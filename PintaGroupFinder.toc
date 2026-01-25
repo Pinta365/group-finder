@@ -6,6 +6,7 @@
 ## Version: 0.0.1
 ## SavedVariables: PintaGroupFinderDB
 ## SavedVariablesPerCharacter: PintaGroupFinderCharDB
+## X-Curse-Project-ID: 1443532
 ## IconTexture: Interface\AddOns\PintaGroupFinder\Textures\pinta
 ## Category: Dungeons & Raids
 ## Category-deDE: Dungeons & Schlachtzüge
