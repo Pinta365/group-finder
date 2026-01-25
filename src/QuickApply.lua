@@ -257,11 +257,9 @@ local function SetupRoleChangeMonitoring()
     local roleButtonHandler = _G["LFGListRoleButtonCheckButton_OnClick"]
     if roleButtonHandler then
         local buttonClickHandler = function(button)
-            C_Timer.After(0.01, function()
-                if PGF.UpdateQuickApplyRoles then
-                    PGF.UpdateQuickApplyRoles()
-                end
-            end)
+            if PGF.UpdateQuickApplyRoles then
+                PGF.UpdateQuickApplyRoles()
+            end
         end
         hooksecurefunc("LFGListRoleButtonCheckButton_OnClick", buttonClickHandler)
     end

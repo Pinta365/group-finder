@@ -310,9 +310,6 @@ end
 ---Initialize advanced filter with our defaults if not already set.
 local function InitializeAdvancedFilterDefaults()
     local advancedFilter = C_LFGList.GetAdvancedFilter()
-    if not advancedFilter then
-        return
-    end
     
     local db = PintaGroupFinderDB or PGF.defaults
     local filter = db.filter or {}
@@ -595,7 +592,8 @@ function PGF.InitializeFilterPanel()
         originalTabWidths[selectedTab] = originalTabWidths[selectedTab] or PVEFrame:GetWidth()
     end
     
-    C_Timer.After(0.3, InitializeAdvancedFilterDefaults)
+    -- Try to initialize immediately, will retry if API not ready
+    InitializeAdvancedFilterDefaults()
     
     CreateFilterPanel()
     
@@ -674,7 +672,7 @@ function PGF.InitializeFilterPanel()
     
     PVEFrame:HookScript("OnShow", function()
         UpdatePVEFrameWidth()
-        C_Timer.After(0.2, UpdatePanelVisibility)
+        UpdatePanelVisibility()
     end)
     
     PVEFrame:HookScript("OnHide", function()
@@ -683,41 +681,42 @@ function PGF.InitializeFilterPanel()
     
     hooksecurefunc("PVEFrame_ShowFrame", function()
         UpdatePVEFrameWidth()
-        C_Timer.After(0.2, UpdatePanelVisibility)
+        UpdatePanelVisibility()
     end)
     
     if LFGListFrame.SearchPanel then
         LFGListFrame.SearchPanel:HookScript("OnShow", function()
-            C_Timer.After(0.2, UpdatePanelVisibility)
+            UpdatePanelVisibility()
         end)
     end
     
     hooksecurefunc("LFGListFrame_SetActivePanel", function(frame, panel)
         if panel == LFGListFrame.SearchPanel then
-            C_Timer.After(0.2, UpdatePanelVisibility)
+            UpdatePanelVisibility()
         end
     end)
     
     hooksecurefunc("LFGListSearchPanel_SetCategory", function(self, categoryID, filters, baseFilters)
         if categoryID == PGF.DUNGEON_CATEGORY_ID then
-            C_Timer.After(0.1, InitializeAdvancedFilterDefaults)
+            InitializeAdvancedFilterDefaults()
         end
-        C_Timer.After(0.2, UpdatePanelVisibility)
+        UpdatePanelVisibility()
     end)
     
     if LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.BackButton then
         LFGListFrame.SearchPanel.BackButton:HookScript("OnClick", function()
-            C_Timer.After(0.1, UpdatePanelVisibility)
+            UpdatePanelVisibility()
         end)
     end
     
     if LFGListFrame.SearchPanel.FilterButton then
         LFGListFrame.SearchPanel.FilterButton:HookScript("OnClick", function()
-            C_Timer.After(0.3, function()
+            C_Timer.After(0.2, function()
                 PGF.UpdateFilterPanel()
             end)
         end)
     end
     
-    C_Timer.After(0.5, UpdatePanelVisibility)
+    -- Initial update
+    UpdatePanelVisibility()
 end
