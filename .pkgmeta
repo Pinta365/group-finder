@@ -2,5 +2,6 @@ ignore:
   - .vscode
   - .github
   - README.md
+  - src/locales/README.md
   - .pkgmeta
 externals:

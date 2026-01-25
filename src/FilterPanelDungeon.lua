@@ -224,13 +224,13 @@ end
 ---Get rating label text for dungeons.
 ---@return string
 function PGF.GetDungeonRatingLabel()
-    return "Min Rating:"
+    return PGF.L("MIN_RATING")
 end
 
 ---Get rating tooltip text for dungeons.
 ---@return string, string
 function PGF.GetDungeonRatingTooltip()
-    return "Minimum Leader Rating", "Only show groups where the leader has at least this M+ rating.\nSet to 0 or leave empty to disable."
+    return PGF.L("MIN_RATING_TITLE"), PGF.L("MIN_RATING_DESC")
 end
 
 ---Get difficulty options for dungeons.
@@ -241,25 +241,25 @@ function PGF.GetDungeonDifficulties()
             key = "normal", 
             label = PGF.GetLocalizedDifficultyName("normal"), 
             blizzKey = "difficultyNormal", 
-            tooltip = "Show Normal difficulty dungeons." 
+            tooltip = PGF.L("DIFFICULTY_NORMAL_DESC")
         },
         { 
             key = "heroic", 
             label = PGF.GetLocalizedDifficultyName("heroic"), 
             blizzKey = "difficultyHeroic", 
-            tooltip = "Show Heroic difficulty dungeons." 
+            tooltip = PGF.L("DIFFICULTY_HEROIC_DESC")
         },
         { 
             key = "mythic", 
             label = PGF.GetLocalizedDifficultyName("mythic"), 
             blizzKey = "difficultyMythic", 
-            tooltip = "Show Mythic (non-keystone) dungeons." 
+            tooltip = PGF.L("DIFFICULTY_MYTHIC_DESC")
         },
         { 
             key = "mythicplus", 
             label = PGF.GetLocalizedDifficultyName("mythicplus"), 
             blizzKey = "difficultyMythicPlus", 
-            tooltip = "Show Mythic+ keystone dungeons." 
+            tooltip = PGF.L("DIFFICULTY_MYTHICPLUS_DESC")
         },
     }
 end
@@ -324,10 +324,10 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
     
     -- Difficulty section    
     local difficultyLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    difficultyLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 10, yOffset)
-    difficultyLabel:SetText("Difficulty:")
+    difficultyLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 10, yOffset - 20)
+    difficultyLabel:SetText(PGF.L("DIFFICULTY"))
     
-    local difficultyStartY = yOffset - headerSpacing
+    local difficultyStartY = yOffset - headerSpacing - 20
     
     local difficultyCheckboxes = {}
     filterPanel.difficultyCheckboxes = difficultyCheckboxes
@@ -387,7 +387,7 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
     
     local playstyleLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     playstyleLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    playstyleLabel:SetText("Playstyle:")
+    playstyleLabel:SetText(PGF.L("PLAYSTYLE"))
     filterPanel.playstyleLabel = playstyleLabel
     
     local playstyleStartY = yOffset - headerSpacing
@@ -399,10 +399,10 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
     local playstyle4Name = _G["GROUP_FINDER_GENERAL_PLAYSTYLE4"] or "Carry Offered"
     
     local playstyles = {
-        { blizzKey = "generalPlaystyle1", label = playstyle1Name, tooltip = "Show groups with Learning playstyle." },
-        { blizzKey = "generalPlaystyle2", label = playstyle2Name, tooltip = "Show groups with Relaxed playstyle." },
-        { blizzKey = "generalPlaystyle3", label = playstyle3Name, tooltip = "Show groups with Competitive playstyle." },
-        { blizzKey = "generalPlaystyle4", label = playstyle4Name, tooltip = "Show groups offering carries." },
+        { blizzKey = "generalPlaystyle1", label = playstyle1Name, tooltip = PGF.L("PLAYSTYLE_LEARNING_DESC") },
+        { blizzKey = "generalPlaystyle2", label = playstyle2Name, tooltip = PGF.L("PLAYSTYLE_RELAXED_DESC") },
+        { blizzKey = "generalPlaystyle3", label = playstyle3Name, tooltip = PGF.L("PLAYSTYLE_COMPETITIVE_DESC") },
+        { blizzKey = "generalPlaystyle4", label = playstyle4Name, tooltip = PGF.L("PLAYSTYLE_CARRY_DESC") },
     }
     
     local playstyleY = playstyleStartY
@@ -450,18 +450,18 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
     local difficultyHeight = 4 * 20
     local difficultyBottomY = difficultyStartY - difficultyHeight
 
-    local roleYOffset = difficultyBottomY - spacing - 5
+    local roleYOffset = difficultyBottomY - spacing +5
     local roleLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     roleLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 30, roleYOffset)
-    roleLabel:SetText("Has Role:")
+    roleLabel:SetText(PGF.L("HAS_ROLE"))
     filterPanel.roleLabel = roleLabel
     
     local roleStartY = roleYOffset - headerSpacing
     
     local roleCheckboxes = {}
     local roles = {
-        { key = "tank", label = "Has Tank", blizzKey = "hasTank", tooltip = "Only show groups that already have a tank." },
-        { key = "healer", label = "Has Healer", blizzKey = "hasHealer", tooltip = "Only show groups that already have a healer." },
+        { key = "tank", label = PGF.L("HAS_TANK"), blizzKey = "hasTank", tooltip = PGF.L("HAS_TANK_DESC") },
+        { key = "healer", label = PGF.L("HAS_HEALER"), blizzKey = "hasHealer", tooltip = PGF.L("HAS_HEALER_DESC") },
     }
     
     local roleY = roleStartY

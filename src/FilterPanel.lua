@@ -131,7 +131,7 @@ local function CreateFilterPanel()
     
     local quickApplyLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     quickApplyLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    quickApplyLabel:SetText("Quick Apply:")
+    quickApplyLabel:SetText(PGF.L("QUICK_APPLY"))
     
     yOffset = yOffset - headerSpacing
     
@@ -141,7 +141,7 @@ local function CreateFilterPanel()
     
     local enableLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     enableLabel:SetPoint("LEFT", quickApplyEnable, "RIGHT", 5, 0)
-    enableLabel:SetText("Enable")
+    enableLabel:SetText(PGF.L("ENABLE"))
     
     quickApplyEnable:SetScript("OnClick", function(self)
         local charDB = PintaGroupFinderCharDB or PGF.charDefaults
@@ -151,9 +151,9 @@ local function CreateFilterPanel()
     
     quickApplyEnable:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Enable Quick Apply")
-        GameTooltip:AddLine("Click a group to instantly sign up with selected roles.", 1, 1, 1, true)
-        GameTooltip:AddLine("Hold Shift when clicking to show the dialog.", 0.7, 0.7, 0.7, true)
+        GameTooltip:SetText(PGF.L("ENABLE_QUICK_APPLY"))
+        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_DESC"), 1, 1, 1, true)
+        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_SHIFT"), 0.7, 0.7, 0.7, true)
         GameTooltip:Show()
     end)
     quickApplyEnable:SetScript("OnLeave", GameTooltip_Hide)
@@ -162,7 +162,7 @@ local function CreateFilterPanel()
     
     local quickApplyRolesLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     quickApplyRolesLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    quickApplyRolesLabel:SetText("Roles:")
+    quickApplyRolesLabel:SetText(PGF.L("ROLES"))
     
     local quickApplyRoleCheckboxes = {}
     local roleButtons = {
@@ -202,7 +202,7 @@ local function CreateFilterPanel()
     
     local noteLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     noteLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    noteLabel:SetText("Note:")
+    noteLabel:SetText(PGF.L("NOTE"))
     
     local noteBox = CreateFrame("EditBox", nil, filterPanel, "InputBoxTemplate")
     noteBox:SetSize(PANEL_WIDTH - 55, 20)
@@ -227,9 +227,9 @@ local function CreateFilterPanel()
     
     noteBox:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Application Note")
-        GameTooltip:AddLine("This note will be sent with your application.", 1, 1, 1, true)
-        GameTooltip:AddLine("Note persists between sign-ups.", 0.7, 0.7, 0.7, true)
+        GameTooltip:SetText(PGF.L("APPLICATION_NOTE"))
+        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_DESC"), 1, 1, 1, true)
+        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_PERSIST"), 0.7, 0.7, 0.7, true)
         GameTooltip:Show()
     end)
     noteBox:SetScript("OnLeave", GameTooltip_Hide)
@@ -242,7 +242,7 @@ local function CreateFilterPanel()
     
     local autoAcceptLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     autoAcceptLabel:SetPoint("LEFT", autoAcceptCheckbox, "RIGHT", 5, 0)
-    autoAcceptLabel:SetText("Auto-accept party")
+    autoAcceptLabel:SetText(PGF.L("AUTO_ACCEPT_PARTY"))
     autoAcceptLabel:SetWidth(PANEL_WIDTH - 40)
     autoAcceptLabel:SetJustifyH("LEFT")
     
@@ -254,8 +254,8 @@ local function CreateFilterPanel()
     
     autoAcceptCheckbox:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Auto-Accept Party Sign Up")
-        GameTooltip:AddLine("Automatically accept when your party leader signs up.", 1, 1, 1, true)
+        GameTooltip:SetText(PGF.L("AUTO_ACCEPT_PARTY_TITLE"))
+        GameTooltip:AddLine(PGF.L("AUTO_ACCEPT_PARTY_DESC"), 1, 1, 1, true)
         GameTooltip:Show()
     end)
     autoAcceptCheckbox:SetScript("OnLeave", GameTooltip_Hide)

@@ -33,6 +33,10 @@ end
 function eventFrame:ADDON_LOADED(loadedAddon)
     if loadedAddon ~= addonName then return end
     
+    if PGF.InitializeLocale then
+        PGF.InitializeLocale()
+    end
+    
     if not PintaGroupFinderDB then
         PintaGroupFinderDB = CopyTable(PGF.defaults)
     else
