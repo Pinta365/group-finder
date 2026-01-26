@@ -1,317 +1,19 @@
 --[[
-    PintaGroupFinder - Filter Panel Module
+    PintaGroupFinder - Filter Panel Coordinator
     
-    Side panel UI for filter controls.
+    Coordinates showing/hiding the appropriate filter panel for each category.
 ]]
 
 local addonName, PGF = ...
 
-local filterPanel = nil
-local originalPVEFrameWidth = nil
 local PANEL_WIDTH = 280
-
--- Store original widths per tab (tab 1 = Group Finder, tab 2 = PvP, etc.)
 local originalTabWidths = {}
-
----Update activity list based on current category.
----@param categoryID number
-local function UpdateActivityList(categoryID)
-    if not filterPanel then
-        return
-    end
-    
-    if categoryID == PGF.DUNGEON_CATEGORY_ID then
-        PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
-    end
-end
-
----Create difficulty checkboxes for a category (delegates to category-specific modules).
----@param categoryID number
-local function CreateDifficultyCheckboxes(categoryID)
-    if not filterPanel then
-        return
-    end
-    
-    if categoryID == PGF.DUNGEON_CATEGORY_ID then
-        local difficulties = PGF.GetDungeonDifficulties()
-        if not filterPanel.difficultyCheckboxes then
-            return
-        end
-        
-        for _, diff in ipairs(difficulties) do
-            local checkbox = filterPanel.difficultyCheckboxes[diff.key]
-            if checkbox then
-                checkbox:Show()
-            end
-        end
-    end
-end
-
----Create category-specific filter UI section.
----@param categoryID number
-local function CreateCategoryFilterSection(categoryID)
-    if not filterPanel then
-        return -10
-    end
-    
-    -- Only create if not already created
-    if filterPanel.categoryUICreated then
-        return filterPanel.categoryUIYOffset or -10
-    end
-    
-    if categoryID == PGF.DUNGEON_CATEGORY_ID then
-        local yOffset = PGF.CreateDungeonFilterSection(filterPanel, PANEL_WIDTH)
-        filterPanel.categoryUICreated = true
-        filterPanel.categoryUIYOffset = yOffset
-        return yOffset
-    end
-    
-    -- Future: Add other categories here (Raid, PvP, etc.)
-    return -10
-end
-
----Update UI labels and visibility based on category.
----@param categoryID number
-local function UpdateCategoryUI(categoryID)
-    if not filterPanel then
-        return
-    end
-
-    if categoryID == PGF.DUNGEON_CATEGORY_ID then
-        if not filterPanel.categoryUICreated then
-            CreateCategoryFilterSection(categoryID)
-        end
-        CreateDifficultyCheckboxes(categoryID)
-    end
-end
-
----Create the filter panel UI.
----@return Frame? Filter panel frame
-local function CreateFilterPanel()
-    if filterPanel then
-        return filterPanel
-    end
-    
-    local parent = PVEFrame
-    if not parent then
-        return nil
-    end
-    
-    if PVEFrame then
-        local selectedTab = PVEFrame.selectedTab or 1
-        if not originalTabWidths[selectedTab] then
-            originalTabWidths[selectedTab] = parent:GetWidth()
-        end
-    end
-    
-    filterPanel = CreateFrame("Frame", "PGFilterPanel", parent, "BackdropTemplate")
-    filterPanel:SetSize(PANEL_WIDTH, 400)
-    
-    if LFGListFrame then
-        filterPanel:SetPoint("TOPLEFT", LFGListFrame, "TOPRIGHT", 5, -25)
-    else
-        filterPanel:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -5, -75)
-    end
-    
-    filterPanel:SetFrameStrata("HIGH")
-    filterPanel:SetFrameLevel(100)
-    
-    filterPanel:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    filterPanel:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
-    filterPanel:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
-    
-    local headerSpacing = 12
-    
-    local yOffset = -310
-    
-    local quickApplyLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    quickApplyLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    quickApplyLabel:SetText(PGF.L("QUICK_APPLY"))
-    
-    yOffset = yOffset - headerSpacing
-    
-    local quickApplyEnable = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
-    quickApplyEnable:SetSize(20, 20)
-    quickApplyEnable:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    
-    local enableLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    enableLabel:SetPoint("LEFT", quickApplyEnable, "RIGHT", 5, 0)
-    enableLabel:SetText(PGF.L("ENABLE"))
-    
-    quickApplyEnable:SetScript("OnClick", function(self)
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.enabled = self:GetChecked()
-    end)
-    
-    quickApplyEnable:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(PGF.L("ENABLE_QUICK_APPLY"))
-        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_DESC"), 1, 1, 1, true)
-        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_SHIFT"), 0.7, 0.7, 0.7, true)
-        GameTooltip:Show()
-    end)
-    quickApplyEnable:SetScript("OnLeave", GameTooltip_Hide)
-    
-    yOffset = yOffset - 20
-    
-    local quickApplyRolesLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    quickApplyRolesLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    quickApplyRolesLabel:SetText(PGF.L("ROLES"))
-    
-    local quickApplyRoleCheckboxes = {}
-    local roleButtons = {
-        { key = "tank", label = "T" },
-        { key = "healer", label = "H" },
-        { key = "damage", label = "D" },
-    }
-    
-    local roleX = 55
-    for _, role in ipairs(roleButtons) do
-        local checkbox = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
-        checkbox:SetSize(16, 16)
-        checkbox:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", roleX, yOffset)
-        
-        local label = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-        label:SetPoint("LEFT", checkbox, "RIGHT", 2, 0)
-        label:SetText(role.label)
-        
-        checkbox:SetScript("OnClick", function(self)
-            local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-            if not charDB.quickApply then charDB.quickApply = {} end
-            if not charDB.quickApply.roles then charDB.quickApply.roles = {} end
-            charDB.quickApply.roles[role.key] = self:GetChecked()
-            
-            local leader = false
-            local tank = charDB.quickApply.roles.tank == true
-            local healer = charDB.quickApply.roles.healer == true
-            local dps = charDB.quickApply.roles.damage == true
-            SetLFGRoles(leader, tank, healer, dps)
-        end)
-        
-        quickApplyRoleCheckboxes[role.key] = checkbox
-        roleX = roleX + 35
-    end
-    
-    yOffset = yOffset - 20
-    
-    local noteLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    noteLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    noteLabel:SetText(PGF.L("NOTE"))
-    
-    local noteBox = CreateFrame("EditBox", nil, filterPanel, "InputBoxTemplate")
-    noteBox:SetSize(PANEL_WIDTH - 55, 20)
-    noteBox:SetPoint("LEFT", noteLabel, "RIGHT", 10, 0)
-    noteBox:SetAutoFocus(false)
-    noteBox:SetMaxLetters(60)
-    
-    noteBox:SetScript("OnEnterPressed", function(self)
-        self:ClearFocus()
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.note = self:GetText()
-    end)
-    
-    noteBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    
-    noteBox:SetScript("OnEditFocusLost", function(self)
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.note = self:GetText()
-    end)
-    
-    noteBox:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(PGF.L("APPLICATION_NOTE"))
-        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_DESC"), 1, 1, 1, true)
-        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_PERSIST"), 0.7, 0.7, 0.7, true)
-        GameTooltip:Show()
-    end)
-    noteBox:SetScript("OnLeave", GameTooltip_Hide)
-    
-    yOffset = yOffset - 15
-    
-    local autoAcceptCheckbox = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
-    autoAcceptCheckbox:SetSize(20, 20)
-    autoAcceptCheckbox:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    
-    local autoAcceptLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    autoAcceptLabel:SetPoint("LEFT", autoAcceptCheckbox, "RIGHT", 5, 0)
-    autoAcceptLabel:SetText(PGF.L("AUTO_ACCEPT_PARTY"))
-    autoAcceptLabel:SetWidth(PANEL_WIDTH - 40)
-    autoAcceptLabel:SetJustifyH("LEFT")
-    
-    autoAcceptCheckbox:SetScript("OnClick", function(self)
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.autoAcceptParty = self:GetChecked()
-    end)
-    
-    autoAcceptCheckbox:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(PGF.L("AUTO_ACCEPT_PARTY_TITLE"))
-        GameTooltip:AddLine(PGF.L("AUTO_ACCEPT_PARTY_DESC"), 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    autoAcceptCheckbox:SetScript("OnLeave", GameTooltip_Hide)
-    
-    filterPanel.quickApplyEnable = quickApplyEnable
-    filterPanel.quickApplyRoleCheckboxes = quickApplyRoleCheckboxes
-    filterPanel.quickApplyNoteBox = noteBox
-    filterPanel.quickApplyAutoAccept = autoAcceptCheckbox
-    
-    return filterPanel
-end
-
----Update Quick Apply role checkboxes from Blizzard's persistent roles.
-function PGF.UpdateQuickApplyRoles()
-    if not filterPanel or not filterPanel.quickApplyRoleCheckboxes then
-        return
-    end
-    
-    local _, tank, healer, dps = GetLFGRoles()
-    
-    local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-    if not charDB.quickApply then charDB.quickApply = {} end
-    if not charDB.quickApply.roles then charDB.quickApply.roles = {} end
-    charDB.quickApply.roles.tank = tank
-    charDB.quickApply.roles.healer = healer
-    charDB.quickApply.roles.damage = dps
-    
-    local availTank, availHealer, availDPS = C_LFGList.GetAvailableRoles()
-    
-    if filterPanel.quickApplyRoleCheckboxes.tank then
-        filterPanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
-        if availTank then
-            filterPanel.quickApplyRoleCheckboxes.tank:SetChecked(tank)
-        end
-    end
-    
-    if filterPanel.quickApplyRoleCheckboxes.healer then
-        filterPanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
-        if availHealer then
-            filterPanel.quickApplyRoleCheckboxes.healer:SetChecked(healer)
-        end
-    end
-    
-    if filterPanel.quickApplyRoleCheckboxes.damage then
-        filterPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
-        if availDPS then
-            filterPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps)
-        end
-    end
-end
 
 ---Initialize advanced filter with our defaults if not already set.
 local function InitializeAdvancedFilterDefaults()
     local advancedFilter = C_LFGList.GetAdvancedFilter()
     
-    local db = PintaGroupFinderDB or PGF.defaults
+    local db = PintaGroupFinderDB
     local filter = db.filter or {}
     local difficultyDefaults = filter.difficulty or PGF.defaults.filter.difficulty
     local playstyleDefaults = filter.playstyle or PGF.defaults.filter.playstyle
@@ -351,191 +53,100 @@ local function InitializeAdvancedFilterDefaults()
     end
 end
 
----Update filter panel UI from saved settings.
-function PGF.UpdateFilterPanel()
-    if not filterPanel then
-        return
+---Check if we're in a valid state to show a filter panel.
+---@return boolean, number? Returns true if should show, and categoryID if valid
+local function ShouldShowFilterPanel()
+    if not PVEFrame or not PVEFrame:IsVisible() then
+        return false
     end
     
-    InitializeAdvancedFilterDefaults()
-    
-    local db = PintaGroupFinderDB or PGF.defaults
-    local filter = db.filter or {}
-    
-    if filterPanel.ratingBox then
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if advancedFilter and advancedFilter.minimumRating then
-            filterPanel.ratingBox:SetText(advancedFilter.minimumRating > 0 and tostring(advancedFilter.minimumRating) or "")
-            filter.minRating = advancedFilter.minimumRating
-        else
-            filterPanel.ratingBox:SetText(filter.minRating and filter.minRating > 0 and tostring(filter.minRating) or "")
-        end
+    if PVEFrame.selectedTab ~= 1 then
+        return false
     end
     
-    local panel = LFGListFrame and LFGListFrame.SearchPanel
-    local categoryID = panel and panel.categoryID
-    
-    if categoryID then
-        UpdateCategoryUI(categoryID)
+    if not LFGListFrame or not LFGListFrame:IsVisible() then
+        return false
     end
     
-    if filterPanel.difficultyCheckboxes then
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if advancedFilter then
-            local blizzToOur = {
-                difficultyNormal = "normal",
-                difficultyHeroic = "heroic",
-                difficultyMythic = "mythic",
-                difficultyMythicPlus = "mythicplus",
-            }
-            
-            for blizzKey, ourKey in pairs(blizzToOur) do
-                local checkbox = filterPanel.difficultyCheckboxes[ourKey]
-                if checkbox then
-                    local isChecked = advancedFilter[blizzKey] ~= false
-                    checkbox:SetChecked(isChecked)
-                    
-                    if not filter.difficulty then filter.difficulty = {} end
-                    filter.difficulty[ourKey] = isChecked
-                end
-            end
-        else
-            local difficulty = filter.difficulty or PGF.defaults.filter.difficulty
-            
-            for key, checkbox in pairs(filterPanel.difficultyCheckboxes) do
-                if checkbox and difficulty then
-                    checkbox:SetChecked(difficulty[key] == true)
-                end
-            end
-        end
+    if LFGListFrame.activePanel ~= LFGListFrame.SearchPanel then
+        return false
     end
     
-    if filterPanel.roleCheckboxes then
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if advancedFilter then
-            local blizzToOur = {
-                hasTank = "tank",
-                hasHealer = "healer",
-            }
-            
-            for blizzKey, ourKey in pairs(blizzToOur) do
-                local checkboxData = filterPanel.roleCheckboxes[ourKey]
-                local checkbox = checkboxData and checkboxData.frame
-                if checkbox then
-                    local isChecked = advancedFilter[blizzKey] == true
-                    checkbox:SetChecked(isChecked)
-                    
-                    if not filter.hasRole then filter.hasRole = {} end
-                    filter.hasRole[ourKey] = isChecked
-                end
-            end
-        else
-            local hasRole = filter.hasRole or {}
-            for key, checkboxData in pairs(filterPanel.roleCheckboxes) do
-                local checkbox = checkboxData and checkboxData.frame
-                if checkbox then
-                    checkbox:SetChecked(hasRole[key] == true)
-                end
-            end
-        end
+    local panel = LFGListFrame.SearchPanel
+    if not panel or not panel:IsVisible() then
+        return false
     end
     
-    if filterPanel.playstyleCheckboxes then
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if advancedFilter then
-            for blizzKey, checkboxData in pairs(filterPanel.playstyleCheckboxes) do
-                local checkbox = checkboxData and checkboxData.frame
-                if checkbox then
-                    local isChecked = advancedFilter[blizzKey] == true
-                    checkbox:SetChecked(isChecked)
-                end
-            end
-        else
-            local playstyle = filter.playstyle or {}
-            local keyToBlizzKey = {
-                learning = "generalPlaystyle1",
-                relaxed = "generalPlaystyle2",
-                competitive = "generalPlaystyle3",
-                carry = "generalPlaystyle4",
-            }
-            for blizzKey, checkboxData in pairs(filterPanel.playstyleCheckboxes) do
-                local checkbox = checkboxData and checkboxData.frame
-                if checkbox then
-                    local isChecked = false
-                    for oldKey, mappedBlizzKey in pairs(keyToBlizzKey) do
-                        if mappedBlizzKey == blizzKey and playstyle[oldKey] then
-                            isChecked = playstyle[oldKey] == true
-                            break
-                        end
-                    end
-                    checkbox:SetChecked(isChecked)
-                end
-            end
-        end
+    local categoryID = panel.categoryID
+    if not categoryID then
+        return false
     end
     
-    if categoryID then
-        UpdateActivityList(categoryID)
+    if not panel.SearchBox or not panel.SearchBox:IsVisible() then
+        return false
     end
     
-    local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-    local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
+    local db = PintaGroupFinderDB
+    local categoryMatches = (categoryID == PGF.DUNGEON_CATEGORY_ID) or (categoryID == PGF.RAID_CATEGORY_ID)
+    local panelEnabled = db.ui and db.ui.filterPanelShown ~= false
     
-    if filterPanel.quickApplyEnable then
-        filterPanel.quickApplyEnable:SetChecked(quickApply.enabled == true)
-    end
+    return categoryMatches and panelEnabled, categoryID
+end
+
+---Hide all filter panels.
+local function HideAllPanels()
+    PGF.ShowDungeonPanel(false)
+    PGF.ShowRaidPanel(false)
+end
+
+---Show the appropriate panel for a category.
+---@param categoryID number
+local function ShowPanelForCategory(categoryID)
+    HideAllPanels()
     
-    if filterPanel.quickApplyRoleCheckboxes then
-        local _, tank, healer, dps = GetLFGRoles()
-        local roles = {
-            tank = tank,
-            healer = healer,
-            damage = dps,
-        }
-        
-        if not quickApply.roles then quickApply.roles = {} end
-        quickApply.roles.tank = tank
-        quickApply.roles.healer = healer
-        quickApply.roles.damage = dps
-        
-        local availTank, availHealer, availDPS = C_LFGList.GetAvailableRoles()
-        
-        if filterPanel.quickApplyRoleCheckboxes.tank then
-            filterPanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
-            if availTank then
-                filterPanel.quickApplyRoleCheckboxes.tank:SetChecked(roles.tank)
-            end
-        end
-        
-        if filterPanel.quickApplyRoleCheckboxes.healer then
-            filterPanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
-            if availHealer then
-                filterPanel.quickApplyRoleCheckboxes.healer:SetChecked(roles.healer)
-            end
-        end
-        
-        if filterPanel.quickApplyRoleCheckboxes.damage then
-            filterPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
-            if availDPS then
-                filterPanel.quickApplyRoleCheckboxes.damage:SetChecked(roles.damage)
-            end
-        end
-    end
-    
-    if filterPanel.quickApplyNoteBox then
-        filterPanel.quickApplyNoteBox:SetText(quickApply.note or "")
-    end
-    
-    if filterPanel.quickApplyAutoAccept then
-        filterPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
+    if categoryID == PGF.DUNGEON_CATEGORY_ID then
+        PGF.ShowDungeonPanel(true)
+    elseif categoryID == PGF.RAID_CATEGORY_ID then
+        PGF.ShowRaidPanel(true)
     end
 end
 
----Show or hide the filter panel.
----@param show boolean? Show state (nil = toggle)
+---Update PVE frame width to accommodate panel.
+---@param showPanel boolean
+local function UpdatePVEFrameWidth(showPanel)
+    if not PVEFrame then return end
+    
+    local selectedTab = PVEFrame.selectedTab or 1
+    
+    if not originalTabWidths[selectedTab] then
+        originalTabWidths[selectedTab] = PVEFrame:GetWidth()
+    end
+    
+    if showPanel then
+        PVEFrame:SetWidth(originalTabWidths[selectedTab] + PANEL_WIDTH + 5)
+    else
+        PVEFrame:SetWidth(originalTabWidths[selectedTab])
+    end
+end
+
+---Update panel visibility based on current state.
+local function UpdatePanelVisibility()
+    local shouldShow, categoryID = ShouldShowFilterPanel()
+    
+    if shouldShow and categoryID then
+        ShowPanelForCategory(categoryID)
+        UpdatePVEFrameWidth(true)
+    else
+        HideAllPanels()
+        UpdatePVEFrameWidth(false)
+    end
+end
+
+---Show or hide filter panels.
+---@param show boolean? Show state
 ---@param save boolean? Whether to save state
 function PGF.ShowFilterPanel(show, save)
-    local db = PintaGroupFinderDB or PGF.defaults
+    local db = PintaGroupFinderDB
     db.ui = db.ui or {}
     
     if show == nil then
@@ -548,39 +159,72 @@ function PGF.ShowFilterPanel(show, save)
         db.ui.filterPanelShown = false
     end
     
-    if not filterPanel then
-        CreateFilterPanel()
-    end
-    
-    if not filterPanel then
-        return
-    end
-    
     if show then
-        filterPanel:Show()
-        if PVEFrame then
-            local selectedTab = PVEFrame.selectedTab or 1
-            if selectedTab == 1 then
-                if not originalTabWidths[selectedTab] then
-                    originalTabWidths[selectedTab] = PVEFrame:GetWidth()
-                end
-                PVEFrame:SetWidth(originalTabWidths[selectedTab] + PANEL_WIDTH + 5)
-            end
-        end
+        UpdatePanelVisibility()
     else
-        filterPanel:Hide()
-        if PVEFrame then
-            local selectedTab = PVEFrame.selectedTab or 1
-            if originalTabWidths[selectedTab] then
-                PVEFrame:SetWidth(originalTabWidths[selectedTab])
-            elseif originalPVEFrameWidth then
-                PVEFrame:SetWidth(originalPVEFrameWidth)
-            end
+        HideAllPanels()
+        UpdatePVEFrameWidth(false)
+    end
+end
+
+---Update filter panel UI (compatibility function).
+function PGF.UpdateFilterPanel()
+    local shouldShow, categoryID = ShouldShowFilterPanel()
+    if shouldShow and categoryID then
+        if categoryID == PGF.DUNGEON_CATEGORY_ID then
+            PGF.UpdateDungeonPanel()
+        elseif categoryID == PGF.RAID_CATEGORY_ID then
+            PGF.UpdateRaidPanel()
         end
     end
 end
 
----Initialize filter panel and hook into WoW UI.
+---Update Quick Apply role checkboxes from Blizzard's persistent roles.
+function PGF.UpdateQuickApplyRoles()
+    local _, tank, healer, dps = GetLFGRoles()
+    local availTank, availHealer, availDPS = C_LFGList.GetAvailableRoles()
+    
+    local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+    if not charDB.quickApply then charDB.quickApply = {} end
+    if not charDB.quickApply.roles then charDB.quickApply.roles = {} end
+    charDB.quickApply.roles.tank = tank
+    charDB.quickApply.roles.healer = healer
+    charDB.quickApply.roles.damage = dps
+
+    local dungeonPanel = PGF.GetDungeonPanel()
+    if dungeonPanel and dungeonPanel.quickApplyRoleCheckboxes then
+        if dungeonPanel.quickApplyRoleCheckboxes.tank then
+            dungeonPanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
+            if availTank then dungeonPanel.quickApplyRoleCheckboxes.tank:SetChecked(tank) end
+        end
+        if dungeonPanel.quickApplyRoleCheckboxes.healer then
+            dungeonPanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
+            if availHealer then dungeonPanel.quickApplyRoleCheckboxes.healer:SetChecked(healer) end
+        end
+        if dungeonPanel.quickApplyRoleCheckboxes.damage then
+            dungeonPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
+            if availDPS then dungeonPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
+        end
+    end
+    
+    local raidPanel = PGF.GetRaidPanel()
+    if raidPanel and raidPanel.quickApplyRoleCheckboxes then
+        if raidPanel.quickApplyRoleCheckboxes.tank then
+            raidPanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
+            if availTank then raidPanel.quickApplyRoleCheckboxes.tank:SetChecked(tank) end
+        end
+        if raidPanel.quickApplyRoleCheckboxes.healer then
+            raidPanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
+            if availHealer then raidPanel.quickApplyRoleCheckboxes.healer:SetChecked(healer) end
+        end
+        if raidPanel.quickApplyRoleCheckboxes.damage then
+            raidPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
+            if availDPS then raidPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
+        end
+    end
+end
+
+---Initialize filter panel coordinator and hook into WoW UI.
 function PGF.InitializeFilterPanel()
     if not PVEFrame or not LFGListFrame then
         C_Timer.After(0.5, PGF.InitializeFilterPanel)
@@ -591,99 +235,39 @@ function PGF.InitializeFilterPanel()
         local selectedTab = PVEFrame.selectedTab or 1
         originalTabWidths[selectedTab] = originalTabWidths[selectedTab] or PVEFrame:GetWidth()
     end
-    
-    -- Try to initialize immediately, will retry if API not ready
+
     InitializeAdvancedFilterDefaults()
-    
-    CreateFilterPanel()
-    
-    if not filterPanel then
-        return
-    end
-    
-    ---Check if we're in a valid state to show the filter panel.
-    ---@return boolean, number? categoryID Returns true if should show, and categoryID if valid
-    local function ShouldShowFilterPanel()
-        if not filterPanel or not PVEFrame or not PVEFrame:IsVisible() then
-            return false
-        end
-        
-        if PVEFrame.selectedTab ~= 1 then
-            return false
-        end
-        
-        if not LFGListFrame or not LFGListFrame:IsVisible() then
-            return false
-        end
-        
-        if LFGListFrame.activePanel ~= LFGListFrame.SearchPanel then
-            return false
-        end
-        
-        local panel = LFGListFrame.SearchPanel
-        if not panel or not panel:IsVisible() then
-            return false
-        end
-        
-        local categoryID = panel.categoryID
-        if not categoryID then
-            return false
-        end
-        
-        if not panel.SearchBox or not panel.SearchBox:IsVisible() then
-            return false
-        end
-        
-        local db = PintaGroupFinderDB or PGF.defaults
-        local categoryMatches = (categoryID == PGF.DUNGEON_CATEGORY_ID)
-        local panelEnabled = db.ui and db.ui.filterPanelShown ~= false
-        
-        return categoryMatches and panelEnabled, categoryID
-    end
-    
-    local function UpdatePanelVisibility()
-        local shouldShow, categoryID = ShouldShowFilterPanel()
-        
-        PGF.ShowFilterPanel(shouldShow, shouldShow)
-        
-        if shouldShow and categoryID then
-            if LFGListFrame then
-                filterPanel:ClearAllPoints()
-                filterPanel:SetPoint("TOPLEFT", LFGListFrame, "TOPRIGHT", 5, -25)
-            end
-            UpdateCategoryUI(categoryID)
-            PGF.UpdateFilterPanel()
-        end
-    end
-    
-    local function UpdatePVEFrameWidth()
-        if not PVEFrame then return end
-        
-        local selectedTab = PVEFrame.selectedTab or 1
-        
-        if not originalTabWidths[selectedTab] then
-            originalTabWidths[selectedTab] = PVEFrame:GetWidth()
-        end
-        
-        if originalTabWidths[selectedTab] then
-            PVEFrame:SetWidth(originalTabWidths[selectedTab])
-        end
-    end
-    
+
+    PGF.InitializeDungeonPanel()
+    PGF.InitializeRaidPanel()
+
+    HideAllPanels()
+
     PVEFrame:HookScript("OnShow", function()
-        UpdatePVEFrameWidth()
+        if PVEFrame then
+            local selectedTab = PVEFrame.selectedTab or 1
+            if not originalTabWidths[selectedTab] then
+                originalTabWidths[selectedTab] = PVEFrame:GetWidth()
+            end
+        end
         UpdatePanelVisibility()
     end)
     
     PVEFrame:HookScript("OnHide", function()
-        PGF.ShowFilterPanel(false, false)
+        HideAllPanels()
+        UpdatePVEFrameWidth(false)
     end)
     
     hooksecurefunc("PVEFrame_ShowFrame", function()
-        UpdatePVEFrameWidth()
+        if PVEFrame then
+            local selectedTab = PVEFrame.selectedTab or 1
+            if not originalTabWidths[selectedTab] then
+                originalTabWidths[selectedTab] = PVEFrame:GetWidth()
+            end
+        end
         UpdatePanelVisibility()
     end)
-    
+
     if LFGListFrame.SearchPanel then
         LFGListFrame.SearchPanel:HookScript("OnShow", function()
             UpdatePanelVisibility()
@@ -693,11 +277,14 @@ function PGF.InitializeFilterPanel()
     hooksecurefunc("LFGListFrame_SetActivePanel", function(frame, panel)
         if panel == LFGListFrame.SearchPanel then
             UpdatePanelVisibility()
+        else
+            HideAllPanels()
+            UpdatePVEFrameWidth(false)
         end
     end)
     
     hooksecurefunc("LFGListSearchPanel_SetCategory", function(self, categoryID, filters, baseFilters)
-        if categoryID == PGF.DUNGEON_CATEGORY_ID then
+        if categoryID == PGF.DUNGEON_CATEGORY_ID or categoryID == PGF.RAID_CATEGORY_ID then
             InitializeAdvancedFilterDefaults()
         end
         UpdatePanelVisibility()
@@ -716,7 +303,6 @@ function PGF.InitializeFilterPanel()
             end)
         end)
     end
-    
-    -- Initial update
+
     UpdatePanelVisibility()
 end

@@ -7,6 +7,7 @@
 local addonName, PGF = ...
 
 PGF.DUNGEON_CATEGORY_ID = 2
+PGF.RAID_CATEGORY_ID = 3
 
 ---@class SavedVariables
 ---@field debug boolean
@@ -64,6 +65,26 @@ PGF.defaults = {
             relaxed = true,
             competitive = true,
             carry = true,
+        },
+        raidRoleRequirements = {
+            tank = { enabled = false, operator = ">=", value = 1 },
+            healer = { enabled = false, operator = ">=", value = 2 },
+            dps = { enabled = false, operator = ">=", value = 0 },
+        },
+        raidAccordionState = {
+            activities = true,
+            bossFilter = false,
+            difficulty = true,
+            playstyle = false,
+            roleFiltering = false,
+            quickApply = true,
+        },
+        dungeonAccordionState = {
+            activities = true,
+            difficulty = true,
+            playstyle = false,
+            misc = false,
+            quickApply = true,
         },
     },
     

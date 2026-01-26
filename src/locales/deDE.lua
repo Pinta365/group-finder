@@ -48,5 +48,27 @@ if GetLocale() == "deDE" then
     ["HAS_HEALER"] = "Hat Heiler",
     ["HAS_TANK_DESC"] = "Zeige nur Gruppen, die bereits einen Tank haben.",
     ["HAS_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Heiler haben.",
+    
+    -- Role Requirements
+    ["ROLE_REQUIREMENTS"] = "Rollenanforderungen",
+    ["ROLE_REQ_DESC"] = "Filtere Gruppen nach exakten Rollenanzahlen (z.B. mindestens 2 Heiler).",
+    ["OP_GTE"] = ">=",
+    ["OP_LTE"] = "<=",
+    ["OP_EQ"] = "=",
+    
+    -- Raids
+    ["BOSS_FILTER"] = "Boss-Filter:",
+    ["BOSS_FILTER_ANY"] = "Beliebig",
+    ["BOSS_FILTER_FRESH"] = "Neue Instanz",
+    ["BOSS_FILTER_PARTIAL"] = "Teilweiser Fortschritt",
+    
+    -- Accordion sections
+    ["SECTION_ACTIVITIES"] = "AKTIVITÄTEN",
+    ["SECTION_BOSS_FILTER"] = "BOSS-FILTER",
+    ["SECTION_DIFFICULTY"] = "SCHWIERIGKEIT",
+    ["SECTION_PLAYSTYLE"] = "SPIELSTIL",
+    ["SECTION_MISC"] = "SONSTIGES",
+    ["SECTION_ROLE_FILTERING"] = "ROLLENFILTERUNG",
+    ["SECTION_QUICK_APPLY"] = "SOFORT ANMELDEN",
     }
 end

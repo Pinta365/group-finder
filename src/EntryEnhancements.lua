@@ -81,7 +81,7 @@ end
 ---@param resultID number
 ---@param searchResultInfo LfgSearchResultData
 local function AddMissingRoles(entry, resultID, searchResultInfo)
-    local db = PintaGroupFinderDB or PGF.defaults
+    local db = PintaGroupFinderDB
     if not (db.ui and db.ui.showMissingRoles) then
         return
     end
@@ -151,7 +151,7 @@ end
 ---@param resultID number
 ---@param searchResultInfo LfgSearchResultData
 local function AddLeaderRating(entry, resultID, searchResultInfo)
-    local db = PintaGroupFinderDB or PGF.defaults
+    local db = PintaGroupFinderDB
     if not (db.ui and db.ui.showLeaderRating) then
         return
     end

@@ -48,5 +48,27 @@ if GetLocale() == "frFR" then
     ["HAS_HEALER"] = "A un soigneur",
     ["HAS_TANK_DESC"] = "Afficher uniquement les groupes qui ont déjà un tank.",
     ["HAS_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un soigneur.",
+    
+    -- Role Requirements
+    ["ROLE_REQUIREMENTS"] = "Exigences de rôle",
+    ["ROLE_REQ_DESC"] = "Filtrer les groupes par nombre exact de rôles (ex. au moins 2 soigneurs).",
+    ["OP_GTE"] = ">=",
+    ["OP_LTE"] = "<=",
+    ["OP_EQ"] = "=",
+    
+    -- Raids
+    ["BOSS_FILTER"] = "Filtre de boss :",
+    ["BOSS_FILTER_ANY"] = "Tous",
+    ["BOSS_FILTER_FRESH"] = "Instance neuve",
+    ["BOSS_FILTER_PARTIAL"] = "Déjà entamé",
+    
+    -- Accordion sections
+    ["SECTION_ACTIVITIES"] = "ACTIVITÉS",
+    ["SECTION_BOSS_FILTER"] = "FILTRE DE BOSS",
+    ["SECTION_DIFFICULTY"] = "DIFFICULTÉ",
+    ["SECTION_PLAYSTYLE"] = "STYLE DE JEU",
+    ["SECTION_MISC"] = "DIVERS",
+    ["SECTION_ROLE_FILTERING"] = "FILTRAGE DES RÔLES",
+    ["SECTION_QUICK_APPLY"] = "APPLICATION RAPIDE",
     }
 end

@@ -8,10 +8,11 @@
 
 Pinta Group Finder enhances the default Group Finder UI with advanced filtering, quick apply functionality, and visual improvements. The addon provides:
 
-* **Filtering Panel** - Filter groups by dungeon, difficulty, minimum leader rating, role requirements, and playstyle
+* **Filtering Panels** - Filtering for both Dungeons and Raids with accordion-style collapsible sections
 * **Quick Apply** - Sign up to groups with pre-selected roles, bypassing the role selection dialog
 * **Visual Improvements** - See leader M+ ratings with Raider.IO color coding, class-colored role indicators, and missing role indicators
 * **Auto-Accept** - Automatically accept party sign-ups when your party leader applies to a group
+* **Raid Filtering** - Advanced raid-specific filters including boss progress filtering and granular role requirements
 
 ## Download
 
@@ -31,9 +32,13 @@ Pinta Group Finder offers the following slash commands:
 
 ## Features
 
-### Filter Panel
+### Filter Panels
 
-The filter panel appears automatically next to the Group Finder window when viewing the Dungeons category. It allows you to:
+The filter panels appear automatically next to the Group Finder window when viewing the Dungeons or Raids category. Both panels feature a modern accordion-style interface with collapsible sections for better organization.
+
+#### Dungeon Filter Panel
+
+The dungeon filter panel allows you to:
 
 * **Select Specific Dungeons** - Choose which dungeons to show in your search results
 * **Set Minimum Rating** - Filter groups by leader's Mythic+ rating
@@ -41,7 +46,17 @@ The filter panel appears automatically next to the Group Finder window when view
 * **Role Requirements** - Only show groups that already have a tank or healer
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered (all enabled by default)
 
-The panel automatically hides when switching to other tabs (PvP, etc.) or when returning to the category selection view.
+#### Raid Filter Panel
+
+The raid filter panel provides advanced raid-specific filtering:
+
+* **Select Specific Raids** - Choose which raid activities to show in your search results
+* **Boss Progress Filtering** - Filter by boss progress: Any, Fresh (no bosses defeated), or Partial (some bosses defeated)
+* **Difficulty Filtering** - Show/hide Normal, Heroic, or Mythic difficulty raids
+* **Advanced Role Requirements** - Filter by exact role counts with operators (>=, <=, =). For example, show only groups with at least 2 healers
+* **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered
+
+The panels automatically hide when switching to other tabs (PvP, etc.) or when returning to the category selection view. Accordion section states (expanded/collapsed) are saved and persist across sessions.
 
 ### Quick Apply
 
@@ -64,7 +79,8 @@ The addon enhances group list entries with:
 
 The addon integrates with Blizzard's native filtering system, ensuring compatibility and performance:
 
-* **Native Integration** - Uses Blizzard's advanced filter API for difficulty, roles, playstyle, and minimum rating
+* **Native Integration** - Uses Blizzard's advanced filter API for dungeons (difficulty, roles, playstyle, and minimum rating)
+* **Client-Side Raid Filtering** - Raids use custom client-side filtering to enhance Blizzard's filter
 * **Automatic Sorting** - Results are sorted by application status, rating, and age
 * **Fallback Support** - Custom filtering logic as fallback when Blizzard's filter is unavailable
 

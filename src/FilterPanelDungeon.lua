@@ -1,21 +1,184 @@
 --[[
-    PintaGroupFinder - Filter Panel Dungeon Module
+    PintaGroupFinder - Dungeon Filter Panel Module
     
-    Dungeon-specific filtering logic.
+    Filter panel for dungeon category with accordion-style collapsible sections.
 ]]
 
 local addonName, PGF = ...
 
+local dungeonPanel = nil
 local PANEL_WIDTH = 280
+local PANEL_HEIGHT = 400
+local HEADER_HEIGHT = 24
+local CONTENT_PADDING = 8
+
+local sections = {}
+
+---Check if a section is expanded.
+---@param sectionID string
+---@return boolean
+local function IsSectionExpanded(sectionID)
+    return PintaGroupFinderDB.filter.dungeonAccordionState[sectionID]
+end
+
+---Set accordion state for a section.
+---@param sectionID string
+---@param expanded boolean
+local function SetAccordionState(sectionID, expanded)
+    PintaGroupFinderDB.filter.dungeonAccordionState[sectionID] = expanded
+end
+
+---Recalculate content height and reposition all sections.
+local function RecalculateLayout()
+    if not dungeonPanel or not dungeonPanel.scrollContent then return end
+    
+    local yOffset = 0
+    
+    for _, section in ipairs(sections) do
+        -- Position header
+        section.header:ClearAllPoints()
+        section.header:SetPoint("TOPLEFT", dungeonPanel.scrollContent, "TOPLEFT", 0, -yOffset)
+        section.header:SetPoint("TOPRIGHT", dungeonPanel.scrollContent, "TOPRIGHT", 0, -yOffset)
+        
+        yOffset = yOffset + HEADER_HEIGHT
+        
+        -- Position and show/hide content
+        if IsSectionExpanded(section.id) then
+            section.content:ClearAllPoints()
+            section.content:SetPoint("TOPLEFT", dungeonPanel.scrollContent, "TOPLEFT", 0, -yOffset)
+            section.content:SetPoint("TOPRIGHT", dungeonPanel.scrollContent, "TOPRIGHT", 0, -yOffset)
+            section.content:Show()
+            yOffset = yOffset + section.content:GetHeight()
+            section.header.arrow:SetText("-")
+        else
+            section.content:Hide()
+            section.header.arrow:SetText("+")
+        end
+        
+        -- Small gap between sections
+        yOffset = yOffset + 2
+    end
+    
+    -- Update scroll content height
+    dungeonPanel.scrollContent:SetHeight(math.max(1, yOffset))
+    
+    -- Update scrollbar visibility and range
+    if dungeonPanel.scrollBar then
+        local scrollFrame = dungeonPanel.scrollFrame
+        local visibleHeight = scrollFrame:GetHeight()
+        local contentHeight = dungeonPanel.scrollContent:GetHeight()
+        
+        if contentHeight > visibleHeight then
+            dungeonPanel.scrollBar:Show()
+            dungeonPanel.scrollBar:SetMinMaxValues(0, contentHeight - visibleHeight)
+        else
+            dungeonPanel.scrollBar:Hide()
+            scrollFrame:SetVerticalScroll(0)
+        end
+    end
+end
+
+---Create a minimal/modern style scrollbar.
+---@param parent Frame The scroll frame to attach to
+---@return Slider scrollBar
+local function CreateMinimalScrollBar(parent)
+    local scrollBar = CreateFrame("Slider", nil, parent, "BackdropTemplate")
+    scrollBar:SetWidth(8)
+    scrollBar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, -2)
+    scrollBar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 2)
+    
+    scrollBar:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        insets = { left = 0, right = 0, top = 0, bottom = 0 }
+    })
+    scrollBar:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+
+    local thumb = scrollBar:CreateTexture(nil, "OVERLAY")
+    thumb:SetTexture("Interface\\Buttons\\WHITE8X8")
+    thumb:SetVertexColor(0.4, 0.4, 0.4, 0.8)
+    thumb:SetSize(8, 40)
+    scrollBar:SetThumbTexture(thumb)
+
+    scrollBar:SetScript("OnEnter", function(self)
+        thumb:SetVertexColor(0.6, 0.6, 0.6, 1)
+    end)
+    scrollBar:SetScript("OnLeave", function(self)
+        thumb:SetVertexColor(0.4, 0.4, 0.4, 0.8)
+    end)
+    
+    scrollBar:SetOrientation("VERTICAL")
+    scrollBar:SetValueStep(1)
+    scrollBar:SetMinMaxValues(0, 0)
+    scrollBar:SetValue(0)
+    
+    scrollBar:SetScript("OnValueChanged", function(self, value)
+        parent:SetVerticalScroll(value)
+    end)
+    
+    return scrollBar
+end
+
+---Create an accordion section header.
+---@param parent Frame Parent frame (scroll content)
+---@param sectionID string Unique section identifier
+---@param title string Section title text
+---@return Frame header The header frame
+local function CreateAccordionHeader(parent, sectionID, title)
+    local header = CreateFrame("Button", nil, parent, "BackdropTemplate")
+    header:SetHeight(HEADER_HEIGHT)
+    
+    header:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    header:SetBackdropColor(0.2, 0.2, 0.2, 1)
+    header:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    
+    local arrow = header:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    arrow:SetPoint("LEFT", header, "LEFT", 8, 0)
+    arrow:SetText(IsSectionExpanded(sectionID) and "-" or "+")
+    header.arrow = arrow
+    
+    local titleText = header:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    titleText:SetPoint("LEFT", arrow, "RIGHT", 6, 0)
+    titleText:SetText(title)
+    titleText:SetTextColor(1, 0.82, 0) -- Gold color
+    
+    header:SetScript("OnEnter", function(self)
+        self:SetBackdropColor(0.3, 0.3, 0.3, 1)
+    end)
+    header:SetScript("OnLeave", function(self)
+        self:SetBackdropColor(0.2, 0.2, 0.2, 1)
+    end)
+    
+    header:SetScript("OnClick", function(self)
+        local newState = not IsSectionExpanded(sectionID)
+        SetAccordionState(sectionID, newState)
+        RecalculateLayout()
+    end)
+    
+    return header
+end
+
+---Create an accordion section content container.
+---@param parent Frame Parent frame (scroll content)
+---@return Frame content The content frame
+local function CreateAccordionContent(parent)
+    local content = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    content:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+    })
+    content:SetBackdropColor(0.15, 0.15, 0.15, 1)
+    
+    return content
+end
+
+--------------------------------------------------------------------------------
+-- Section 1: Activities (Dungeon List)
+--------------------------------------------------------------------------------
 
 ---Check if dungeon group has activities matching difficulty filters.
----@param categoryID number
----@param groupID number Activity group ID
----@param showMythicPlus boolean
----@param showMythic boolean
----@param showHeroic boolean
----@param showNormal boolean
----@return boolean
 local function GroupHasMatchingDifficulty(categoryID, groupID, showMythicPlus, showMythic, showHeroic, showNormal)
     local activities = C_LFGList.GetAvailableActivities(categoryID, groupID)
     if not activities then return false end
@@ -34,88 +197,15 @@ local function GroupHasMatchingDifficulty(categoryID, groupID, showMythicPlus, s
     return false
 end
 
----Create dungeon checkbox in scroll content.
----@param filterPanel Frame Filter panel frame
----@param content Frame Scroll content frame
----@param groupID number Activity group ID
----@param yPos number Y position
----@param selectedGroupIDs table Map of selected group IDs
----@param checkboxHeight number
----@param spacing number
----@return number New Y position
-local function CreateDungeonCheckbox(filterPanel, content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
-    if not groupID then return yPos end
-    local name = C_LFGList.GetActivityGroupInfo(groupID)
-    if not name then return yPos end
-    
-    local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-    checkbox:SetSize(16, 16)
-    checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", 5, -yPos)
-    
-    local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
-    label:SetText(name)
-    label:SetWidth(PANEL_WIDTH - 35)
-    label:SetJustifyH("LEFT")
-    
-    checkbox:SetChecked(selectedGroupIDs[groupID] == true)
-    
-    checkbox:SetScript("OnClick", function(self)
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if not advancedFilter then return end
-        
-        local isChecked = self:GetChecked()
-        local activities = advancedFilter.activities or {}
-        
-        if isChecked then
-            local found = false
-            for _, id in ipairs(activities) do
-                if id == groupID then
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                table.insert(activities, groupID)
-            end
-        else
-            for i = #activities, 1, -1 do
-                if activities[i] == groupID then
-                    table.remove(activities, i)
-                end
-            end
-        end
-        
-        advancedFilter.activities = activities
-        C_LFGList.SaveAdvancedFilter(advancedFilter)
-        
-        local panel = LFGListFrame and LFGListFrame.SearchPanel
-        if panel and LFGListSearchPanel_DoSearch then
-            LFGListSearchPanel_DoSearch(panel)
-        end
-    end)
-    
-    if filterPanel and filterPanel.activityCheckboxes then
-        table.insert(filterPanel.activityCheckboxes, {
-            frame = checkbox,
-            label = label,
-            groupID = groupID,
-        })
-    end
-    
-    return yPos + checkboxHeight + spacing
-end
-
 ---Update dungeon list based on current filters.
----@param filterPanel Frame Filter panel frame
----@param categoryID number
-function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
-    if not filterPanel or not filterPanel.activityContent then
+local function UpdateDungeonList()
+    if not dungeonPanel or not dungeonPanel.activityContent then
         return
     end
     
-    local content = filterPanel.activityContent
-    local checkboxes = filterPanel.activityCheckboxes or {}
+    local categoryID = PGF.DUNGEON_CATEGORY_ID
+    local content = dungeonPanel.activityContent
+    local checkboxes = dungeonPanel.activityCheckboxes or {}
     
     for i = 1, #checkboxes do
         local checkbox = checkboxes[i]
@@ -135,12 +225,7 @@ function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
         end
     end
     wipe(checkboxes)
-    filterPanel.activityCheckboxes = checkboxes
-    
-    content:SetHeight(1)
-    if filterPanel.activityScrollFrame then
-        filterPanel.activityScrollFrame:SetVerticalScroll(0)
-    end
+    dungeonPanel.activityCheckboxes = checkboxes
     
     local advancedFilter = C_LFGList.GetAdvancedFilter()
     local showMythicPlus = advancedFilter and advancedFilter.difficultyMythicPlus ~= false
@@ -155,7 +240,7 @@ function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
         end
     end
     
-    local yPos = 0
+    local yPos = CONTENT_PADDING
     local checkboxHeight = 20
     local spacing = 2
     local separatorHeight = 10
@@ -171,15 +256,59 @@ function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
         expansionFilter = bit.bor(Enum.LFGListFilter.CurrentExpansion, Enum.LFGListFilter.NotCurrentSeason, Enum.LFGListFilter.PvE)
     end
     local expansionGroupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, expansionFilter) or {}
-    
+
     local seasonCount = 0
     for _, groupID in ipairs(seasonGroupIDs) do
         if GroupHasMatchingDifficulty(categoryID, groupID, showMythicPlus, showMythic, showHeroic, showNormal) then
-            yPos = CreateDungeonCheckbox(filterPanel, content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
-            seasonCount = seasonCount + 1
+            local name = C_LFGList.GetActivityGroupInfo(groupID)
+            if name then
+                local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+                checkbox:SetSize(16, 16)
+                checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
+                
+                local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+                label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
+                label:SetText(name)
+                label:SetWidth(PANEL_WIDTH - 50)
+                label:SetJustifyH("LEFT")
+                
+                checkbox:SetChecked(selectedGroupIDs[groupID] == true)
+                
+                checkbox:SetScript("OnClick", function(self)
+                    local filter = C_LFGList.GetAdvancedFilter()
+                    if not filter then return end
+                    
+                    local isChecked = self:GetChecked()
+                    local activities = filter.activities or {}
+                    
+                    if isChecked then
+                        local found = false
+                        for _, id in ipairs(activities) do
+                            if id == groupID then found = true break end
+                        end
+                        if not found then table.insert(activities, groupID) end
+                    else
+                        for i = #activities, 1, -1 do
+                            if activities[i] == groupID then table.remove(activities, i) end
+                        end
+                    end
+                    
+                    filter.activities = activities
+                    C_LFGList.SaveAdvancedFilter(filter)
+                    
+                    local panel = LFGListFrame and LFGListFrame.SearchPanel
+                    if panel and LFGListSearchPanel_DoSearch then
+                        LFGListSearchPanel_DoSearch(panel)
+                    end
+                end)
+                
+                table.insert(checkboxes, { frame = checkbox, label = label, groupID = groupID })
+                yPos = yPos + checkboxHeight + spacing
+                seasonCount = seasonCount + 1
+            end
         end
     end
-    
+
     if seasonCount > 0 and #expansionGroupIDs > 0 then
         local hasExpansionMatches = false
         for _, groupID in ipairs(expansionGroupIDs) do
@@ -192,8 +321,8 @@ function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
         if hasExpansionMatches then
             local separator = content:CreateTexture(nil, "ARTWORK")
             separator:SetTexture("Interface\\Common\\UI-TooltipDivider-Transparent")
-            separator:SetSize(PANEL_WIDTH - 20, 8)
-            separator:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -yPos)
+            separator:SetSize(PANEL_WIDTH - 30, 8)
+            separator:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
             separator:SetVertexColor(0.5, 0.5, 0.5, 0.5)
             
             table.insert(checkboxes, { separator = separator })
@@ -203,149 +332,103 @@ function PGF.UpdateDungeonFilterPanel(filterPanel, categoryID)
     
     for _, groupID in ipairs(expansionGroupIDs) do
         if GroupHasMatchingDifficulty(categoryID, groupID, showMythicPlus, showMythic, showHeroic, showNormal) then
-            yPos = CreateDungeonCheckbox(filterPanel, content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+            local name = C_LFGList.GetActivityGroupInfo(groupID)
+            if name then
+                local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+                checkbox:SetSize(16, 16)
+                checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
+                
+                local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+                label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
+                label:SetText(name)
+                label:SetWidth(PANEL_WIDTH - 50)
+                label:SetJustifyH("LEFT")
+                
+                checkbox:SetChecked(selectedGroupIDs[groupID] == true)
+                
+                checkbox:SetScript("OnClick", function(self)
+                    local filter = C_LFGList.GetAdvancedFilter()
+                    if not filter then return end
+                    
+                    local isChecked = self:GetChecked()
+                    local activities = filter.activities or {}
+                    
+                    if isChecked then
+                        local found = false
+                        for _, id in ipairs(activities) do
+                            if id == groupID then found = true break end
+                        end
+                        if not found then table.insert(activities, groupID) end
+                    else
+                        for i = #activities, 1, -1 do
+                            if activities[i] == groupID then table.remove(activities, i) end
+                        end
+                    end
+                    
+                    filter.activities = activities
+                    C_LFGList.SaveAdvancedFilter(filter)
+                    
+                    local panel = LFGListFrame and LFGListFrame.SearchPanel
+                    if panel and LFGListSearchPanel_DoSearch then
+                        LFGListSearchPanel_DoSearch(panel)
+                    end
+                end)
+                
+                table.insert(checkboxes, { frame = checkbox, label = label, groupID = groupID })
+                yPos = yPos + checkboxHeight + spacing
+            end
         end
     end
     
-    content:SetHeight(math.max(1, yPos))
+    content:SetHeight(math.max(1, yPos + CONTENT_PADDING))
     
-    if filterPanel.activityScrollFrame then
-        local scrollFrame = filterPanel.activityScrollFrame
-        local scrollBar = scrollFrame.ScrollBar
-        local visibleHeight = scrollFrame:GetHeight()
-        local contentHeight = content:GetHeight()
-        
-        if scrollBar then
-            scrollBar:SetShown(contentHeight > visibleHeight)
-        end
-    end
+    RecalculateLayout()
 end
 
----Get rating label text for dungeons.
----@return string
-function PGF.GetDungeonRatingLabel()
-    return PGF.L("MIN_RATING")
+---Create Activities section.
+local function CreateActivitiesSection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "activities", PGF.L("SECTION_ACTIVITIES") or "ACTIVITIES")
+    local content = CreateAccordionContent(scrollContent)
+    
+    content:SetHeight(150)
+    
+    dungeonPanel.activityContent = content
+    dungeonPanel.activityCheckboxes = {}
+    
+    table.insert(sections, {
+        id = "activities",
+        header = header,
+        content = content,
+    })
 end
 
----Get rating tooltip text for dungeons.
----@return string, string
-function PGF.GetDungeonRatingTooltip()
-    return PGF.L("MIN_RATING_TITLE"), PGF.L("MIN_RATING_DESC")
-end
+--------------------------------------------------------------------------------
+-- Section 2: Difficulty
+--------------------------------------------------------------------------------
 
----Get difficulty options for dungeons.
----@return table[]
-function PGF.GetDungeonDifficulties()
-    return {
-        { 
-            key = "normal", 
-            label = PGF.GetLocalizedDifficultyName("normal"), 
-            blizzKey = "difficultyNormal", 
-            tooltip = PGF.L("DIFFICULTY_NORMAL_DESC")
-        },
-        { 
-            key = "heroic", 
-            label = PGF.GetLocalizedDifficultyName("heroic"), 
-            blizzKey = "difficultyHeroic", 
-            tooltip = PGF.L("DIFFICULTY_HEROIC_DESC")
-        },
-        { 
-            key = "mythic", 
-            label = PGF.GetLocalizedDifficultyName("mythic"), 
-            blizzKey = "difficultyMythic", 
-            tooltip = PGF.L("DIFFICULTY_MYTHIC_DESC")
-        },
-        { 
-            key = "mythicplus", 
-            label = PGF.GetLocalizedDifficultyName("mythicplus"), 
-            blizzKey = "difficultyMythicPlus", 
-            tooltip = PGF.L("DIFFICULTY_MYTHICPLUS_DESC")
-        },
-    }
-end
-
----Create dungeon-specific filter UI elements.
----@param filterPanel Frame The filter panel frame
----@param panelWidth number Width of the panel
----@return number yOffset Final Y offset after creating all elements
-function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
-    if not filterPanel then
-        return -10
-    end
+---Create Difficulty section.
+local function CreateDifficultySection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "difficulty", PGF.L("SECTION_DIFFICULTY") or "DIFFICULTY")
+    local content = CreateAccordionContent(scrollContent)
     
-    PANEL_WIDTH = panelWidth or PANEL_WIDTH
-    
-    local yOffset = -10
-    local spacing = 10
-    local headerSpacing = 12
-    
-    -- Activity scroll frame (dungeon list)
-    local activityScrollTop = yOffset
-    local activityScrollFrame = CreateFrame("ScrollFrame", nil, filterPanel, "UIPanelScrollFrameTemplate")
-    activityScrollFrame:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, activityScrollTop)
-    activityScrollFrame:SetWidth(PANEL_WIDTH - 20)
-    
-    local activityContent = CreateFrame("Frame", nil, activityScrollFrame)
-    activityContent:SetWidth(PANEL_WIDTH - 20)
-    activityContent:SetHeight(1)
-    activityScrollFrame:SetScrollChild(activityContent)
-    
-    filterPanel.activityScrollFrame = activityScrollFrame
-    filterPanel.activityContent = activityContent
-    filterPanel.activityCheckboxes = {}
-    
-    local estimatedActivityHeight = 170
-    yOffset = yOffset - estimatedActivityHeight - spacing
-    
-    -- Min Rating input
-    local ratingLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    ratingLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    ratingLabel:SetText(PGF.GetDungeonRatingLabel())
-    filterPanel.ratingLabel = ratingLabel
-    
-    local ratingBox = CreateFrame("EditBox", nil, filterPanel, "InputBoxTemplate")
-    ratingBox:SetSize(60, 20)
-    ratingBox:SetPoint("LEFT", ratingLabel, "RIGHT", 10, 0)
-    ratingBox:SetAutoFocus(false)
-    ratingBox:SetNumeric(true)
-    ratingBox:SetMaxLetters(5)
-    
-    ratingBox:SetScript("OnEnter", function(self)
-        local title, text = PGF.GetDungeonRatingTooltip()
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(title)
-        GameTooltip:AddLine(text, 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    ratingBox:SetScript("OnLeave", GameTooltip_Hide)
-    
-    local minRatingBottom = yOffset - 5 - spacing - 5
-    activityScrollFrame:SetPoint("BOTTOMRIGHT", filterPanel, "BOTTOMRIGHT", -30, filterPanel:GetHeight() + minRatingBottom + 30)
-    
-    -- Difficulty section    
-    local difficultyLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    difficultyLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 10, yOffset - 20)
-    difficultyLabel:SetText(PGF.L("DIFFICULTY"))
-    
-    local difficultyStartY = yOffset - headerSpacing - 20
-    
+    local y = CONTENT_PADDING
     local difficultyCheckboxes = {}
-    filterPanel.difficultyCheckboxes = difficultyCheckboxes
-    filterPanel.difficultyLabel = difficultyLabel
-    filterPanel.difficultyStartY = difficultyStartY
     
-    local difficulties = PGF.GetDungeonDifficulties()
-    local difficultyY = difficultyStartY
+    local difficulties = {
+        { key = "normal", label = PGF.GetLocalizedDifficultyName("normal"), blizzKey = "difficultyNormal", tooltip = PGF.L("DIFFICULTY_NORMAL_DESC") },
+        { key = "heroic", label = PGF.GetLocalizedDifficultyName("heroic"), blizzKey = "difficultyHeroic", tooltip = PGF.L("DIFFICULTY_HEROIC_DESC") },
+        { key = "mythic", label = PGF.GetLocalizedDifficultyName("mythic"), blizzKey = "difficultyMythic", tooltip = PGF.L("DIFFICULTY_MYTHIC_DESC") },
+        { key = "mythicplus", label = PGF.GetLocalizedDifficultyName("mythicplus"), blizzKey = "difficultyMythicPlus", tooltip = PGF.L("DIFFICULTY_MYTHICPLUS_DESC") },
+    }
+    
     for _, diff in ipairs(difficulties) do
-        local checkbox = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
+        local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
         checkbox:SetSize(20, 20)
-        checkbox:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 10, difficultyY)
+        checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
         
-        local label = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
         label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
         label:SetText(diff.label)
-        label:SetWidth(PANEL_WIDTH / 2 - 45)
-        label:SetJustifyH("LEFT")
         
         checkbox:SetScript("OnClick", function(self)
             local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -354,70 +437,69 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
                 C_LFGList.SaveAdvancedFilter(advancedFilter)
             end
             
-            local panel = LFGListFrame and LFGListFrame.SearchPanel
-            local currentCategoryID = panel and panel.categoryID
-            
-            local db = PintaGroupFinderDB or PGF.defaults
+            local db = PintaGroupFinderDB
             if not db.filter then db.filter = {} end
             if not db.filter.difficulty then db.filter.difficulty = {} end
             db.filter.difficulty[diff.key] = self:GetChecked()
             
-            if currentCategoryID then
-                PGF.UpdateDungeonFilterPanel(filterPanel, currentCategoryID)
-            end
+            UpdateDungeonList()
             
-            if panel and LFGListSearchPanel_DoSearch then
-                LFGListSearchPanel_DoSearch(panel)
+            local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
+            if searchPanel and LFGListSearchPanel_DoSearch then
+                LFGListSearchPanel_DoSearch(searchPanel)
             end
         end)
         
         checkbox:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText(diff.label .. " Difficulty")
+            GameTooltip:SetText(diff.label)
             GameTooltip:AddLine(diff.tooltip, 1, 1, 1, true)
             GameTooltip:Show()
         end)
         checkbox:SetScript("OnLeave", GameTooltip_Hide)
         
         difficultyCheckboxes[diff.key] = checkbox
-        difficultyY = difficultyY - 20
+        y = y + 22
     end
     
-    yOffset = yOffset - spacing - 10
+    dungeonPanel.difficultyCheckboxes = difficultyCheckboxes
     
-    local playstyleLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    playstyleLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", 10, yOffset)
-    playstyleLabel:SetText(PGF.L("PLAYSTYLE"))
-    filterPanel.playstyleLabel = playstyleLabel
+    content:SetHeight(y + CONTENT_PADDING)
     
-    local playstyleStartY = yOffset - headerSpacing
-    local playstyleCheckboxes = {}
+    table.insert(sections, {
+        id = "difficulty",
+        header = header,
+        content = content,
+    })
+end
 
-    local playstyle1Name = _G["GROUP_FINDER_GENERAL_PLAYSTYLE1"] or "Learning"
-    local playstyle2Name = _G["GROUP_FINDER_GENERAL_PLAYSTYLE2"] or "Relaxed"
-    local playstyle3Name = _G["GROUP_FINDER_GENERAL_PLAYSTYLE3"] or "Competitive"
-    local playstyle4Name = _G["GROUP_FINDER_GENERAL_PLAYSTYLE4"] or "Carry Offered"
+--------------------------------------------------------------------------------
+-- Section 3: Playstyle
+--------------------------------------------------------------------------------
+
+---Create Playstyle section.
+local function CreatePlaystyleSection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "playstyle", PGF.L("SECTION_PLAYSTYLE") or "PLAYSTYLE")
+    local content = CreateAccordionContent(scrollContent)
+    
+    local y = CONTENT_PADDING
+    local playstyleCheckboxes = {}
     
     local playstyles = {
-        { blizzKey = "generalPlaystyle1", label = playstyle1Name, tooltip = PGF.L("PLAYSTYLE_LEARNING_DESC") },
-        { blizzKey = "generalPlaystyle2", label = playstyle2Name, tooltip = PGF.L("PLAYSTYLE_RELAXED_DESC") },
-        { blizzKey = "generalPlaystyle3", label = playstyle3Name, tooltip = PGF.L("PLAYSTYLE_COMPETITIVE_DESC") },
-        { blizzKey = "generalPlaystyle4", label = playstyle4Name, tooltip = PGF.L("PLAYSTYLE_CARRY_DESC") },
+        { blizzKey = "generalPlaystyle1", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE1"] or "Learning", tooltip = PGF.L("PLAYSTYLE_LEARNING_DESC") },
+        { blizzKey = "generalPlaystyle2", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE2"] or "Relaxed", tooltip = PGF.L("PLAYSTYLE_RELAXED_DESC") },
+        { blizzKey = "generalPlaystyle3", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE3"] or "Competitive", tooltip = PGF.L("PLAYSTYLE_COMPETITIVE_DESC") },
+        { blizzKey = "generalPlaystyle4", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE4"] or "Carry Offered", tooltip = PGF.L("PLAYSTYLE_CARRY_DESC") },
     }
     
-    local playstyleY = playstyleStartY
-    local playstyleX = 10
-    
-    for i, playstyle in ipairs(playstyles) do
-        local checkbox = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
-        checkbox:SetSize(16, 16)
-        checkbox:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", playstyleX, playstyleY)
+    for _, playstyle in ipairs(playstyles) do
+        local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+        checkbox:SetSize(20, 20)
+        checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
         
-        local label = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-        label:SetPoint("LEFT", checkbox, "RIGHT", 3, 0)
+        local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
         label:SetText(playstyle.label)
-        label:SetWidth(PANEL_WIDTH / 2 - 35)
-        label:SetJustifyH("LEFT")
         
         checkbox:SetScript("OnClick", function(self)
             local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -426,9 +508,9 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
                 C_LFGList.SaveAdvancedFilter(advancedFilter)
             end
             
-            local panel = LFGListFrame and LFGListFrame.SearchPanel
-            if panel and LFGListSearchPanel_DoSearch then
-                LFGListSearchPanel_DoSearch(panel)
+            local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
+            if searchPanel and LFGListSearchPanel_DoSearch then
+                LFGListSearchPanel_DoSearch(searchPanel)
             end
         end)
         
@@ -440,23 +522,84 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
         end)
         checkbox:SetScript("OnLeave", GameTooltip_Hide)
         
-        playstyleCheckboxes[playstyle.blizzKey] = {
-            frame = checkbox,
-            label = label,
-        }
-        playstyleY = playstyleY - 18
+        playstyleCheckboxes[playstyle.blizzKey] = { frame = checkbox, label = label }
+        y = y + 22
     end
-
-    local difficultyHeight = 4 * 20
-    local difficultyBottomY = difficultyStartY - difficultyHeight
-
-    local roleYOffset = difficultyBottomY - spacing +5
-    local roleLabel = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    roleLabel:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 30, roleYOffset)
-    roleLabel:SetText(PGF.L("HAS_ROLE"))
-    filterPanel.roleLabel = roleLabel
     
-    local roleStartY = roleYOffset - headerSpacing
+    dungeonPanel.playstyleCheckboxes = playstyleCheckboxes
+    
+    content:SetHeight(y + CONTENT_PADDING)
+    
+    table.insert(sections, {
+        id = "playstyle",
+        header = header,
+        content = content,
+    })
+end
+
+--------------------------------------------------------------------------------
+-- Section 4: Misc (Min Rating + Has Role)
+--------------------------------------------------------------------------------
+
+---Create Misc section.
+local function CreateMiscSection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "misc", PGF.L("SECTION_MISC") or "MISC")
+    local content = CreateAccordionContent(scrollContent)
+    
+    local y = CONTENT_PADDING
+    
+    -- Min Rating
+    local ratingLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    ratingLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    ratingLabel:SetText(PGF.L("MIN_RATING"))
+    
+    local ratingBox = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+    ratingBox:SetSize(60, 20)
+    ratingBox:SetPoint("LEFT", ratingLabel, "RIGHT", 10, 0)
+    ratingBox:SetAutoFocus(false)
+    ratingBox:SetNumeric(true)
+    ratingBox:SetMaxLetters(5)
+    
+    ratingBox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("MIN_RATING_TITLE"))
+        GameTooltip:AddLine(PGF.L("MIN_RATING_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    ratingBox:SetScript("OnLeave", GameTooltip_Hide)
+    
+    ratingBox:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.minRating = tonumber(self:GetText()) or 0
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            advancedFilter.minimumRating = db.filter.minRating
+            C_LFGList.SaveAdvancedFilter(advancedFilter)
+        end
+        PGF.RefilterResults()
+    end)
+    ratingBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    ratingBox:SetScript("OnEditFocusLost", function(self)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.minRating = tonumber(self:GetText()) or 0
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            advancedFilter.minimumRating = db.filter.minRating
+            C_LFGList.SaveAdvancedFilter(advancedFilter)
+        end
+    end)
+    
+    dungeonPanel.ratingBox = ratingBox
+    
+    y = y + 28
+    
+    local roleLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    roleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    roleLabel:SetText(PGF.L("HAS_ROLE"))
+    y = y + 16
     
     local roleCheckboxes = {}
     local roles = {
@@ -464,13 +607,12 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
         { key = "healer", label = PGF.L("HAS_HEALER"), blizzKey = "hasHealer", tooltip = PGF.L("HAS_HEALER_DESC") },
     }
     
-    local roleY = roleStartY
     for _, role in ipairs(roles) do
-        local checkbox = CreateFrame("CheckButton", nil, filterPanel, "UICheckButtonTemplate")
+        local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
         checkbox:SetSize(20, 20)
-        checkbox:SetPoint("TOPLEFT", filterPanel, "TOPLEFT", PANEL_WIDTH / 2 + 30, roleY)
+        checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
         
-        local label = filterPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
         label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
         label:SetText(role.label)
         
@@ -481,14 +623,14 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
                 C_LFGList.SaveAdvancedFilter(advancedFilter)
             end
             
-            local db = PintaGroupFinderDB or PGF.defaults
+            local db = PintaGroupFinderDB
             if not db.filter then db.filter = {} end
             if not db.filter.hasRole then db.filter.hasRole = {} end
             db.filter.hasRole[role.key] = self:GetChecked()
             
-            local panel = LFGListFrame and LFGListFrame.SearchPanel
-            if panel and LFGListSearchPanel_DoSearch then
-                LFGListSearchPanel_DoSearch(panel)
+            local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
+            if searchPanel and LFGListSearchPanel_DoSearch then
+                LFGListSearchPanel_DoSearch(searchPanel)
             end
         end)
         
@@ -500,39 +642,376 @@ function PGF.CreateDungeonFilterSection(filterPanel, panelWidth)
         end)
         checkbox:SetScript("OnLeave", GameTooltip_Hide)
         
-        roleCheckboxes[role.key] = {
-            frame = checkbox,
-            label = label,
-        }
-        roleY = roleY - 20
+        roleCheckboxes[role.key] = { frame = checkbox, label = label }
+        y = y + 22
     end
     
-    filterPanel.playstyleCheckboxes = playstyleCheckboxes
-    filterPanel.roleCheckboxes = roleCheckboxes
+    dungeonPanel.roleCheckboxes = roleCheckboxes
     
-    local function OnEnterPressed(self)
-        self:ClearFocus()
-        local db = PintaGroupFinderDB or PGF.defaults
-        if not db.filter then db.filter = {} end
+    content:SetHeight(y + CONTENT_PADDING)
+    
+    table.insert(sections, {
+        id = "misc",
+        header = header,
+        content = content,
+    })
+end
+
+--------------------------------------------------------------------------------
+-- Section 5: Quick Apply
+--------------------------------------------------------------------------------
+
+---Create Quick Apply section.
+local function CreateQuickApplySection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "quickApply", PGF.L("SECTION_QUICK_APPLY") or "QUICK APPLY")
+    local content = CreateAccordionContent(scrollContent)
+    
+    local y = CONTENT_PADDING
+    
+    local quickApplyEnable = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    quickApplyEnable:SetSize(20, 20)
+    quickApplyEnable:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    
+    local enableLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    enableLabel:SetPoint("LEFT", quickApplyEnable, "RIGHT", 5, 0)
+    enableLabel:SetText(PGF.L("ENABLE"))
+    
+    quickApplyEnable:SetScript("OnClick", function(self)
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        if not charDB.quickApply then charDB.quickApply = {} end
+        charDB.quickApply.enabled = self:GetChecked()
+    end)
+    
+    quickApplyEnable:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("ENABLE_QUICK_APPLY"))
+        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_DESC"), 1, 1, 1, true)
+        GameTooltip:AddLine(PGF.L("ENABLE_QUICK_APPLY_SHIFT"), 0.7, 0.7, 0.7, true)
+        GameTooltip:Show()
+    end)
+    quickApplyEnable:SetScript("OnLeave", GameTooltip_Hide)
+    
+    y = y + 24
+    
+    local rolesLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    rolesLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    rolesLabel:SetText(PGF.L("ROLES"))
+    
+    local quickApplyRoleCheckboxes = {}
+    local roleButtons = {
+        { key = "tank", label = "T" },
+        { key = "healer", label = "H" },
+        { key = "damage", label = "D" },
+    }
+    
+    local roleX = 55
+    for _, role in ipairs(roleButtons) do
+        local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+        checkbox:SetSize(16, 16)
+        checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", roleX, -y)
         
-        if self == ratingBox then
-            db.filter.minRating = tonumber(self:GetText()) or 0
-            local advancedFilter = C_LFGList.GetAdvancedFilter()
-            if advancedFilter then
-                advancedFilter.minimumRating = db.filter.minRating
-                C_LFGList.SaveAdvancedFilter(advancedFilter)
+        local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        label:SetPoint("LEFT", checkbox, "RIGHT", 2, 0)
+        label:SetText(role.label)
+        
+        checkbox:SetScript("OnClick", function(self)
+            local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+            if not charDB.quickApply then charDB.quickApply = {} end
+            if not charDB.quickApply.roles then charDB.quickApply.roles = {} end
+            charDB.quickApply.roles[role.key] = self:GetChecked()
+            
+            local leader = false
+            local tank = charDB.quickApply.roles.tank == true
+            local healer = charDB.quickApply.roles.healer == true
+            local dps = charDB.quickApply.roles.damage == true
+            SetLFGRoles(leader, tank, healer, dps)
+        end)
+        
+        quickApplyRoleCheckboxes[role.key] = checkbox
+        roleX = roleX + 35
+    end
+    
+    y = y + 24
+    
+    local noteLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    noteLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    noteLabel:SetText(PGF.L("NOTE"))
+    
+    local noteBox = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+    noteBox:SetSize(PANEL_WIDTH - 70, 20)
+    noteBox:SetPoint("LEFT", noteLabel, "RIGHT", 10, 0)
+    noteBox:SetAutoFocus(false)
+    noteBox:SetMaxLetters(60)
+    
+    noteBox:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        if not charDB.quickApply then charDB.quickApply = {} end
+        charDB.quickApply.note = self:GetText()
+    end)
+    
+    noteBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    
+    noteBox:SetScript("OnEditFocusLost", function(self)
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        if not charDB.quickApply then charDB.quickApply = {} end
+        charDB.quickApply.note = self:GetText()
+    end)
+    
+    noteBox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(PGF.L("APPLICATION_NOTE"))
+        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_DESC"), 1, 1, 1, true)
+        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_PERSIST"), 0.7, 0.7, 0.7, true)
+        GameTooltip:Show()
+    end)
+    noteBox:SetScript("OnLeave", GameTooltip_Hide)
+    
+    y = y + 24
+    
+    local autoAcceptCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    autoAcceptCheckbox:SetSize(20, 20)
+    autoAcceptCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    
+    local autoAcceptLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    autoAcceptLabel:SetPoint("LEFT", autoAcceptCheckbox, "RIGHT", 5, 0)
+    autoAcceptLabel:SetText(PGF.L("AUTO_ACCEPT_PARTY"))
+    
+    autoAcceptCheckbox:SetScript("OnClick", function(self)
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        if not charDB.quickApply then charDB.quickApply = {} end
+        charDB.quickApply.autoAcceptParty = self:GetChecked()
+    end)
+    
+    autoAcceptCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("AUTO_ACCEPT_PARTY_TITLE"))
+        GameTooltip:AddLine(PGF.L("AUTO_ACCEPT_PARTY_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    autoAcceptCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    
+    y = y + 24
+    
+    dungeonPanel.quickApplyEnable = quickApplyEnable
+    dungeonPanel.quickApplyRoleCheckboxes = quickApplyRoleCheckboxes
+    dungeonPanel.quickApplyNoteBox = noteBox
+    dungeonPanel.quickApplyAutoAccept = autoAcceptCheckbox
+    
+    content:SetHeight(y + CONTENT_PADDING)
+    
+    table.insert(sections, {
+        id = "quickApply",
+        header = header,
+        content = content,
+    })
+end
+
+--------------------------------------------------------------------------------
+-- Main Panel Creation
+--------------------------------------------------------------------------------
+
+---Create the dungeon filter panel.
+local function CreateDungeonFilterPanel()
+    if dungeonPanel then
+        return dungeonPanel
+    end
+    
+    local parent = PVEFrame
+    if not parent then
+        return nil
+    end
+    
+    dungeonPanel = CreateFrame("Frame", "PGDungeonFilterPanel", parent, "BackdropTemplate")
+    dungeonPanel:SetSize(PANEL_WIDTH, PANEL_HEIGHT)
+    
+    if LFGListFrame then
+        dungeonPanel:SetPoint("TOPLEFT", LFGListFrame, "TOPRIGHT", 5, -25)
+    else
+        dungeonPanel:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -5, -75)
+    end
+    
+    dungeonPanel:SetFrameStrata("HIGH")
+    dungeonPanel:SetFrameLevel(100)
+    
+    dungeonPanel:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    dungeonPanel:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+    dungeonPanel:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+    
+    local scrollFrameContainer = CreateFrame("Frame", nil, dungeonPanel)
+    scrollFrameContainer:SetPoint("TOPLEFT", dungeonPanel, "TOPLEFT", 8, -8)
+    scrollFrameContainer:SetPoint("BOTTOMRIGHT", dungeonPanel, "BOTTOMRIGHT", -4, 8)
+    scrollFrameContainer:SetClipsChildren(true)
+    
+    local scrollFrame = CreateFrame("ScrollFrame", nil, scrollFrameContainer)
+    scrollFrame:SetAllPoints()
+    dungeonPanel.scrollFrame = scrollFrame
+    
+    local scrollContent = CreateFrame("Frame", nil, scrollFrame)
+    scrollContent:SetWidth(PANEL_WIDTH - 20)
+    scrollContent:SetHeight(1)
+    scrollFrame:SetScrollChild(scrollContent)
+    dungeonPanel.scrollContent = scrollContent
+    
+    local scrollBar = CreateMinimalScrollBar(scrollFrame)
+    dungeonPanel.scrollBar = scrollBar
+    
+    scrollFrame:EnableMouseWheel(true)
+    scrollFrame:SetScript("OnMouseWheel", function(self, delta)
+        local current = scrollBar:GetValue()
+        local min, max = scrollBar:GetMinMaxValues()
+        local step = 20
+        
+        local newValue = current - (delta * step)
+        newValue = math.max(min, math.min(max, newValue))
+        scrollBar:SetValue(newValue)
+    end)
+    
+    scrollContent:EnableMouseWheel(true)
+    scrollContent:SetScript("OnMouseWheel", function(self, delta)
+        scrollFrame:GetScript("OnMouseWheel")(scrollFrame, delta)
+    end)
+    
+    wipe(sections)
+    CreateActivitiesSection(scrollContent)
+    CreateDifficultySection(scrollContent)
+    CreatePlaystyleSection(scrollContent)
+    CreateMiscSection(scrollContent)
+    CreateQuickApplySection(scrollContent)
+    
+    RecalculateLayout()
+    
+    return dungeonPanel
+end
+
+---Update panel UI from saved settings.
+function PGF.UpdateDungeonPanel()
+    if not dungeonPanel then
+        return
+    end
+    
+    if dungeonPanel.difficultyCheckboxes then
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            local mapping = {
+                difficultyNormal = "normal",
+                difficultyHeroic = "heroic",
+                difficultyMythic = "mythic",
+                difficultyMythicPlus = "mythicplus",
+            }
+            
+            for blizzKey, ourKey in pairs(mapping) do
+                local checkbox = dungeonPanel.difficultyCheckboxes[ourKey]
+                if checkbox then
+                    checkbox:SetChecked(advancedFilter[blizzKey] ~= false)
+                end
             end
-            PGF.RefilterResults()
         end
     end
     
-    ratingBox:SetScript("OnEnterPressed", OnEnterPressed)
-    ratingBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    if dungeonPanel.playstyleCheckboxes then
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            for blizzKey, checkboxData in pairs(dungeonPanel.playstyleCheckboxes) do
+                if checkboxData and checkboxData.frame then
+                    checkboxData.frame:SetChecked(advancedFilter[blizzKey] == true)
+                end
+            end
+        end
+    end
     
-    filterPanel.ratingBox = ratingBox
-    filterPanel.roleCheckboxes = roleCheckboxes
+    if dungeonPanel.roleCheckboxes then
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            local mapping = { hasTank = "tank", hasHealer = "healer" }
+            for blizzKey, ourKey in pairs(mapping) do
+                local checkboxData = dungeonPanel.roleCheckboxes[ourKey]
+                if checkboxData and checkboxData.frame then
+                    checkboxData.frame:SetChecked(advancedFilter[blizzKey] == true)
+                end
+            end
+        end
+    end
     
-    local bottomY = math.min(roleY, playstyleY)
-    return bottomY - 5
+    if dungeonPanel.ratingBox then
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+        if advancedFilter and advancedFilter.minimumRating then
+            dungeonPanel.ratingBox:SetText(advancedFilter.minimumRating > 0 and tostring(advancedFilter.minimumRating) or "")
+        else
+            dungeonPanel.ratingBox:SetText(filter.minRating and filter.minRating > 0 and tostring(filter.minRating) or "")
+        end
+    end
+    
+    UpdateDungeonList()
+    
+    local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+    local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
+    
+    if dungeonPanel.quickApplyEnable then
+        dungeonPanel.quickApplyEnable:SetChecked(quickApply.enabled == true)
+    end
+    
+    if dungeonPanel.quickApplyRoleCheckboxes then
+        local _, tank, healer, dps = GetLFGRoles()
+        local availTank, availHealer, availDPS = C_LFGList.GetAvailableRoles()
+        
+        if dungeonPanel.quickApplyRoleCheckboxes.tank then
+            dungeonPanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
+            if availTank then dungeonPanel.quickApplyRoleCheckboxes.tank:SetChecked(tank) end
+        end
+        if dungeonPanel.quickApplyRoleCheckboxes.healer then
+            dungeonPanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
+            if availHealer then dungeonPanel.quickApplyRoleCheckboxes.healer:SetChecked(healer) end
+        end
+        if dungeonPanel.quickApplyRoleCheckboxes.damage then
+            dungeonPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
+            if availDPS then dungeonPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
+        end
+    end
+    
+    if dungeonPanel.quickApplyNoteBox then
+        dungeonPanel.quickApplyNoteBox:SetText(quickApply.note or "")
+    end
+    
+    if dungeonPanel.quickApplyAutoAccept then
+        dungeonPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
+    end
+    
+    RecalculateLayout()
 end
 
+---Show or hide the dungeon panel.
+---@param show boolean
+function PGF.ShowDungeonPanel(show)
+    if show then
+        if not dungeonPanel then
+            CreateDungeonFilterPanel()
+        end
+        if dungeonPanel then
+            dungeonPanel:Show()
+            PGF.UpdateDungeonPanel()
+        end
+    else
+        if dungeonPanel then
+            dungeonPanel:Hide()
+        end
+    end
+end
+
+---Get the dungeon panel frame.
+---@return Frame?
+function PGF.GetDungeonPanel()
+    return dungeonPanel
+end
+
+---Initialize the dungeon filter panel.
+function PGF.InitializeDungeonPanel()
+    CreateDungeonFilterPanel()
+end

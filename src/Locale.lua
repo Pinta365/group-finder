@@ -52,6 +52,27 @@ local defaultLocale = {
     ["HAS_HEALER"] = "Has Healer",
     ["HAS_TANK_DESC"] = "Only show groups that already have a tank.",
     ["HAS_HEALER_DESC"] = "Only show groups that already have a healer.",
+    
+    -- Role Requirements
+    ["ROLE_REQUIREMENTS"] = "Role Requirements",
+    ["ROLE_REQ_DESC"] = "Filter groups by exact role counts (e.g., at least 2 healers).",
+    ["OP_GTE"] = ">=",
+    ["OP_LTE"] = "<=",
+    ["OP_EQ"] = "=",
+    
+    ["BOSS_FILTER"] = "Boss Filter:",
+    ["BOSS_FILTER_ANY"] = "Any",
+    ["BOSS_FILTER_FRESH"] = "Fresh Run",
+    ["BOSS_FILTER_PARTIAL"] = "Partial Progress",
+    
+    -- Accordion sections
+    ["SECTION_ACTIVITIES"] = "ACTIVITIES",
+    ["SECTION_BOSS_FILTER"] = "BOSS FILTER",
+    ["SECTION_DIFFICULTY"] = "DIFFICULTY",
+    ["SECTION_PLAYSTYLE"] = "PLAYSTYLE",
+    ["SECTION_MISC"] = "MISC",
+    ["SECTION_ROLE_FILTERING"] = "ROLE FILTERING",
+    ["SECTION_QUICK_APPLY"] = "QUICK APPLY",
 }
 
 local currentLocale = {}

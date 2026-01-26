@@ -7,41 +7,48 @@
 local addonName, PGF = ...
 
 ---@class FilterContext
----@field activityID number
----@field activityName string
----@field categoryID number
----@field difficulty string
----@field mythicplus boolean?
+--- Core fields (always populated)
+---@field activityID number Activity ID for this listing
+---@field categoryID number 2=Dungeons, 3=Raids
+---@field difficulty string "normal"|"heroic"|"mythic"|"mythicplus"|"unknown"
+---@field mythicplus boolean? True if M+ dungeon
+---@field tanks number Number of tanks in group
+---@field healers number Number of healers in group
+---@field mprating number Leader's M+ score
+---@field age number Listing age in minutes
+---@field appStatus string Application status ("none", "applied", etc.)
+---@field isApplied boolean True if you've applied to this group
+---@field generalPlaystyle number Playstyle for raids: 1=Learning, 2=Relaxed, 3=Competitive, 4=Carry
+---@field playstyle number Playstyle for dungeons (0 for raids)
+--- Raid-specific fields
+---@field defeatedBosses string[]? Array of defeated boss names (raids only)
+---@field defeatedBossCount number? Number of bosses defeated (raids only)
+---@field defeatedBossLookup table<string,boolean>? Lookup table for boss names (raids only)
+--- Future fields
+---@field activityName string?
 ---@field mythic boolean?
 ---@field heroic boolean?
 ---@field normal boolean?
+---@field dps number?
+---@field members number?
+---@field maxMembers number?
 ---@field challengeModeID number?
 ---@field dungeonID number?
 ---@field dungeonName string?
----@field tanks number
----@field healers number
----@field dps number
----@field members number
----@field maxMembers number
----@field tankNeeded number
----@field healerNeeded number
----@field dpsNeeded number
----@field mprating number
----@field age number
----@field ageSecs number
----@field leaderName string
----@field myRealm boolean
----@field friends number
----@field ilvl number
----@field hlvl number
----@field dungeonScore number
----@field isDelisted boolean
----@field autoAccept boolean
----@field warmode boolean
----@field hasSelf boolean
----@field appStatus string
----@field isApplied boolean
----@field playstyle number? 0=None, 1=Standard/Competitive, 2=Learning/Casual, 3=Hardcore, 4=Carry Offered?
+---@field tankNeeded number?
+---@field healerNeeded number?
+---@field dpsNeeded number?
+---@field ageSecs number?
+---@field leaderName string?
+---@field myRealm boolean?
+---@field friends number?
+---@field ilvl number?
+---@field hlvl number?
+---@field dungeonScore number?
+---@field isDelisted boolean?
+---@field autoAccept boolean?
+---@field warmode boolean?
+---@field hasSelf boolean?
 
 ---Build filter context for a search result.
 ---@param resultID number
@@ -63,7 +70,17 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.categoryID = activityInfo.categoryID
     
     context.difficulty = "unknown"
-    if activityInfo.isMythicPlusActivity then
+
+    if activityInfo.categoryID == PGF.RAID_CATEGORY_ID then
+        local difficultyID = activityInfo.difficultyID
+        if difficultyID == 14 then
+            context.difficulty = "normal"
+        elseif difficultyID == 15 then
+            context.difficulty = "heroic"
+        elseif difficultyID == 16 then
+            context.difficulty = "mythic"
+        end
+    elseif activityInfo.isMythicPlusActivity then
         context.difficulty = "mythicplus"
         context.mythicplus = true
     elseif activityInfo.isMythicActivity then
@@ -76,13 +93,32 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     
     context.tanks = memberCounts.TANK or 0
     context.healers = memberCounts.HEALER or 0
+    context.dps = (memberCounts.DAMAGER or 0) + (memberCounts.NOROLE or 0)
     
     context.mprating = searchResultInfo.leaderOverallDungeonScore or 0
     context.age = math.floor((searchResultInfo.age or 0) / 60)
     
+    context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
+    context.playstyle = searchResultInfo.playstyle or 0
+    
     local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
     context.appStatus = appStatus or "none"
     context.isApplied = appStatus and appStatus ~= "none" or false
+    
+    -- Raid-specific fields
+    if context.categoryID == PGF.RAID_CATEGORY_ID then
+        local encounterInfo = C_LFGList.GetSearchResultEncounterInfo(resultID)
+        context.defeatedBosses = encounterInfo or {}
+        context.defeatedBossCount = encounterInfo and #encounterInfo or 0
+        
+        context.defeatedBossLookup = {}
+        if encounterInfo then
+            for _, bossName in ipairs(encounterInfo) do
+                context.defeatedBossLookup[bossName:lower()] = true
+                context.defeatedBossLookup[bossName] = true
+            end
+        end
+    end
     
     -- Fields for future filtering/sorting features (commented out for now)
     --[[
@@ -90,7 +126,6 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.mythic = activityInfo.isMythicActivity or false
     context.heroic = activityInfo.isHeroicActivity or false
     context.normal = activityInfo.isNormalActivity or false
-    context.dps = (memberCounts.DAMAGER or 0) + (memberCounts.NOROLE or 0)
     context.members = searchResultInfo.numMembers or 0
     context.maxMembers = activityInfo.maxNumPlayers or 5
     
@@ -127,8 +162,6 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.warmode = searchResultInfo.isWarMode or false
     context.hasSelf = searchResultInfo.hasSelf or false
     
-    -- Playstyle: 0=None, 1=Standard/Competitive, 2=Learning/Casual, 3=Hardcore, 4=Carry Offered?
-    context.playstyle = searchResultInfo.playstyle or 0
     --]]
     
     return context
