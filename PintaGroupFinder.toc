@@ -3,7 +3,7 @@
 ## Title: |cff45D388Pinta Group Finder|r
 ## Notes: A group finder addon for World of Warcraft.
 ## Author: Pinta365@Github
-## Version: 0.1.0
+## Version: 0.2.0
 ## SavedVariables: PintaGroupFinderDB
 ## SavedVariablesPerCharacter: PintaGroupFinderCharDB
 ## X-Curse-Project-ID: 1443532
