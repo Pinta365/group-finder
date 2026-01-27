@@ -471,21 +471,20 @@ local function CreateActivitiesSection(scrollContent)
     local header = CreateAccordionHeader(scrollContent, "activities", PGF.L("SECTION_ACTIVITIES") or "ACTIVITIES")
     local content = CreateAccordionContent(scrollContent)
     
-    -- Content will be populated by UpdateRaidList()
-    content:SetHeight(CONTENT_PADDING * 2 + 100) -- Initial estimate
-    
-    -- Select All / Deselect All buttons
+    content:SetHeight(CONTENT_PADDING * 2 + 100)    
     local selectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    selectAllBtn:SetSize(70, 18)
-    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
     selectAllBtn:SetText(PGF.L("SELECT_ALL") or "Select All")
     selectAllBtn:GetFontString():SetFont(selectAllBtn:GetFontString():GetFont(), 10)
+    local selectWidth = selectAllBtn:GetFontString():GetStringWidth() + 16
+    selectAllBtn:SetSize(selectWidth, 18)
+    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
     
     local deselectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    deselectAllBtn:SetSize(70, 18)
-    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
     deselectAllBtn:SetText(PGF.L("DESELECT_ALL") or "Deselect All")
     deselectAllBtn:GetFontString():SetFont(deselectAllBtn:GetFontString():GetFont(), 10)
+    local deselectWidth = deselectAllBtn:GetFontString():GetStringWidth() + 16
+    deselectAllBtn:SetSize(deselectWidth, 18)
+    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
     
     selectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB

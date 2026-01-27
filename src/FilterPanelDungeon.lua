@@ -218,6 +218,39 @@ local function SortGroupsAlphabetically(groupIDs)
     return result
 end
 
+---Get difficulty suffix for a dungeon group (e.g., "(N/H/M/M+)").
+---@param categoryID number
+---@param groupID number
+---@return string suffix The difficulty suffix or empty string
+local function GetDifficultySuffix(categoryID, groupID)
+    local activities = C_LFGList.GetAvailableActivities(categoryID, groupID)
+    if not activities then return "" end
+    
+    local hasNormal = false
+    local hasHeroic = false
+    local hasMythic = false
+    local hasMythicPlus = false
+    
+    for _, activityID in ipairs(activities) do
+        local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
+        if activityInfo then
+            if activityInfo.isNormalActivity then hasNormal = true end
+            if activityInfo.isHeroicActivity then hasHeroic = true end
+            if activityInfo.isMythicActivity then hasMythic = true end
+            if activityInfo.isMythicPlusActivity then hasMythicPlus = true end
+        end
+    end
+    
+    local parts = {}
+    if hasNormal then table.insert(parts, "N") end
+    if hasHeroic then table.insert(parts, "H") end
+    if hasMythic then table.insert(parts, "M") end
+    if hasMythicPlus then table.insert(parts, "M+") end
+    
+    if #parts == 0 then return "" end
+    return " |cff888888(" .. table.concat(parts, "/") .. ")|r"
+end
+
 ---Update dungeon list based on current filters.
 local function UpdateDungeonList()
     if not dungeonPanel or not dungeonPanel.activityContent then
@@ -291,9 +324,10 @@ local function UpdateDungeonList()
                 checkbox:SetSize(16, 16)
                 checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
                 
+                local suffix = GetDifficultySuffix(categoryID, groupID)
                 local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
                 label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
-                label:SetText(name)
+                label:SetText(name .. suffix)
                 label:SetWidth(PANEL_WIDTH - 50)
                 label:SetJustifyH("LEFT")
                 
@@ -363,9 +397,10 @@ local function UpdateDungeonList()
                 checkbox:SetSize(16, 16)
                 checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
                 
+                local suffix = GetDifficultySuffix(categoryID, groupID)
                 local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
                 label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
-                label:SetText(name)
+                label:SetText(name .. suffix)
                 label:SetWidth(PANEL_WIDTH - 50)
                 label:SetJustifyH("LEFT")
                 
@@ -417,18 +452,19 @@ local function CreateActivitiesSection(scrollContent)
     
     content:SetHeight(150)
     
-    -- Select All / Deselect All buttons
     local selectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    selectAllBtn:SetSize(70, 18)
-    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
     selectAllBtn:SetText(PGF.L("SELECT_ALL") or "Select All")
     selectAllBtn:GetFontString():SetFont(selectAllBtn:GetFontString():GetFont(), 10)
+    local selectWidth = selectAllBtn:GetFontString():GetStringWidth() + 16
+    selectAllBtn:SetSize(selectWidth, 18)
+    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
     
     local deselectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    deselectAllBtn:SetSize(70, 18)
-    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
     deselectAllBtn:SetText(PGF.L("DESELECT_ALL") or "Deselect All")
     deselectAllBtn:GetFontString():SetFont(deselectAllBtn:GetFontString():GetFont(), 10)
+    local deselectWidth = deselectAllBtn:GetFontString():GetStringWidth() + 16
+    deselectAllBtn:SetSize(deselectWidth, 18)
+    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
     
     selectAllBtn:SetScript("OnClick", function()
         local filter = C_LFGList.GetAdvancedFilter()
