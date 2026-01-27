@@ -74,17 +74,17 @@ PGF.defaults = {
         raidAccordionState = {
             activities = true,
             bossFilter = false,
-            difficulty = true,
+            difficulty = false,
             playstyle = false,
             roleFiltering = false,
-            quickApply = true,
+            quickApply = false,
         },
         dungeonAccordionState = {
             activities = true,
-            difficulty = true,
+            difficulty = false,
             playstyle = false,
             misc = false,
-            quickApply = true,
+            quickApply = false,
         },
     },
     

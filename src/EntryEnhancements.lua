@@ -7,6 +7,41 @@
 local addonName, PGF = ...
 
 local roleIndicators = {}
+local classSpecIndicators = {}
+
+local playerClassFile = nil
+local playerSpecID = nil
+local playerSpecIcon = nil
+local playerSpecNamesToIcon = {}
+local playerSpecOrder = {}
+local playerSpecNameToRole = {}
+
+---Update player's class and spec info
+local function UpdatePlayerClassSpec()
+    local _, classFile = UnitClass("player")
+    playerClassFile = classFile
+    
+    local specIndex = GetSpecialization()
+    if specIndex then
+        local specID, _, _, icon = GetSpecializationInfo(specIndex)
+        playerSpecID = specID
+        playerSpecIcon = icon
+    end
+    
+    playerSpecOrder = {}
+    playerSpecNamesToIcon = {}
+    playerSpecNameToRole = {}
+    for i = 1, GetNumSpecializations() do
+        local _, name, _, icon, role = GetSpecializationInfo(i)
+        if name and name ~= "" then
+            table.insert(playerSpecOrder, name)
+            playerSpecNamesToIcon[name] = icon
+            playerSpecNameToRole[name] = (role == "TANK" or role == "HEALER" or role == "DAMAGER") and role or "DAMAGER"
+        end
+    end
+    playerSpecNamesToIcon["?"] = playerSpecIcon
+    playerSpecNameToRole["?"] = "DAMAGER"
+end
 
 local ROLE_ATLAS = {
     TANK = "UI-LFG-RoleIcon-Tank",
@@ -199,6 +234,148 @@ local function AddLeaderRating(entry, resultID, searchResultInfo)
     end
 end
 
+---Get or create class/spec indicator
+---@param entry Frame The search entry frame
+---@return Frame indicator The indicator frame
+local function GetOrCreateClassSpecIndicator(entry)
+    local indicator = classSpecIndicators[entry]
+    if indicator and not indicator.slots then
+        classSpecIndicators[entry] = nil
+        indicator = nil
+    end
+    if indicator == nil then
+        indicator = CreateFrame("Frame", nil, entry)
+        indicator:SetSize(1, 1)
+        indicator.slots = {}
+        for _, role in ipairs(ROLE_ORDER) do
+            local t = indicator:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            t:SetTextColor(1, 1, 1, 0.9)
+            local tex = indicator:CreateTexture(nil, "ARTWORK")
+            tex:SetSize(14, 14)
+            tex:SetPoint("LEFT", t, "RIGHT", 2, 0)
+            indicator.slots[role] = { text = t, icon = tex }
+        end
+        classSpecIndicators[entry] = indicator
+    end
+    return indicator
+end
+
+---Add class/spec match indicators for raid groups.
+---@param entry Frame Search entry frame
+---@param resultID number
+---@param searchResultInfo LfgSearchResultData
+local function AddClassSpecIndicators(entry, resultID, searchResultInfo)
+    local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
+    
+    local indicator = classSpecIndicators[entry]
+    if categoryID ~= PGF.RAID_CATEGORY_ID then
+        if indicator then
+            indicator:Hide()
+        end
+        return
+    end
+    
+    if not playerClassFile then
+        UpdatePlayerClassSpec()
+    end
+    if not playerClassFile then
+        if indicator then indicator:Hide() end
+        return
+    end
+    
+    local numMembers = searchResultInfo.numMembers or 0
+    local specCounts = {}
+    for i = 1, numMembers do
+        local info = C_LFGList.GetSearchResultPlayerInfo(resultID, i)
+        if info and info.classFilename and info.classFilename == playerClassFile then
+            local key = (info.specName and info.specName ~= "") and info.specName or "?"
+            specCounts[key] = (specCounts[key] or 0) + 1
+        end
+    end
+    
+    if not next(specCounts) then
+        if indicator then indicator:Hide() end
+        return
+    end
+    
+    local roleCounts = {}
+    local roleIcon = {}
+    local roleBestCount = {}
+    for specName, count in pairs(specCounts) do
+        local role = (playerSpecNameToRole or {})[specName] or "DAMAGER"
+        roleCounts[role] = (roleCounts[role] or 0) + count
+        if (roleBestCount[role] or 0) < count then
+            roleBestCount[role] = count
+            roleIcon[role] = (playerSpecNamesToIcon or {})[specName] or playerSpecIcon
+        end
+    end
+    
+    indicator = GetOrCreateClassSpecIndicator(entry)
+    indicator:ClearAllPoints()
+    local rc = entry.DataDisplay and entry.DataDisplay.RoleCount
+    local roleCountAnchors = rc and {
+        TANK = rc.TankCount,
+        HEALER = rc.HealerCount,
+        DAMAGER = rc.DamagerCount,
+    } or {}
+    local roleIconAnchors = rc and {
+        TANK = rc.TankIcon,
+        HEALER = rc.HealerIcon,
+        DAMAGER = rc.DamagerIcon,
+    } or {}
+    
+    if rc then
+        indicator:SetPoint("TOPLEFT", entry, "TOPLEFT", 0, 0)
+        for _, role in ipairs(ROLE_ORDER) do
+            local count = roleCounts[role] or 0
+            local slot = indicator.slots[role]
+            local countAnchor = roleCountAnchors[role]
+            local iconAnchor = roleIconAnchors[role]
+            if count > 0 and countAnchor and iconAnchor then
+                slot.text:ClearAllPoints()
+                slot.text:SetText(count)
+                slot.text:SetPoint("TOPLEFT", countAnchor, "BOTTOMLEFT", 4, -5)
+                slot.text:Show()
+                slot.icon:ClearAllPoints()
+                slot.icon:SetPoint("TOPLEFT", iconAnchor, "BOTTOMLEFT", 0, -2)
+                if roleIcon[role] then
+                    slot.icon:SetTexture(roleIcon[role])
+                    slot.icon:Show()
+                else
+                    slot.icon:Hide()
+                end
+            else
+                slot.text:Hide()
+                slot.icon:Hide()
+            end
+        end
+    else
+        indicator:SetPoint("BOTTOMRIGHT", entry, "BOTTOMRIGHT", -5, 2)
+        local prev
+        for _, role in ipairs(ROLE_ORDER) do
+            local count = roleCounts[role] or 0
+            local slot = indicator.slots[role]
+            if count > 0 then
+                slot.text:ClearAllPoints()
+                slot.text:SetPoint("LEFT", prev or indicator, prev and "RIGHT" or "LEFT", prev and 4 or 0, 0)
+                slot.text:SetText(count)
+                slot.text:Show()
+                if roleIcon[role] then
+                    slot.icon:SetTexture(roleIcon[role])
+                    slot.icon:Show()
+                else
+                    slot.icon:Hide()
+                end
+                prev = slot.icon
+            else
+                slot.text:Hide()
+                slot.icon:Hide()
+            end
+        end
+    end
+    indicator:Show()
+end
+
 ---Hook into entry update.
 ---@param self Frame Search entry frame
 local function OnEntryUpdate(self)
@@ -214,10 +391,23 @@ local function OnEntryUpdate(self)
     
     AddMissingRoles(self, resultID, searchResultInfo)
     AddLeaderRating(self, resultID, searchResultInfo)
+    AddClassSpecIndicators(self, resultID, searchResultInfo)
 end
 
 ---Initialize entry enhancements.
 function PGF.InitializeEntryEnhancements()
     hooksecurefunc("LFGListSearchEntry_Update", OnEntryUpdate)
+
+    UpdatePlayerClassSpec()
+    
+    local specFrame = CreateFrame("Frame")
+    specFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    specFrame:RegisterEvent("PLAYER_LOGIN")
+    specFrame:SetScript("OnEvent", function(self, event, arg1)
+        if event == "PLAYER_LOGIN" or (event == "PLAYER_SPECIALIZATION_CHANGED" and arg1 == "player") then
+            UpdatePlayerClassSpec()
+        end
+    end)
+    
     PGF.Debug("Entry enhancements initialized")
 end
