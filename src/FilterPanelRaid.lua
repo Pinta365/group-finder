@@ -271,7 +271,7 @@ end
 --------------------------------------------------------------------------------
 
 ---Create raid checkbox for an activity group.
-local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, allowAllRaids, checkboxHeight, spacing)
     if not groupID then return yPos end
     local name = C_LFGList.GetActivityGroupInfo(groupID)
     if not name then return yPos end
@@ -286,18 +286,25 @@ local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs,
     label:SetWidth(PANEL_WIDTH - 50)
     label:SetJustifyH("LEFT")
     
-    checkbox:SetChecked(selectedGroupIDs[groupID] == true)
+    checkbox:SetChecked(allowAllRaids or selectedGroupIDs[groupID] == true)
     
     checkbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
         if not db.filter then db.filter = {} end
-        if not db.filter.raidActivities then db.filter.raidActivities = {} end
         
         local isChecked = self:GetChecked()
         
         if isChecked then
+            if not db.filter.raidActivities then db.filter.raidActivities = {} end
             db.filter.raidActivities[groupID] = true
         else
+            if db.filter.raidActivities == nil then
+                db.filter.raidActivities = {}
+                for _, cb in ipairs(raidPanel.activityCheckboxes or {}) do
+                    local k = cb.groupID or cb.storageKey
+                    if k then db.filter.raidActivities[k] = true end
+                end
+            end
             db.filter.raidActivities[groupID] = nil
         end
         
@@ -316,7 +323,7 @@ local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs,
 end
 
 ---Create raid checkbox for a standalone activity (like World Bosses).
-local function CreateRaidActivityCheckbox(content, activityID, yPos, selectedActivities, checkboxHeight, spacing)
+local function CreateRaidActivityCheckbox(content, activityID, yPos, selectedActivities, allowAllRaids, checkboxHeight, spacing)
     if not activityID then return yPos end
     local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
     if not activityInfo or not activityInfo.fullName then return yPos end
@@ -332,18 +339,25 @@ local function CreateRaidActivityCheckbox(content, activityID, yPos, selectedAct
     label:SetJustifyH("LEFT")
     
     local storageKey = -activityID
-    checkbox:SetChecked(selectedActivities[storageKey] == true)
+    checkbox:SetChecked(allowAllRaids or selectedActivities[storageKey] == true)
     
     checkbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
         if not db.filter then db.filter = {} end
-        if not db.filter.raidActivities then db.filter.raidActivities = {} end
         
         local isChecked = self:GetChecked()
         
         if isChecked then
+            if not db.filter.raidActivities then db.filter.raidActivities = {} end
             db.filter.raidActivities[storageKey] = true
         else
+            if db.filter.raidActivities == nil then
+                db.filter.raidActivities = {}
+                for _, cb in ipairs(raidPanel.activityCheckboxes or {}) do
+                    local k = cb.groupID or cb.storageKey
+                    if k then db.filter.raidActivities[k] = true end
+                end
+            end
             db.filter.raidActivities[storageKey] = nil
         end
         
@@ -400,8 +414,8 @@ local function UpdateRaidList()
     local showHeroic = raidDifficulty.heroic ~= false
     local showNormal = raidDifficulty.normal ~= false
     
-    local raidActivities = db.filter and db.filter.raidActivities or {}
-    local selectedGroupIDs = raidActivities
+    local allowAllRaids = (db.filter and db.filter.raidActivities) == nil
+    local selectedGroupIDs = (db.filter and db.filter.raidActivities) or {}
     
     local buttonsHeight = raidPanel.activityButtonsHeight or 0
     local yPos = CONTENT_PADDING + buttonsHeight
@@ -441,7 +455,7 @@ local function UpdateRaidList()
     local groupCount = 0
     for _, groupID in ipairs(groupIDs) do
         if GroupHasMatchingDifficulty(categoryID, groupID, showMythic, showHeroic, showNormal) then
-            yPos = CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+            yPos = CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, allowAllRaids, checkboxHeight, spacing)
             groupCount = groupCount + 1
         end
     end
@@ -458,7 +472,7 @@ local function UpdateRaidList()
         end
         
         for _, activityID in ipairs(standaloneActivities) do
-            yPos = CreateRaidActivityCheckbox(content, activityID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+            yPos = CreateRaidActivityCheckbox(content, activityID, yPos, selectedGroupIDs, allowAllRaids, checkboxHeight, spacing)
         end
     end
     

@@ -85,8 +85,18 @@ local function PassesFilter(resultID, context)
     end
     
     if context.categoryID == PGF.DUNGEON_CATEGORY_ID then
-        if advancedFilter and advancedFilter.activities then
-            if #advancedFilter.activities == 0 then
+        local dungeonActivities = filter.dungeonActivities
+        if dungeonActivities ~= nil then
+            local selectedGroupIDs = {}
+            for k, v in pairs(dungeonActivities) do
+                if v and type(k) == "number" and k > 0 then
+                    table.insert(selectedGroupIDs, k)
+                end
+            end
+            if #selectedGroupIDs == 0 then
+                return false
+            end
+            if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
                 return false
             end
         end
@@ -174,41 +184,42 @@ local function PassesFilter(resultID, context)
             end
         end
 
-        local raidActivities = filter.raidActivities or {}
-        
-        local selectedGroupIDs = {}
-        local selectedStandaloneIDs = {}
-        for key, selected in pairs(raidActivities) do
-            if selected then
-                if key > 0 then
-                    table.insert(selectedGroupIDs, key)
-                else
-                    table.insert(selectedStandaloneIDs, -key)
+        if filter.raidActivities ~= nil then
+            local raidActivities = filter.raidActivities
+            local selectedGroupIDs = {}
+            local selectedStandaloneIDs = {}
+            for key, selected in pairs(raidActivities) do
+                if selected then
+                    if key > 0 then
+                        table.insert(selectedGroupIDs, key)
+                    else
+                        table.insert(selectedStandaloneIDs, -key)
+                    end
                 end
             end
-        end
 
-        local activityMatches = false
-        
-        if #selectedGroupIDs > 0 then
-            activityMatches = ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs)
-        end
-        
-        if not activityMatches and #selectedStandaloneIDs > 0 then
-            for _, actID in ipairs(selectedStandaloneIDs) do
-                if actID == context.activityID then
-                    activityMatches = true
-                    break
+            local activityMatches = false
+            
+            if #selectedGroupIDs > 0 then
+                activityMatches = ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs)
+            end
+            
+            if not activityMatches and #selectedStandaloneIDs > 0 then
+                for _, actID in ipairs(selectedStandaloneIDs) do
+                    if actID == context.activityID then
+                        activityMatches = true
+                        break
+                    end
                 end
             end
-        end
-        
-        if #selectedGroupIDs == 0 and #selectedStandaloneIDs == 0 then
-            return false
-        end
-        
-        if not activityMatches then
-            return false
+            
+            if #selectedGroupIDs == 0 and #selectedStandaloneIDs == 0 then
+                return false
+            end
+            
+            if not activityMatches then
+                return false
+            end
         end
 
         local bossFilter = filter.raidBossFilter or "any"

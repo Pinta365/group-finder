@@ -287,12 +287,9 @@ local function UpdateDungeonList()
     local showHeroic = advancedFilter and advancedFilter.difficultyHeroic ~= false
     local showNormal = advancedFilter and advancedFilter.difficultyNormal ~= false
     
-    local selectedGroupIDs = {}
-    if advancedFilter and advancedFilter.activities then
-        for _, groupID in ipairs(advancedFilter.activities) do
-            selectedGroupIDs[groupID] = true
-        end
-    end
+    local db = PintaGroupFinderDB
+    local allowAllDungeons = (db.filter and db.filter.dungeonActivities) == nil
+    local selectedGroupIDs = (db.filter and db.filter.dungeonActivities) or {}
     
     local buttonsHeight = dungeonPanel.activityButtonsHeight or 0
     local yPos = CONTENT_PADDING + buttonsHeight
@@ -331,34 +328,28 @@ local function UpdateDungeonList()
                 label:SetWidth(PANEL_WIDTH - 50)
                 label:SetJustifyH("LEFT")
                 
-                checkbox:SetChecked(selectedGroupIDs[groupID] == true)
+                checkbox:SetChecked(allowAllDungeons or selectedGroupIDs[groupID] == true)
                 
                 checkbox:SetScript("OnClick", function(self)
-                    local filter = C_LFGList.GetAdvancedFilter()
-                    if not filter then return end
+                    local db = PintaGroupFinderDB
+                    if not db.filter then db.filter = {} end
                     
                     local isChecked = self:GetChecked()
-                    local activities = filter.activities or {}
                     
                     if isChecked then
-                        local found = false
-                        for _, id in ipairs(activities) do
-                            if id == groupID then found = true break end
-                        end
-                        if not found then table.insert(activities, groupID) end
+                        if not db.filter.dungeonActivities then db.filter.dungeonActivities = {} end
+                        db.filter.dungeonActivities[groupID] = true
                     else
-                        for i = #activities, 1, -1 do
-                            if activities[i] == groupID then table.remove(activities, i) end
+                        if db.filter.dungeonActivities == nil then
+                            db.filter.dungeonActivities = {}
+                            for _, cb in ipairs(dungeonPanel.activityCheckboxes or {}) do
+                                if cb.groupID then db.filter.dungeonActivities[cb.groupID] = true end
+                            end
                         end
+                        db.filter.dungeonActivities[groupID] = nil
                     end
                     
-                    filter.activities = activities
-                    C_LFGList.SaveAdvancedFilter(filter)
-                    
-                    local panel = LFGListFrame and LFGListFrame.SearchPanel
-                    if panel and LFGListSearchPanel_DoSearch then
-                        LFGListSearchPanel_DoSearch(panel)
-                    end
+                    PGF.RefilterResults()
                 end)
                 
                 table.insert(checkboxes, { frame = checkbox, label = label, groupID = groupID })
@@ -404,34 +395,28 @@ local function UpdateDungeonList()
                 label:SetWidth(PANEL_WIDTH - 50)
                 label:SetJustifyH("LEFT")
                 
-                checkbox:SetChecked(selectedGroupIDs[groupID] == true)
+                checkbox:SetChecked(allowAllDungeons or selectedGroupIDs[groupID] == true)
                 
                 checkbox:SetScript("OnClick", function(self)
-                    local filter = C_LFGList.GetAdvancedFilter()
-                    if not filter then return end
+                    local db = PintaGroupFinderDB
+                    if not db.filter then db.filter = {} end
                     
                     local isChecked = self:GetChecked()
-                    local activities = filter.activities or {}
                     
                     if isChecked then
-                        local found = false
-                        for _, id in ipairs(activities) do
-                            if id == groupID then found = true break end
-                        end
-                        if not found then table.insert(activities, groupID) end
+                        if not db.filter.dungeonActivities then db.filter.dungeonActivities = {} end
+                        db.filter.dungeonActivities[groupID] = true
                     else
-                        for i = #activities, 1, -1 do
-                            if activities[i] == groupID then table.remove(activities, i) end
+                        if db.filter.dungeonActivities == nil then
+                            db.filter.dungeonActivities = {}
+                            for _, cb in ipairs(dungeonPanel.activityCheckboxes or {}) do
+                                if cb.groupID then db.filter.dungeonActivities[cb.groupID] = true end
+                            end
                         end
+                        db.filter.dungeonActivities[groupID] = nil
                     end
                     
-                    filter.activities = activities
-                    C_LFGList.SaveAdvancedFilter(filter)
-                    
-                    local panel = LFGListFrame and LFGListFrame.SearchPanel
-                    if panel and LFGListSearchPanel_DoSearch then
-                        LFGListSearchPanel_DoSearch(panel)
-                    end
+                    PGF.RefilterResults()
                 end)
                 
                 table.insert(checkboxes, { frame = checkbox, label = label, groupID = groupID })
@@ -467,44 +452,32 @@ local function CreateActivitiesSection(scrollContent)
     deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
     
     selectAllBtn:SetScript("OnClick", function()
-        local filter = C_LFGList.GetAdvancedFilter()
-        if not filter then return end
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.dungeonActivities = {}
         
         local checkboxes = dungeonPanel.activityCheckboxes or {}
-        local activities = {}
-        
         for _, cb in ipairs(checkboxes) do
             if cb.groupID then
-                table.insert(activities, cb.groupID)
+                db.filter.dungeonActivities[cb.groupID] = true
                 if cb.frame then cb.frame:SetChecked(true) end
             end
         end
         
-        filter.activities = activities
-        C_LFGList.SaveAdvancedFilter(filter)
-        
-        local panel = LFGListFrame and LFGListFrame.SearchPanel
-        if panel and panel.RefreshButton then
-            panel.RefreshButton:Click()
-        end
+        PGF.RefilterResults()
     end)
     
     deselectAllBtn:SetScript("OnClick", function()
-        local filter = C_LFGList.GetAdvancedFilter()
-        if not filter then return end
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.dungeonActivities = {}
         
         local checkboxes = dungeonPanel.activityCheckboxes or {}
         for _, cb in ipairs(checkboxes) do
             if cb.frame then cb.frame:SetChecked(false) end
         end
         
-        filter.activities = {}
-        C_LFGList.SaveAdvancedFilter(filter)
-        
-        local panel = LFGListFrame and LFGListFrame.SearchPanel
-        if panel and panel.RefreshButton then
-            panel.RefreshButton:Click()
-        end
+        PGF.RefilterResults()
     end)
     
     dungeonPanel.activityContent = content
