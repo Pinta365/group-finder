@@ -18,7 +18,7 @@ Pinta Group Finder enhances the default Group Finder UI with advanced filtering,
 
 You can download Pinta Group Finder from these sources:
 
-* [Wago Addons](https://addons.wago.io/addons/PintaGroupFinder)
+* [Wago Addons](https://addons.wago.io/addons/group-finder)
 * [CurseForge](https://www.curseforge.com/wow/addons/PintaGroupFinder)
 
 ## Slash Commands
