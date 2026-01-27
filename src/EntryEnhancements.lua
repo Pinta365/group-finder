@@ -85,6 +85,20 @@ local function AddMissingRoles(entry, resultID, searchResultInfo)
     if not (db.ui and db.ui.showMissingRoles) then
         return
     end
+
+    local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
+    if categoryID ~= PGF.DUNGEON_CATEGORY_ID then
+        local frames = roleIndicators[entry]
+        if frames then
+            for i = 1, #frames do
+                if frames[i] then
+                    frames[i]:Hide()
+                    frames[i].missingRole:Hide()
+                end
+            end
+        end
+        return
+    end
     
     local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
     local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
