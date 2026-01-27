@@ -195,6 +195,59 @@ local function GroupHasMatchingDifficulty(categoryID, groupID, showMythic, showH
     return false
 end
 
+---Get the max level and highest activity ID for a group (for sorting).
+---@param categoryID number
+---@param groupID number
+---@return number maxLevel
+---@return number maxActivityID
+local function GetGroupSortInfo(categoryID, groupID)
+    local activities = C_LFGList.GetAvailableActivities(categoryID, groupID)
+    local maxLevel = 0
+    local maxActivityID = 0
+    
+    if activities then
+        for _, activityID in ipairs(activities) do
+            local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
+            if activityInfo then
+                local level = activityInfo.maxLevelSuggestion or activityInfo.minLevel or 0
+                if level > maxLevel then
+                    maxLevel = level
+                end
+                if activityID > maxActivityID then
+                    maxActivityID = activityID
+                end
+            end
+        end
+    end
+    
+    return maxLevel, maxActivityID
+end
+
+---Sort activity groups by level (descending), then by ID (descending).
+---@param categoryID number
+---@param groupIDs table Array of group IDs
+---@return table sortedGroupIDs
+local function SortGroupsByLevel(categoryID, groupIDs)
+    local sorted = {}
+    for _, groupID in ipairs(groupIDs) do
+        local maxLevel, maxActivityID = GetGroupSortInfo(categoryID, groupID)
+        table.insert(sorted, { groupID = groupID, level = maxLevel, activityID = maxActivityID })
+    end
+    
+    table.sort(sorted, function(a, b)
+        if a.level ~= b.level then
+            return a.level > b.level
+        end
+        return a.activityID > b.activityID
+    end)
+    
+    local result = {}
+    for _, entry in ipairs(sorted) do
+        table.insert(result, entry.groupID)
+    end
+    return result
+end
+
 ---Check if current raid category is for current expansion or legacy.
 ---@return boolean isCurrentExpansion True if Recommended (current expansion), false if NotRecommended (legacy)
 local function IsCurrentExpansionCategory()
@@ -217,8 +270,8 @@ end
 -- Section 1: Activities
 --------------------------------------------------------------------------------
 
----Create raid checkbox in activity content.
-local function CreateRaidCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+---Create raid checkbox for an activity group.
+local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
     if not groupID then return yPos end
     local name = C_LFGList.GetActivityGroupInfo(groupID)
     if not name then return yPos end
@@ -262,6 +315,53 @@ local function CreateRaidCheckbox(content, groupID, yPos, selectedGroupIDs, chec
     return yPos + checkboxHeight + spacing
 end
 
+---Create raid checkbox for a standalone activity (like World Bosses).
+local function CreateRaidActivityCheckbox(content, activityID, yPos, selectedActivities, checkboxHeight, spacing)
+    if not activityID then return yPos end
+    local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
+    if not activityInfo or not activityInfo.fullName then return yPos end
+    
+    local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    checkbox:SetSize(16, 16)
+    checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
+    
+    local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
+    label:SetText(activityInfo.fullName)
+    label:SetWidth(PANEL_WIDTH - 50)
+    label:SetJustifyH("LEFT")
+    
+    local storageKey = -activityID
+    checkbox:SetChecked(selectedActivities[storageKey] == true)
+    
+    checkbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidActivities then db.filter.raidActivities = {} end
+        
+        local isChecked = self:GetChecked()
+        
+        if isChecked then
+            db.filter.raidActivities[storageKey] = true
+        else
+            db.filter.raidActivities[storageKey] = nil
+        end
+        
+        PGF.RefilterResults()
+    end)
+    
+    if raidPanel and raidPanel.activityCheckboxes then
+        table.insert(raidPanel.activityCheckboxes, {
+            frame = checkbox,
+            label = label,
+            activityID = activityID,
+            storageKey = storageKey,
+        })
+    end
+    
+    return yPos + checkboxHeight + spacing
+end
+
 ---Update raid list in activities section.
 local function UpdateRaidList()
     if not raidPanel or not raidPanel.activityContent then
@@ -288,6 +388,12 @@ local function UpdateRaidList()
     wipe(checkboxes)
     raidPanel.activityCheckboxes = checkboxes
     
+    if raidPanel.activitySeparator then
+        raidPanel.activitySeparator:Hide()
+        raidPanel.activitySeparator:ClearAllPoints()
+        raidPanel.activitySeparator = nil
+    end
+    
     local db = PintaGroupFinderDB
     local raidDifficulty = db.filter and db.filter.raidDifficulty or {}
     local showMythic = raidDifficulty.mythic ~= false
@@ -308,25 +414,51 @@ local function UpdateRaidList()
     
     local isCurrentExpansion = IsCurrentExpansionCategory()
     
+    local standaloneActivities = {}
+    
     if isCurrentExpansion then
         if Enum.LFGListFilter.Recommended and bit and bit.bor then
             local filter = bit.bor(baseFilters, Enum.LFGListFilter.Recommended)
             groupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, filter) or {}
+            standaloneActivities = C_LFGList.GetAvailableActivities(categoryID, 0, filter) or {}
         else
             groupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, baseFilters) or {}
+            standaloneActivities = C_LFGList.GetAvailableActivities(categoryID, 0, baseFilters) or {}
         end
     else
         if Enum.LFGListFilter.NotRecommended and bit and bit.bor then
             local filter = bit.bor(baseFilters, Enum.LFGListFilter.NotRecommended)
             groupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, filter) or {}
+            standaloneActivities = C_LFGList.GetAvailableActivities(categoryID, 0, filter) or {}
         else
             groupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, baseFilters) or {}
+            standaloneActivities = C_LFGList.GetAvailableActivities(categoryID, 0, baseFilters) or {}
         end
     end
     
+    groupIDs = SortGroupsByLevel(categoryID, groupIDs)
+    
+    local groupCount = 0
     for _, groupID in ipairs(groupIDs) do
         if GroupHasMatchingDifficulty(categoryID, groupID, showMythic, showHeroic, showNormal) then
-            yPos = CreateRaidCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+            yPos = CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs, checkboxHeight, spacing)
+            groupCount = groupCount + 1
+        end
+    end
+
+    if isCurrentExpansion and #standaloneActivities > 0 then
+        if groupCount > 0 then
+            local separator = content:CreateTexture(nil, "ARTWORK")
+            separator:SetHeight(1)
+            separator:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -yPos)
+            separator:SetPoint("TOPRIGHT", content, "TOPRIGHT", -CONTENT_PADDING, -yPos)
+            separator:SetColorTexture(0.4, 0.4, 0.4, 0.5)
+            raidPanel.activitySeparator = separator
+            yPos = yPos + 8
+        end
+        
+        for _, activityID in ipairs(standaloneActivities) do
+            yPos = CreateRaidActivityCheckbox(content, activityID, yPos, selectedGroupIDs, checkboxHeight, spacing)
         end
     end
     
@@ -364,8 +496,10 @@ local function CreateActivitiesSection(scrollContent)
         for _, cb in ipairs(checkboxes) do
             if cb.groupID then
                 db.filter.raidActivities[cb.groupID] = true
-                if cb.frame then cb.frame:SetChecked(true) end
+            elseif cb.storageKey then
+                db.filter.raidActivities[cb.storageKey] = true
             end
+            if cb.frame then cb.frame:SetChecked(true) end
         end
         
         PGF.RefilterResults()

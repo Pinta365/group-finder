@@ -174,13 +174,37 @@ local function PassesFilter(resultID, context)
         local raidActivities = filter.raidActivities or {}
         
         local selectedGroupIDs = {}
-        for groupID, selected in pairs(raidActivities) do
+        local selectedStandaloneIDs = {}
+        for key, selected in pairs(raidActivities) do
             if selected then
-                table.insert(selectedGroupIDs, groupID)
+                if key > 0 then
+                    table.insert(selectedGroupIDs, key)
+                else
+                    table.insert(selectedStandaloneIDs, -key)
+                end
             end
         end
 
-        if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
+        local activityMatches = false
+        
+        if #selectedGroupIDs > 0 then
+            activityMatches = ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs)
+        end
+        
+        if not activityMatches and #selectedStandaloneIDs > 0 then
+            for _, actID in ipairs(selectedStandaloneIDs) do
+                if actID == context.activityID then
+                    activityMatches = true
+                    break
+                end
+            end
+        end
+        
+        if #selectedGroupIDs == 0 and #selectedStandaloneIDs == 0 then
+            return false
+        end
+        
+        if not activityMatches then
             return false
         end
 

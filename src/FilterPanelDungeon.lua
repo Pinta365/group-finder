@@ -197,6 +197,27 @@ local function GroupHasMatchingDifficulty(categoryID, groupID, showMythicPlus, s
     return false
 end
 
+---Sort activity groups alphabetically by name.
+---@param groupIDs table Array of group IDs
+---@return table sortedGroupIDs
+local function SortGroupsAlphabetically(groupIDs)
+    local sorted = {}
+    for _, groupID in ipairs(groupIDs) do
+        local name = C_LFGList.GetActivityGroupInfo(groupID) or ""
+        table.insert(sorted, { groupID = groupID, name = name })
+    end
+    
+    table.sort(sorted, function(a, b)
+        return a.name < b.name
+    end)
+    
+    local result = {}
+    for _, entry in ipairs(sorted) do
+        table.insert(result, entry.groupID)
+    end
+    return result
+end
+
 ---Update dungeon list based on current filters.
 local function UpdateDungeonList()
     if not dungeonPanel or not dungeonPanel.activityContent then
@@ -257,6 +278,9 @@ local function UpdateDungeonList()
         expansionFilter = bit.bor(Enum.LFGListFilter.CurrentExpansion, Enum.LFGListFilter.NotCurrentSeason, Enum.LFGListFilter.PvE)
     end
     local expansionGroupIDs = C_LFGList.GetAvailableActivityGroups(categoryID, expansionFilter) or {}
+
+    seasonGroupIDs = SortGroupsAlphabetically(seasonGroupIDs)
+    expansionGroupIDs = SortGroupsAlphabetically(expansionGroupIDs)
 
     local seasonCount = 0
     for _, groupID in ipairs(seasonGroupIDs) do
