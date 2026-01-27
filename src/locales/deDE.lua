@@ -70,5 +70,9 @@ if GetLocale() == "deDE" then
     ["SECTION_MISC"] = "SONSTIGES",
     ["SECTION_ROLE_FILTERING"] = "ROLLENFILTERUNG",
     ["SECTION_QUICK_APPLY"] = "SOFORT ANMELDEN",
+    
+    -- Activity buttons
+    ["SELECT_ALL"] = "Alle auswählen",
+    ["DESELECT_ALL"] = "Alle abwählen",
     }
 end

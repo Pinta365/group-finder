@@ -297,7 +297,8 @@ local function UpdateRaidList()
     local raidActivities = db.filter and db.filter.raidActivities or {}
     local selectedGroupIDs = raidActivities
     
-    local yPos = CONTENT_PADDING
+    local buttonsHeight = raidPanel.activityButtonsHeight or 0
+    local yPos = CONTENT_PADDING + buttonsHeight
     local checkboxHeight = 20
     local spacing = 2
     
@@ -341,8 +342,51 @@ local function CreateActivitiesSection(scrollContent)
     -- Content will be populated by UpdateRaidList()
     content:SetHeight(CONTENT_PADDING * 2 + 100) -- Initial estimate
     
+    -- Select All / Deselect All buttons
+    local selectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    selectAllBtn:SetSize(70, 18)
+    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
+    selectAllBtn:SetText(PGF.L("SELECT_ALL") or "Select All")
+    selectAllBtn:GetFontString():SetFont(selectAllBtn:GetFontString():GetFont(), 10)
+    
+    local deselectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    deselectAllBtn:SetSize(70, 18)
+    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
+    deselectAllBtn:SetText(PGF.L("DESELECT_ALL") or "Deselect All")
+    deselectAllBtn:GetFontString():SetFont(deselectAllBtn:GetFontString():GetFont(), 10)
+    
+    selectAllBtn:SetScript("OnClick", function()
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidActivities then db.filter.raidActivities = {} end
+        
+        local checkboxes = raidPanel.activityCheckboxes or {}
+        for _, cb in ipairs(checkboxes) do
+            if cb.groupID then
+                db.filter.raidActivities[cb.groupID] = true
+                if cb.frame then cb.frame:SetChecked(true) end
+            end
+        end
+        
+        PGF.RefilterResults()
+    end)
+    
+    deselectAllBtn:SetScript("OnClick", function()
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.raidActivities = {}
+        
+        local checkboxes = raidPanel.activityCheckboxes or {}
+        for _, cb in ipairs(checkboxes) do
+            if cb.frame then cb.frame:SetChecked(false) end
+        end
+        
+        PGF.RefilterResults()
+    end)
+    
     raidPanel.activityContent = content
     raidPanel.activityCheckboxes = {}
+    raidPanel.activityButtonsHeight = 18 + CONTENT_PADDING
     
     table.insert(sections, {
         id = "activities",

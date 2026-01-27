@@ -70,5 +70,9 @@ if GetLocale() == "frFR" then
     ["SECTION_MISC"] = "DIVERS",
     ["SECTION_ROLE_FILTERING"] = "FILTRAGE DES RÔLES",
     ["SECTION_QUICK_APPLY"] = "APPLICATION RAPIDE",
+    
+    -- Activity buttons
+    ["SELECT_ALL"] = "Tout sélectionner",
+    ["DESELECT_ALL"] = "Tout désélectionner",
     }
 end

@@ -240,7 +240,8 @@ local function UpdateDungeonList()
         end
     end
     
-    local yPos = CONTENT_PADDING
+    local buttonsHeight = dungeonPanel.activityButtonsHeight or 0
+    local yPos = CONTENT_PADDING + buttonsHeight
     local checkboxHeight = 20
     local spacing = 2
     local separatorHeight = 10
@@ -392,8 +393,63 @@ local function CreateActivitiesSection(scrollContent)
     
     content:SetHeight(150)
     
+    -- Select All / Deselect All buttons
+    local selectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    selectAllBtn:SetSize(70, 18)
+    selectAllBtn:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -CONTENT_PADDING)
+    selectAllBtn:SetText(PGF.L("SELECT_ALL") or "Select All")
+    selectAllBtn:GetFontString():SetFont(selectAllBtn:GetFontString():GetFont(), 10)
+    
+    local deselectAllBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    deselectAllBtn:SetSize(70, 18)
+    deselectAllBtn:SetPoint("LEFT", selectAllBtn, "RIGHT", 4, 0)
+    deselectAllBtn:SetText(PGF.L("DESELECT_ALL") or "Deselect All")
+    deselectAllBtn:GetFontString():SetFont(deselectAllBtn:GetFontString():GetFont(), 10)
+    
+    selectAllBtn:SetScript("OnClick", function()
+        local filter = C_LFGList.GetAdvancedFilter()
+        if not filter then return end
+        
+        local checkboxes = dungeonPanel.activityCheckboxes or {}
+        local activities = {}
+        
+        for _, cb in ipairs(checkboxes) do
+            if cb.groupID then
+                table.insert(activities, cb.groupID)
+                if cb.frame then cb.frame:SetChecked(true) end
+            end
+        end
+        
+        filter.activities = activities
+        C_LFGList.SaveAdvancedFilter(filter)
+        
+        local panel = LFGListFrame and LFGListFrame.SearchPanel
+        if panel and panel.RefreshButton then
+            panel.RefreshButton:Click()
+        end
+    end)
+    
+    deselectAllBtn:SetScript("OnClick", function()
+        local filter = C_LFGList.GetAdvancedFilter()
+        if not filter then return end
+        
+        local checkboxes = dungeonPanel.activityCheckboxes or {}
+        for _, cb in ipairs(checkboxes) do
+            if cb.frame then cb.frame:SetChecked(false) end
+        end
+        
+        filter.activities = {}
+        C_LFGList.SaveAdvancedFilter(filter)
+        
+        local panel = LFGListFrame and LFGListFrame.SearchPanel
+        if panel and panel.RefreshButton then
+            panel.RefreshButton:Click()
+        end
+    end)
+    
     dungeonPanel.activityContent = content
     dungeonPanel.activityCheckboxes = {}
+    dungeonPanel.activityButtonsHeight = 18 + CONTENT_PADDING
     
     table.insert(sections, {
         id = "activities",

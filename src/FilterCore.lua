@@ -30,8 +30,12 @@ end
 ---@param selectedGroupIDs table Array of selected group IDs
 ---@return boolean matches True if activity matches one of the selected groups
 local function ActivityMatchesSelectedGroups(activityID, categoryID, selectedGroupIDs)
-    if not activityID or not selectedGroupIDs or #selectedGroupIDs == 0 then
-        return true -- No filter, matches all
+    if not activityID then
+        return false
+    end
+    
+    if not selectedGroupIDs or #selectedGroupIDs == 0 then
+        return false
     end
 
     for _, groupID in ipairs(selectedGroupIDs) do
@@ -75,6 +79,14 @@ local function PassesFilter(resultID, context)
         
         if filter.minRating and filter.minRating > 0 then
             if context.mythicplus and context.mprating < filter.minRating then
+                return false
+            end
+        end
+    end
+    
+    if context.categoryID == PGF.DUNGEON_CATEGORY_ID then
+        if advancedFilter and advancedFilter.activities then
+            if #advancedFilter.activities == 0 then
                 return false
             end
         end
@@ -161,19 +173,15 @@ local function PassesFilter(resultID, context)
 
         local raidActivities = filter.raidActivities or {}
         
-        local selectedCount = 0
         local selectedGroupIDs = {}
         for groupID, selected in pairs(raidActivities) do
             if selected then
-                selectedCount = selectedCount + 1
                 table.insert(selectedGroupIDs, groupID)
             end
         end
 
-        if selectedCount > 0 then
-            if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
-                return false
-            end
+        if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
+            return false
         end
 
         local bossFilter = filter.raidBossFilter or "any"

@@ -73,6 +73,10 @@ local defaultLocale = {
     ["SECTION_MISC"] = "MISC",
     ["SECTION_ROLE_FILTERING"] = "ROLE FILTERING",
     ["SECTION_QUICK_APPLY"] = "QUICK APPLY",
+    
+    -- Activity buttons
+    ["SELECT_ALL"] = "Select All",
+    ["DESELECT_ALL"] = "Deselect All",
 }
 
 local currentLocale = {}
