@@ -113,6 +113,9 @@ local function PassesFilter(resultID, context)
                 difficultyMatch = true
             elseif context.difficulty == "mythic" and showMythic then
                 difficultyMatch = true
+            elseif context.difficulty == "unknown" then
+                -- Activities without standard difficulty (World Bosses)
+                difficultyMatch = true
             end
             
             if not difficultyMatch then
