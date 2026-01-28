@@ -1076,6 +1076,367 @@ local function CreateQuickApplySection(scrollContent)
 end
 
 --------------------------------------------------------------------------------
+-- Section 7: Settings
+--------------------------------------------------------------------------------
+
+local raidSortOptions = {
+    { value = "age", label = PGF.L("SORT_AGE") },
+    { value = "groupSize", label = PGF.L("SORT_GROUP_SIZE") },
+    { value = "ilvl", label = PGF.L("SORT_ILVL") },
+    { value = "name", label = PGF.L("SORT_NAME") },
+}
+
+local function GetSortSettingsRaid()
+    local db = PintaGroupFinderDB
+    return db.filter and db.filter.raidSortSettings or PGF.defaults.filter.raidSortSettings
+end
+
+---Create Settings section.
+local function CreateSettingsSection(scrollContent)
+    local header = CreateAccordionHeader(scrollContent, "settings", PGF.L("SECTION_SETTINGS") or "SETTINGS")
+    local content = CreateAccordionContent(scrollContent)
+    
+    local y = CONTENT_PADDING
+    
+    -- Disable Custom Sorting Checkbox
+    local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    disableCustomSortingCheckbox:SetSize(20, 20)
+    disableCustomSortingCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    
+    local disableCustomSortingLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    disableCustomSortingLabel:SetPoint("LEFT", disableCustomSortingCheckbox, "RIGHT", 5, 0)
+    disableCustomSortingLabel:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
+    
+    local function UpdateDropdownStates()
+        local settings = GetSortSettingsRaid()
+        local disabled = settings.disableCustomSorting == true
+        
+        if raidPanel.primarySortDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(raidPanel.primarySortDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(raidPanel.primarySortDropdown)
+            end
+        end
+        
+        if raidPanel.primaryDirDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(raidPanel.primaryDirDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(raidPanel.primaryDirDropdown)
+            end
+        end
+        
+        if raidPanel.secondarySortDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(raidPanel.secondarySortDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(raidPanel.secondarySortDropdown)
+            end
+        end
+        
+        if raidPanel.secondaryDirDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(raidPanel.secondaryDirDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(raidPanel.secondaryDirDropdown)
+            end
+        end
+    end
+    
+    disableCustomSortingCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidSortSettings then
+            db.filter.raidSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
+                db.filter.raidSortSettings[k] = v
+            end
+        end
+        db.filter.raidSortSettings.disableCustomSorting = self:GetChecked()
+        UpdateDropdownStates()
+        PGF.RefilterResults()
+    end)
+    
+    disableCustomSortingCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
+        GameTooltip:AddLine(PGF.L("DISABLE_CUSTOM_SORTING_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    disableCustomSortingCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    
+    -- Initialize checkbox state
+    local settings = GetSortSettingsRaid()
+    disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
+    
+    raidPanel.disableCustomSortingCheckbox = disableCustomSortingCheckbox
+    raidPanel.UpdateDropdownStates = UpdateDropdownStates
+    
+    y = y + 24
+    
+    -- Primary Sort
+    local primarySortLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    primarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    primarySortLabel:SetText(PGF.L("SORT_PRIMARY"))
+    
+    local primarySortDropdown = CreateFrame("Frame", "PGFRaidPrimarySortDropdown", content, "UIDropDownMenuTemplate")
+    primarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
+    UIDropDownMenu_SetWidth(primarySortDropdown, 120)
+    
+    local function SetPrimarySort(value)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidSortSettings then
+            db.filter.raidSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
+                db.filter.raidSortSettings[k] = v
+            end
+        end
+        db.filter.raidSortSettings.primarySort = value
+        PGF.RefilterResults()
+    end
+    
+    local function PrimarySortOnClick(self, arg1)
+        SetPrimarySort(arg1)
+        UIDropDownMenu_SetSelectedValue(primarySortDropdown, arg1)
+        for _, opt in ipairs(raidSortOptions) do
+            if opt.value == arg1 then
+                UIDropDownMenu_SetText(primarySortDropdown, opt.label)
+                break
+            end
+        end
+    end
+    
+    UIDropDownMenu_Initialize(primarySortDropdown, function(self, level)
+        local settings = GetSortSettingsRaid()
+        local currentSort = settings.primarySort or "age"
+        
+        for _, opt in ipairs(raidSortOptions) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = opt.label
+            info.value = opt.value
+            info.arg1 = opt.value
+            info.func = PrimarySortOnClick
+            info.checked = currentSort == opt.value
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    
+    local settings = GetSortSettingsRaid()
+    local currentPrimarySort = settings.primarySort or "age"
+    UIDropDownMenu_SetSelectedValue(primarySortDropdown, currentPrimarySort)
+    for _, opt in ipairs(raidSortOptions) do
+        if opt.value == currentPrimarySort then
+            UIDropDownMenu_SetText(primarySortDropdown, opt.label)
+            break
+        end
+    end
+    
+    raidPanel.primarySortDropdown = primarySortDropdown
+    
+    -- Primary Sort Direction
+    local primaryDirLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    primaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
+    primaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
+    
+    local primaryDirDropdown = CreateFrame("Frame", "PGFRaidPrimaryDirDropdown", content, "UIDropDownMenuTemplate")
+    primaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
+    UIDropDownMenu_SetWidth(primaryDirDropdown, 80)
+    
+    local function SetPrimarySortDirection(value)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidSortSettings then
+            db.filter.raidSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
+                db.filter.raidSortSettings[k] = v
+            end
+        end
+        db.filter.raidSortSettings.primarySortDirection = value
+        PGF.RefilterResults()
+    end
+    
+    local function PrimaryDirOnClick(self, arg1)
+        SetPrimarySortDirection(arg1)
+        UIDropDownMenu_SetSelectedValue(primaryDirDropdown, arg1)
+        UIDropDownMenu_SetText(primaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    end
+    
+    UIDropDownMenu_Initialize(primaryDirDropdown, function(self, level)
+        local settings = GetSortSettingsRaid()
+        local currentDir = settings.primarySortDirection or "asc"
+        
+        local info = UIDropDownMenu_CreateInfo()
+        info.text = PGF.L("SORT_ASC")
+        info.value = "asc"
+        info.arg1 = "asc"
+        info.func = PrimaryDirOnClick
+        info.checked = currentDir == "asc"
+        UIDropDownMenu_AddButton(info)
+        
+        info = UIDropDownMenu_CreateInfo()
+        info.text = PGF.L("SORT_DESC")
+        info.value = "desc"
+        info.arg1 = "desc"
+        info.func = PrimaryDirOnClick
+        info.checked = currentDir == "desc"
+        UIDropDownMenu_AddButton(info)
+    end)
+    
+    local currentPrimaryDir = settings.primarySortDirection or "asc"
+    UIDropDownMenu_SetSelectedValue(primaryDirDropdown, currentPrimaryDir)
+    UIDropDownMenu_SetText(primaryDirDropdown, currentPrimaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    
+    raidPanel.primaryDirDropdown = primaryDirDropdown
+    
+    y = y + 50
+    
+    -- Secondary Sort
+    local secondarySortLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    secondarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    secondarySortLabel:SetText(PGF.L("SORT_SECONDARY"))
+    
+    local secondarySortDropdown = CreateFrame("Frame", "PGFRaidSecondarySortDropdown", content, "UIDropDownMenuTemplate")
+    secondarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
+    UIDropDownMenu_SetWidth(secondarySortDropdown, 120)
+    
+    local function SetSecondarySort(value)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidSortSettings then
+            db.filter.raidSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
+                db.filter.raidSortSettings[k] = v
+            end
+        end
+        db.filter.raidSortSettings.secondarySort = value ~= "none" and value or nil
+        PGF.RefilterResults()
+    end
+    
+    local function SecondarySortOnClick(self, arg1)
+        SetSecondarySort(arg1)
+        UIDropDownMenu_SetSelectedValue(secondarySortDropdown, arg1)
+        if arg1 == "none" then
+            UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
+        else
+            for _, opt in ipairs(raidSortOptions) do
+                if opt.value == arg1 then
+                    UIDropDownMenu_SetText(secondarySortDropdown, opt.label)
+                    break
+                end
+            end
+        end
+    end
+    
+    UIDropDownMenu_Initialize(secondarySortDropdown, function(self, level)
+        local settings = GetSortSettingsRaid()
+        local currentSort = settings.secondarySort
+        
+        local info = UIDropDownMenu_CreateInfo()
+        info.text = PGF.L("SORT_NONE")
+        info.value = "none"
+        info.arg1 = "none"
+        info.func = SecondarySortOnClick
+        info.checked = not settings.secondarySort
+        UIDropDownMenu_AddButton(info)
+        
+        for _, opt in ipairs(raidSortOptions) do
+            info = UIDropDownMenu_CreateInfo()
+            info.text = opt.label
+            info.value = opt.value
+            info.arg1 = opt.value
+            info.func = SecondarySortOnClick
+            info.checked = currentSort == opt.value
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    
+    local currentSecondarySort = settings.secondarySort
+    UIDropDownMenu_SetSelectedValue(secondarySortDropdown, currentSecondarySort or "none")
+    if currentSecondarySort then
+        for _, opt in ipairs(raidSortOptions) do
+            if opt.value == currentSecondarySort then
+                UIDropDownMenu_SetText(secondarySortDropdown, opt.label)
+                break
+            end
+        end
+    else
+        UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
+    end
+    
+    raidPanel.secondarySortDropdown = secondarySortDropdown
+    
+    -- Secondary Sort Direction
+    local secondaryDirLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    secondaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
+    secondaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
+    
+    local secondaryDirDropdown = CreateFrame("Frame", "PGFRaidSecondaryDirDropdown", content, "UIDropDownMenuTemplate")
+    secondaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
+    UIDropDownMenu_SetWidth(secondaryDirDropdown, 80)
+    
+    local function SetSecondarySortDirection(value)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.raidSortSettings then
+            db.filter.raidSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
+                db.filter.raidSortSettings[k] = v
+            end
+        end
+        db.filter.raidSortSettings.secondarySortDirection = value
+        PGF.RefilterResults()
+    end
+    
+    local function SecondaryDirOnClick(self, arg1)
+        SetSecondarySortDirection(arg1)
+        UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, arg1)
+        UIDropDownMenu_SetText(secondaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    end
+    
+    UIDropDownMenu_Initialize(secondaryDirDropdown, function(self, level)
+        local settings = GetSortSettingsRaid()
+        local currentDir = settings.secondarySortDirection or "desc"
+        
+        local info = UIDropDownMenu_CreateInfo()
+        info.text = PGF.L("SORT_ASC")
+        info.value = "asc"
+        info.arg1 = "asc"
+        info.func = SecondaryDirOnClick
+        info.checked = currentDir == "asc"
+        UIDropDownMenu_AddButton(info)
+        
+        info = UIDropDownMenu_CreateInfo()
+        info.text = PGF.L("SORT_DESC")
+        info.value = "desc"
+        info.arg1 = "desc"
+        info.func = SecondaryDirOnClick
+        info.checked = currentDir == "desc"
+        UIDropDownMenu_AddButton(info)
+    end)
+    
+    local currentSecondaryDir = settings.secondarySortDirection or "desc"
+    UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, currentSecondaryDir)
+    UIDropDownMenu_SetText(secondaryDirDropdown, currentSecondaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    
+    raidPanel.secondaryDirDropdown = secondaryDirDropdown
+    
+    y = y + 50
+    
+    -- Set initial dropdown states
+    UpdateDropdownStates()
+    
+    content:SetHeight(y + CONTENT_PADDING)
+    
+    table.insert(sections, {
+        id = "settings",
+        header = header,
+        content = content,
+    })
+end
+
+--------------------------------------------------------------------------------
 -- Main Panel Creation
 --------------------------------------------------------------------------------
 
@@ -1152,6 +1513,7 @@ local function CreateRaidFilterPanel()
     CreatePlaystyleSection(scrollContent)
     CreateRoleFilteringSection(scrollContent)
     CreateQuickApplySection(scrollContent)
+    CreateSettingsSection(scrollContent)
     
     RecalculateLayout()
     
@@ -1274,6 +1636,57 @@ function PGF.UpdateRaidPanel()
     
     if raidPanel.quickApplyAutoAccept then
         raidPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
+    end
+    
+    if raidPanel.disableCustomSortingCheckbox then
+        local settings = GetSortSettingsRaid()
+        raidPanel.disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
+    end
+    
+    if raidPanel.UpdateDropdownStates then
+        raidPanel.UpdateDropdownStates()
+    end
+
+    if raidPanel.primarySortDropdown then
+        local settings = GetSortSettingsRaid()
+        local currentPrimarySort = settings.primarySort or "age"
+        UIDropDownMenu_SetSelectedValue(raidPanel.primarySortDropdown, currentPrimarySort)
+        for _, opt in ipairs(raidSortOptions) do
+            if opt.value == currentPrimarySort then
+                UIDropDownMenu_SetText(raidPanel.primarySortDropdown, opt.label)
+                break
+            end
+        end
+    end
+    
+    if raidPanel.primaryDirDropdown then
+        local settings = GetSortSettingsRaid()
+        local currentPrimaryDir = settings.primarySortDirection or "asc"
+        UIDropDownMenu_SetSelectedValue(raidPanel.primaryDirDropdown, currentPrimaryDir)
+        UIDropDownMenu_SetText(raidPanel.primaryDirDropdown, currentPrimaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    end
+    
+    if raidPanel.secondarySortDropdown then
+        local settings = GetSortSettingsRaid()
+        local currentSecondarySort = settings.secondarySort
+        UIDropDownMenu_SetSelectedValue(raidPanel.secondarySortDropdown, currentSecondarySort or "none")
+        if currentSecondarySort then
+            for _, opt in ipairs(raidSortOptions) do
+                if opt.value == currentSecondarySort then
+                    UIDropDownMenu_SetText(raidPanel.secondarySortDropdown, opt.label)
+                    break
+                end
+            end
+        else
+            UIDropDownMenu_SetText(raidPanel.secondarySortDropdown, PGF.L("SORT_NONE"))
+        end
+    end
+    
+    if raidPanel.secondaryDirDropdown then
+        local settings = GetSortSettingsRaid()
+        local currentSecondaryDir = settings.secondarySortDirection or "desc"
+        UIDropDownMenu_SetSelectedValue(raidPanel.secondaryDirDropdown, currentSecondaryDir)
+        UIDropDownMenu_SetText(raidPanel.secondaryDirDropdown, currentSecondaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
     end
     
     RecalculateLayout()

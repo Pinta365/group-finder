@@ -20,6 +20,8 @@ PGF.RAID_CATEGORY_ID = 3
 ---@field hasRole HasRoleSettings
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
+---@field dungeonSortSettings SortSettings
+---@field raidSortSettings SortSettings
 
 ---@class HasRoleSettings
 ---@field tank boolean
@@ -37,8 +39,13 @@ PGF.RAID_CATEGORY_ID = 3
 ---@field competitive boolean
 ---@field carry boolean
 
+---@class SortSettings
+---@field primarySort string "age"|"rating"|"groupSize"|"ilvl"|"name"
+---@field primarySortDirection string "asc"|"desc"
+---@field secondarySort string? "age"|"rating"|"groupSize"|"ilvl"|"name"|nil
+---@field secondarySortDirection string? "asc"|"desc"|nil
+
 ---@class UISettings
----@field showClassColors boolean
 ---@field showLeaderRating boolean
 ---@field showMissingRoles boolean
 ---@field filterPanelShown boolean
@@ -78,6 +85,7 @@ PGF.defaults = {
             playstyle = false,
             roleFiltering = false,
             quickApply = false,
+            settings = false,
         },
         dungeonAccordionState = {
             activities = true,
@@ -85,11 +93,25 @@ PGF.defaults = {
             playstyle = false,
             misc = false,
             quickApply = false,
+            settings = false,
+        },
+        dungeonSortSettings = {
+            disableCustomSorting = true,
+            primarySort = "rating",
+            primarySortDirection = "desc",
+            secondarySort = nil,
+            secondarySortDirection = "desc",
+        },
+        raidSortSettings = {
+            disableCustomSorting = true,
+            primarySort = "groupSize",
+            primarySortDirection = "desc",
+            secondarySort = nil,
+            secondarySortDirection = "desc",
         },
     },
     
     ui = {
-        showClassColors = true,
         showLeaderRating = true,
         showMissingRoles = true,
         filterPanelShown = true,

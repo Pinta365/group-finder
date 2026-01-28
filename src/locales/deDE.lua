@@ -70,9 +70,25 @@ if GetLocale() == "deDE" then
     ["SECTION_MISC"] = "SONSTIGES",
     ["SECTION_ROLE_FILTERING"] = "ROLLENFILTERUNG",
     ["SECTION_QUICK_APPLY"] = "SOFORT ANMELDEN",
+    ["SECTION_SETTINGS"] = "EINSTELLUNGEN",
     
     -- Activity buttons
     ["SELECT_ALL"] = "Alle auswählen",
     ["DESELECT_ALL"] = "Alle abwählen",
+    
+    -- Sorting
+    ["SORT_PRIMARY"] = "Primäre Sortierung:",
+    ["SORT_SECONDARY"] = "Sekundäre Sortierung:",
+    ["SORT_DIRECTION"] = "Richtung:",
+    ["SORT_AGE"] = "Alter",
+    ["SORT_RATING"] = "Leiterwertung",
+    ["SORT_GROUP_SIZE"] = "Gruppengröße",
+    ["SORT_ILVL"] = "Gegenstandsstufe",
+    ["SORT_NAME"] = "Leitername",
+    ["SORT_ASC"] = "Aufsteigend",
+    ["SORT_DESC"] = "Absteigend",
+    ["SORT_NONE"] = "Keine",
+    ["DISABLE_CUSTOM_SORTING"] = "Benutzerdefinierte Sortierung deaktivieren",
+    ["DISABLE_CUSTOM_SORTING_DESC"] = "Blizzards Standard-Sortierung verwenden",
     }
 end

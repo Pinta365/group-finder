@@ -73,10 +73,26 @@ local defaultLocale = {
     ["SECTION_MISC"] = "MISC",
     ["SECTION_ROLE_FILTERING"] = "ROLE FILTERING",
     ["SECTION_QUICK_APPLY"] = "QUICK APPLY",
+    ["SECTION_SETTINGS"] = "SETTINGS",
     
     -- Activity buttons
     ["SELECT_ALL"] = "Select All",
     ["DESELECT_ALL"] = "Deselect All",
+    
+    -- Sorting
+    ["SORT_PRIMARY"] = "Primary Sort:",
+    ["SORT_SECONDARY"] = "Secondary Sort:",
+    ["SORT_DIRECTION"] = "Direction:",
+    ["SORT_AGE"] = "Age",
+    ["SORT_RATING"] = "Leader Rating",
+    ["SORT_GROUP_SIZE"] = "Group Size",
+    ["SORT_ILVL"] = "Item Level Req.",
+    ["SORT_NAME"] = "Leader Name",
+    ["SORT_ASC"] = "Ascending",
+    ["SORT_DESC"] = "Descending",
+    ["SORT_NONE"] = "None",
+    ["DISABLE_CUSTOM_SORTING"] = "Disable custom sorting",
+    ["DISABLE_CUSTOM_SORTING_DESC"] = "Use Blizzard's default result sorting",
 }
 
 local currentLocale = {}

@@ -70,9 +70,25 @@ if GetLocale() == "frFR" then
     ["SECTION_MISC"] = "DIVERS",
     ["SECTION_ROLE_FILTERING"] = "FILTRAGE DES RÔLES",
     ["SECTION_QUICK_APPLY"] = "APPLICATION RAPIDE",
+    ["SECTION_SETTINGS"] = "PARAMÈTRES",
     
     -- Activity buttons
     ["SELECT_ALL"] = "Tout sélectionner",
     ["DESELECT_ALL"] = "Tout désélectionner",
+    
+    -- Sorting
+    ["SORT_PRIMARY"] = "Tri principal :",
+    ["SORT_SECONDARY"] = "Tri secondaire :",
+    ["SORT_DIRECTION"] = "Direction :",
+    ["SORT_AGE"] = "Âge",
+    ["SORT_RATING"] = "Note du chef",
+    ["SORT_GROUP_SIZE"] = "Taille du groupe",
+    ["SORT_ILVL"] = "Niveau d'objet requis",
+    ["SORT_NAME"] = "Nom du chef",
+    ["SORT_ASC"] = "Croissant",
+    ["SORT_DESC"] = "Décroissant",
+    ["SORT_NONE"] = "Aucun",
+    ["DISABLE_CUSTOM_SORTING"] = "Désactiver le tri personnalisé",
+    ["DISABLE_CUSTOM_SORTING_DESC"] = "Utiliser le tri par défaut de Blizzard",
     }
 end

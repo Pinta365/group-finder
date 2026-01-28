@@ -266,12 +266,83 @@ function PGF.FilterResults(results)
     return filtered
 end
 
+---Get sort value for a context based on sort type.
+---@param context FilterContext
+---@param sortType string
+---@return number|string|nil value
+local function GetSortValue(context, sortType)
+    if sortType == "age" then
+        return context.ageSecs or context.age * 60 or 0
+    elseif sortType == "rating" then
+        return context.mprating or 0
+    elseif sortType == "groupSize" then
+        return context.members or 0
+    elseif sortType == "ilvl" then
+        return context.ilvl or 0
+    elseif sortType == "name" then
+        return context.leaderName or ""
+    end
+    return 0
+end
+
+---Compare two values based on sort direction.
+---@param valueA number|string
+---@param valueB number|string
+---@param direction string "asc"|"desc"
+---@return boolean aLessThanB
+local function CompareSortValues(valueA, valueB, direction)
+    local isLess
+    if type(valueA) == "string" and type(valueB) == "string" then
+        isLess = valueA < valueB
+    else
+        isLess = valueA < valueB
+    end
+    
+    if direction == "desc" then
+        return not isLess
+    end
+    return isLess
+end
+
 ---@param results table Array of resultIDs
 ---@return table sortedResults
 function PGF.SortResults(results)
     if not results or #results <= 1 then
         return results
     end
+    
+    local db = PintaGroupFinderDB
+    
+    local categoryID = nil
+    if #results > 0 then
+        local firstResultID = results[1]
+        if C_LFGList.HasSearchResultInfo(firstResultID) then
+            local searchResultInfo = C_LFGList.GetSearchResultInfo(firstResultID)
+            if searchResultInfo then
+                local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
+                local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
+                if activityInfo then
+                    categoryID = activityInfo.categoryID
+                end
+            end
+        end
+    end
+
+    local sortSettings
+    if categoryID == PGF.RAID_CATEGORY_ID then
+        sortSettings = (db.filter and db.filter.raidSortSettings) or PGF.defaults.filter.raidSortSettings
+    else
+        sortSettings = (db.filter and db.filter.dungeonSortSettings) or PGF.defaults.filter.dungeonSortSettings
+    end
+
+    if sortSettings.disableCustomSorting == true then
+        return results
+    end
+    
+    local primarySort = sortSettings.primarySort or "age"
+    local primaryDir = sortSettings.primarySortDirection or "asc"
+    local secondarySort = sortSettings.secondarySort
+    local secondaryDir = sortSettings.secondarySortDirection or "desc"
     
     local resultCache = {}
     for _, resultID in ipairs(results) do
@@ -302,14 +373,20 @@ function PGF.SortResults(results)
             return contextA.isApplied
         end
         
-        if contextA.mythicplus and contextB.mythicplus then
-            if contextA.mprating ~= contextB.mprating then
-                return contextA.mprating > contextB.mprating
-            end
-        end
+        local valueA = GetSortValue(contextA, primarySort)
+        local valueB = GetSortValue(contextB, primarySort)
         
-        if contextA.age ~= contextB.age then
-            return contextA.age < contextB.age
+        if valueA ~= valueB then
+            return CompareSortValues(valueA, valueB, primaryDir)
+        end
+
+        if secondarySort then
+            valueA = GetSortValue(contextA, secondarySort)
+            valueB = GetSortValue(contextB, secondarySort)
+            
+            if valueA ~= valueB then
+                return CompareSortValues(valueA, valueB, secondaryDir)
+            end
         end
         
         return a < b

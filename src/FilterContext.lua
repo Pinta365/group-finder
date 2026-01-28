@@ -94,9 +94,14 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.tanks = memberCounts.TANK or 0
     context.healers = memberCounts.HEALER or 0
     context.dps = (memberCounts.DAMAGER or 0) + (memberCounts.NOROLE or 0)
+    context.members = searchResultInfo.numMembers or 0
     
     context.mprating = searchResultInfo.leaderOverallDungeonScore or 0
     context.age = math.floor((searchResultInfo.age or 0) / 60)
+    context.ageSecs = searchResultInfo.age or 0
+    
+    context.ilvl = searchResultInfo.requiredItemLevel or 0
+    context.leaderName = searchResultInfo.leaderName and searchResultInfo.leaderName:lower() or ""
     
     context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
     context.playstyle = searchResultInfo.playstyle or 0
