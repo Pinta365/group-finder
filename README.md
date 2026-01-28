@@ -10,7 +10,7 @@ Pinta Group Finder enhances the default Group Finder UI with advanced filtering,
 
 * **Filtering Panels** - Filtering for both Dungeons and Raids with accordion-style collapsible sections
 * **Quick Apply** - Sign up to groups with pre-selected roles, bypassing the role selection dialog
-* **Visual Improvements** - See leader M+ ratings with Raider.IO color coding, class-colored role indicators, and missing role indicators
+* **Visual Improvements** - See leader M+ ratings with Raider.IO color coding, class-colored role indicators, missing role indicators, and raid class/spec match indicators
 * **Auto-Accept** - Automatically accept party sign-ups when your party leader applies to a group
 * **Raid Filtering** - Advanced raid-specific filters including boss progress filtering and granular role requirements
 
@@ -74,6 +74,7 @@ The addon enhances group list entries with:
 * **Leader Rating Display** - See the leader's M+ rating next to the group name, color-coded by Raider.IO tiers
 * **Class Color Bars** - Small colored bars below role icons showing each member's class
 * **Missing Role Indicators** - Visual indicators for roles the group still needs
+* **Raid Class/Spec Indicators** - For raid groups, see how many players match your class and spec, organized by role (Tank, Healer, DPS). Icons and counts appear below the role columns, showing the most common spec per role
 
 ### Smart Filtering
 
