@@ -45,6 +45,11 @@ The dungeon filter panel allows you to:
 * **Filter by Difficulty** - Show/hide Normal, Heroic, Mythic, or Mythic+ groups (all enabled by default)
 * **Role Requirements** - Only show groups that already have a tank or healer
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered (all enabled by default)
+* **Custom Sorting** - Configure how search results are sorted:
+  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
+  * **Primary Sort** - Choose to sort by Age, Leader Rating, Item Level Req., or Leader Name
+  * **Secondary Sort** - Optional secondary sort criteria
+  * **Sort Direction** - Choose Ascending or Descending for each sort level
 
 #### Raid Filter Panel
 
@@ -55,6 +60,11 @@ The raid filter panel provides advanced raid-specific filtering:
 * **Difficulty Filtering** - Show/hide Normal, Heroic, or Mythic difficulty raids
 * **Advanced Role Requirements** - Filter by exact role counts with operators (>=, <=, =). For example, show only groups with at least 2 healers
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered
+* **Custom Sorting** - Configure how search results are sorted:
+  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
+  * **Primary Sort** - Choose to sort by Age, Group Size, Item Level Req., or Leader Name
+  * **Secondary Sort** - Optional secondary sort criteria
+  * **Sort Direction** - Choose Ascending or Descending for each sort level
 
 The panels automatically hide when switching to other tabs (PvP, etc.) or when returning to the category selection view. Accordion section states (expanded/collapsed) are saved and persist across sessions.
 
@@ -82,7 +92,8 @@ The addon integrates with Blizzard's native filtering system, ensuring compatibi
 
 * **Native Integration** - Uses Blizzard's advanced filter API for dungeons (difficulty, roles, playstyle, and minimum rating)
 * **Client-Side Raid Filtering** - Raids use custom client-side filtering to enhance Blizzard's filter
-* **Automatic Sorting** - Results are sorted by application status, rating, and age
+* **Custom Sorting** - Configure custom sorting for search results with primary and secondary sort options, or use Blizzard's default sorting (default)
+* **Automatic Sorting** - When custom sorting is enabled, results are sorted by application status, then by your configured primary and secondary sort criteria
 * **Fallback Support** - Custom filtering logic as fallback when Blizzard's filter is unavailable
 
 ## Troubleshooting
