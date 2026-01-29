@@ -65,6 +65,10 @@ local function ShouldShowFilterPanel()
         return false
     end
     
+    if GroupFinderFrame and LFGListPVEStub and GroupFinderFrame.selection ~= LFGListPVEStub then
+        return false
+    end
+    
     if not LFGListFrame or not LFGListFrame:IsVisible() then
         return false
     end
@@ -261,6 +265,12 @@ function PGF.InitializeFilterPanel()
             applyFrameWidthForPanel(false)
         end
     end)
+
+    if GroupFinderFrame_ShowGroupFrame then
+        hooksecurefunc("GroupFinderFrame_ShowGroupFrame", function(frame)
+            syncPanelAndFrameWidth()
+        end)
+    end
     
     -- Runs when a category is selected (e.g. Dungeons, Raids, Arenas, Battlegrounds).
     hooksecurefunc("LFGListSearchPanel_SetCategory", function(self, categoryID, filters, baseFilters)
