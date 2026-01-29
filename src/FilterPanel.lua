@@ -8,7 +8,7 @@ local addonName, PGF = ...
 
 local PANEL_WIDTH = 280
 local PVE_BASE_WIDTH = PVE_FRAME_BASE_WIDTH or 563
-local baseWidthByTab = {}
+local WIDENED_WIDTH_OFFSET = PANEL_WIDTH + 5
 
 ---Initialize advanced filter with our defaults if not already set.
 local function InitializeAdvancedFilterDefaults()
@@ -112,39 +112,17 @@ local function ShowPanelForCategory(categoryID)
     end
 end
 
-local WIDENED_WIDTH_OFFSET = PANEL_WIDTH + 5
-
----Set PVEFrame width: widened (panel shown) or base for tab 1 (panel hidden).
----Only modifies width for tab 1; other tabs are left alone.
+---Set PVEFrame width for tab 1: widened when panel shown, Blizzard default when hidden.
+---Other tabs are left alone.
 ---@param panelShown boolean
 local function applyFrameWidthForPanel(panelShown)
     if not PVEFrame then return end
-    local tab = PVEFrame.selectedTab or 1
-    
-    if tab ~= 1 then return end
+    if (PVEFrame.selectedTab or 1) ~= 1 then return end
 
     if panelShown then
-        if not baseWidthByTab[1] then
-            baseWidthByTab[1] = PVEFrame:GetWidth()
-        end
-        PVEFrame:SetWidth(baseWidthByTab[1] + WIDENED_WIDTH_OFFSET)
+        PVEFrame:SetWidth(PVE_BASE_WIDTH + WIDENED_WIDTH_OFFSET)
     else
-        PVEFrame:SetWidth(baseWidthByTab[1] or PVE_BASE_WIDTH)
-    end
-end
-
----On tab 1 show: store current width as base only if it is not our widened width.
----Only captures for tab 1; other tabs don't need width management.
-local function captureTab1BaseWidthIfClean()
-    if not PVEFrame then return end
-    local tab = PVEFrame.selectedTab or 1
-
-    if tab ~= 1 then return end
-
-    local currentWidth = PVEFrame:GetWidth()
-    local isOurWidenedWidth = baseWidthByTab[1] and (currentWidth == baseWidthByTab[1] + WIDENED_WIDTH_OFFSET)
-    if not isOurWidenedWidth then
-        baseWidthByTab[1] = currentWidth
+        PVEFrame:SetWidth(PVE_BASE_WIDTH)
     end
 end
 
@@ -248,10 +226,6 @@ function PGF.InitializeFilterPanel()
         return
     end
     
-    if PVEFrame and (PVEFrame.selectedTab or 1) == 1 then
-        baseWidthByTab[1] = baseWidthByTab[1] or PVEFrame:GetWidth()
-    end
-
     InitializeAdvancedFilterDefaults()
 
     PGF.InitializeDungeonPanel()
@@ -260,7 +234,6 @@ function PGF.InitializeFilterPanel()
     HideAllPanels()
 
     PVEFrame:HookScript("OnShow", function()
-        captureTab1BaseWidthIfClean()
         syncPanelAndFrameWidth()
     end)
     
@@ -269,9 +242,7 @@ function PGF.InitializeFilterPanel()
         applyFrameWidthForPanel(false)
     end)
     
-    -- Runs when switching PVEFrame tabs (e.g. Group Finder -> PvP) and on initial show.
     hooksecurefunc("PVEFrame_ShowFrame", function()
-        captureTab1BaseWidthIfClean()
         syncPanelAndFrameWidth()
     end)
 
