@@ -18,6 +18,7 @@ PGF.RAID_CATEGORY_ID = 3
 ---@field minRating number
 ---@field dungeons number[]
 ---@field hasRole HasRoleSettings
+---@field hideIncompatibleGroups boolean?
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
 ---@field dungeonSortSettings SortSettings
@@ -61,6 +62,7 @@ PGF.defaults = {
             tank = false,
             healer = false,
         },
+        hideIncompatibleGroups = false,
         difficulty = {
             normal = true,
             heroic = true,

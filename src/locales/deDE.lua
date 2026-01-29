@@ -48,6 +48,8 @@ if GetLocale() == "deDE" then
     ["HAS_HEALER"] = "Hat Heiler",
     ["HAS_TANK_DESC"] = "Zeige nur Gruppen, die bereits einen Tank haben.",
     ["HAS_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Heiler haben.",
+    ["HIDE_INCOMPATIBLE_GROUPS"] = "Unpassende Gruppen ausblenden",
+    ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Zeige nur Gruppen, die Platz für die Rollen eurer Gruppe haben (Tank/Heiler/DPS). Solo blendet Gruppen aus, die keine deiner gewählten Rollen brauchen.",
     
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Rollenanforderungen",

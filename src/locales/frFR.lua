@@ -48,6 +48,8 @@ if GetLocale() == "frFR" then
     ["HAS_HEALER"] = "A un soigneur",
     ["HAS_TANK_DESC"] = "Afficher uniquement les groupes qui ont déjà un tank.",
     ["HAS_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un soigneur.",
+    ["HIDE_INCOMPATIBLE_GROUPS"] = "Masquer les groupes incompatibles",
+    ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Afficher uniquement les groupes qui ont de la place pour les rôles de votre groupe (tank/soigneur/DPS). En solo, masque les groupes qui n'ont besoin d'aucun de vos rôles.",
     
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Exigences de rôle",

@@ -8,6 +8,48 @@ local addonName, PGF = ...
 
 local filterInProgress = false
 
+---Get fixed role counts from party members only (party1..party4). Player is excluded.
+---@return number fixedTanks
+---@return number fixedHealers
+---@return number fixedDps
+local function GetFixedPartyRoleCounts()
+    local fixedTanks, fixedHealers, fixedDps = 0, 0, 0
+    for i = 1, 4 do
+        local unit = "party" .. i
+        if UnitExists(unit) then
+            local role = UnitGroupRolesAssigned(unit)
+            if role == "TANK" then
+                fixedTanks = fixedTanks + 1
+            elseif role == "HEALER" then
+                fixedHealers = fixedHealers + 1
+            elseif role == "DAMAGER" then
+                fixedDps = fixedDps + 1
+            end
+        end
+    end
+    return fixedTanks, fixedHealers, fixedDps
+end
+
+---Get all possible "party role vectors" for compatibility. Only the player can have multiple
+---roles; party members have one role each. Each vector is { tanks, healers, dps } representing
+---one way the full party could fill roles (player picks one of their selected roles per vector).
+---@return table[] vectors Array of { tanks, healers, dps } (1–3 elements)
+local function GetPossiblePartyRoleVectors()
+    local fixedTanks, fixedHealers, fixedDps = GetFixedPartyRoleCounts()
+    local _, wantTank, wantHealer, wantDps = GetLFGRoles()
+    local vectors = {}
+    if wantTank then
+        table.insert(vectors, { fixedTanks + 1, fixedHealers, fixedDps })
+    end
+    if wantHealer then
+        table.insert(vectors, { fixedTanks, fixedHealers + 1, fixedDps })
+    end
+    if wantDps then
+        table.insert(vectors, { fixedTanks, fixedHealers, fixedDps + 1 })
+    end
+    return vectors
+end
+
 ---Compare a value using an operator.
 ---@param actual number The actual value
 ---@param operator string The comparison operator (">=", "<=", "=")
@@ -98,6 +140,25 @@ local function PassesFilter(resultID, context)
             end
             if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
                 return false
+            end
+        end
+        
+        if filter.hideIncompatibleGroups then
+            local vectors = GetPossiblePartyRoleVectors()
+            if #vectors > 0 then
+                local tankNeeded = context.tankNeeded or 0
+                local healerNeeded = context.healerNeeded or 0
+                local dpsNeeded = context.dpsNeeded or 0
+                local anyFits = false
+                for _, v in ipairs(vectors) do
+                    if tankNeeded >= v[1] and healerNeeded >= v[2] and dpsNeeded >= v[3] then
+                        anyFits = true
+                        break
+                    end
+                end
+                if not anyFits then
+                    return false
+                end
             end
         end
     end

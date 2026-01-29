@@ -52,6 +52,8 @@ local defaultLocale = {
     ["HAS_HEALER"] = "Has Healer",
     ["HAS_TANK_DESC"] = "Only show groups that already have a tank.",
     ["HAS_HEALER_DESC"] = "Only show groups that already have a healer.",
+    ["HIDE_INCOMPATIBLE_GROUPS"] = "Hide incompatible groups",
+    ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Only show groups that have room for your party's roles (tank/healer/DPS). When solo, hides groups that need none of your selected roles.",
     
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Role Requirements",

@@ -737,6 +737,36 @@ local function CreateMiscSection(scrollContent)
     
     dungeonPanel.roleCheckboxes = roleCheckboxes
     
+    y = y + 5
+    
+    -- Hide incompatible groups
+    local hideIncompatibleCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideIncompatibleCheckbox:SetSize(20, 20)
+    hideIncompatibleCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    
+    local hideIncompatibleLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideIncompatibleLabel:SetPoint("LEFT", hideIncompatibleCheckbox, "RIGHT", 5, 0)
+    hideIncompatibleLabel:SetText(PGF.L("HIDE_INCOMPATIBLE_GROUPS"))
+    
+    hideIncompatibleCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        db.filter.hideIncompatibleGroups = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    
+    hideIncompatibleCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_INCOMPATIBLE_GROUPS"))
+        GameTooltip:AddLine(PGF.L("HIDE_INCOMPATIBLE_GROUPS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideIncompatibleCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    
+    dungeonPanel.hideIncompatibleGroupsCheckbox = hideIncompatibleCheckbox
+    
+    y = y + 22
+    
     content:SetHeight(y + CONTENT_PADDING)
     
     table.insert(sections, {
@@ -1399,6 +1429,12 @@ function PGF.UpdateDungeonPanel()
         else
             dungeonPanel.ratingBox:SetText(filter.minRating and filter.minRating > 0 and tostring(filter.minRating) or "")
         end
+    end
+    
+    if dungeonPanel.hideIncompatibleGroupsCheckbox then
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+        dungeonPanel.hideIncompatibleGroupsCheckbox:SetChecked(filter.hideIncompatibleGroups == true)
     end
     
     UpdateDungeonList()

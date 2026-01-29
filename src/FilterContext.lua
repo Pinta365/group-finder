@@ -14,6 +14,9 @@ local addonName, PGF = ...
 ---@field mythicplus boolean? True if M+ dungeon
 ---@field tanks number Number of tanks in group
 ---@field healers number Number of healers in group
+---@field tankNeeded number Slots still needed for tank
+---@field healerNeeded number Slots still needed for healer
+---@field dpsNeeded number Slots still needed for DPS
 ---@field mprating number Leader's M+ score
 ---@field age number Listing age in minutes
 ---@field appStatus string Application status ("none", "applied", etc.)
@@ -35,9 +38,6 @@ local addonName, PGF = ...
 ---@field challengeModeID number?
 ---@field dungeonID number?
 ---@field dungeonName string?
----@field tankNeeded number?
----@field healerNeeded number?
----@field dpsNeeded number?
 ---@field ageSecs number?
 ---@field leaderName string?
 ---@field myRealm boolean?
@@ -95,6 +95,10 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.healers = memberCounts.HEALER or 0
     context.dps = (memberCounts.DAMAGER or 0) + (memberCounts.NOROLE or 0)
     context.members = searchResultInfo.numMembers or 0
+    
+    context.tankNeeded = memberCounts.TANK_REMAINING or 0
+    context.healerNeeded = memberCounts.HEALER_REMAINING or 0
+    context.dpsNeeded = memberCounts.DAMAGER_REMAINING or 0
     
     context.mprating = searchResultInfo.leaderOverallDungeonScore or 0
     context.age = math.floor((searchResultInfo.age or 0) / 60)
