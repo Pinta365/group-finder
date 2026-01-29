@@ -7,7 +7,8 @@
 local addonName, PGF = ...
 
 local PANEL_WIDTH = 280
-local originalTabWidths = {}
+local PVE_BASE_WIDTH = PVE_FRAME_BASE_WIDTH or 563
+local baseWidthByTab = {}
 
 ---Initialize advanced filter with our defaults if not already set.
 local function InitializeAdvancedFilterDefaults()
@@ -111,34 +112,51 @@ local function ShowPanelForCategory(categoryID)
     end
 end
 
----Update PVE frame width to accommodate panel.
----@param showPanel boolean
-local function UpdatePVEFrameWidth(showPanel)
+local WIDENED_WIDTH_OFFSET = PANEL_WIDTH + 5
+
+---Set PVEFrame width: widened (panel shown) or base for tab 1 (panel hidden).
+---Only modifies width for tab 1; other tabs are left alone.
+---@param panelShown boolean
+local function applyFrameWidthForPanel(panelShown)
     if not PVEFrame then return end
+    local tab = PVEFrame.selectedTab or 1
     
-    local selectedTab = PVEFrame.selectedTab or 1
-    
-    if not originalTabWidths[selectedTab] then
-        originalTabWidths[selectedTab] = PVEFrame:GetWidth()
-    end
-    
-    if showPanel then
-        PVEFrame:SetWidth(originalTabWidths[selectedTab] + PANEL_WIDTH + 5)
+    if tab ~= 1 then return end
+
+    if panelShown then
+        if not baseWidthByTab[1] then
+            baseWidthByTab[1] = PVEFrame:GetWidth()
+        end
+        PVEFrame:SetWidth(baseWidthByTab[1] + WIDENED_WIDTH_OFFSET)
     else
-        PVEFrame:SetWidth(originalTabWidths[selectedTab])
+        PVEFrame:SetWidth(baseWidthByTab[1] or PVE_BASE_WIDTH)
     end
 end
 
----Update panel visibility based on current state.
-local function UpdatePanelVisibility()
+---On tab 1 show: store current width as base only if it is not our widened width.
+---Only captures for tab 1; other tabs don't need width management.
+local function captureTab1BaseWidthIfClean()
+    if not PVEFrame then return end
+    local tab = PVEFrame.selectedTab or 1
+
+    if tab ~= 1 then return end
+
+    local currentWidth = PVEFrame:GetWidth()
+    local isOurWidenedWidth = baseWidthByTab[1] and (currentWidth == baseWidthByTab[1] + WIDENED_WIDTH_OFFSET)
+    if not isOurWidenedWidth then
+        baseWidthByTab[1] = currentWidth
+    end
+end
+
+---Show or hide our panel and set frame width based on current view (dungeon/raid on tab 1 = show; else hide).
+local function syncPanelAndFrameWidth()
     local shouldShow, categoryID = ShouldShowFilterPanel()
-    
     if shouldShow and categoryID then
         ShowPanelForCategory(categoryID)
-        UpdatePVEFrameWidth(true)
+        applyFrameWidthForPanel(true)
     else
         HideAllPanels()
-        UpdatePVEFrameWidth(false)
+        applyFrameWidthForPanel(false)
     end
 end
 
@@ -160,14 +178,13 @@ function PGF.ShowFilterPanel(show, save)
     end
     
     if show then
-        UpdatePanelVisibility()
+        syncPanelAndFrameWidth()
     else
         HideAllPanels()
-        UpdatePVEFrameWidth(false)
+        applyFrameWidthForPanel(false)
     end
 end
 
----Update filter panel UI (compatibility function).
 function PGF.UpdateFilterPanel()
     local shouldShow, categoryID = ShouldShowFilterPanel()
     if shouldShow and categoryID then
@@ -231,9 +248,8 @@ function PGF.InitializeFilterPanel()
         return
     end
     
-    if PVEFrame then
-        local selectedTab = PVEFrame.selectedTab or 1
-        originalTabWidths[selectedTab] = originalTabWidths[selectedTab] or PVEFrame:GetWidth()
+    if PVEFrame and (PVEFrame.selectedTab or 1) == 1 then
+        baseWidthByTab[1] = baseWidthByTab[1] or PVEFrame:GetWidth()
     end
 
     InitializeAdvancedFilterDefaults()
@@ -244,55 +260,51 @@ function PGF.InitializeFilterPanel()
     HideAllPanels()
 
     PVEFrame:HookScript("OnShow", function()
-        if PVEFrame then
-            local selectedTab = PVEFrame.selectedTab or 1
-            if not originalTabWidths[selectedTab] then
-                originalTabWidths[selectedTab] = PVEFrame:GetWidth()
-            end
-        end
-        UpdatePanelVisibility()
+        captureTab1BaseWidthIfClean()
+        syncPanelAndFrameWidth()
     end)
     
     PVEFrame:HookScript("OnHide", function()
         HideAllPanels()
-        UpdatePVEFrameWidth(false)
+        applyFrameWidthForPanel(false)
     end)
     
+    -- Runs when switching PVEFrame tabs (e.g. Group Finder -> PvP) and on initial show.
     hooksecurefunc("PVEFrame_ShowFrame", function()
-        if PVEFrame then
-            local selectedTab = PVEFrame.selectedTab or 1
-            if not originalTabWidths[selectedTab] then
-                originalTabWidths[selectedTab] = PVEFrame:GetWidth()
-            end
-        end
-        UpdatePanelVisibility()
+        captureTab1BaseWidthIfClean()
+        syncPanelAndFrameWidth()
     end)
 
     if LFGListFrame.SearchPanel then
         LFGListFrame.SearchPanel:HookScript("OnShow", function()
-            UpdatePanelVisibility()
+            syncPanelAndFrameWidth()
         end)
     end
     
     hooksecurefunc("LFGListFrame_SetActivePanel", function(frame, panel)
-        if panel == LFGListFrame.SearchPanel then
-            UpdatePanelVisibility()
+        local isSearch = panel == LFGListFrame.SearchPanel
+        if isSearch then
+            syncPanelAndFrameWidth()
         else
             HideAllPanels()
-            UpdatePVEFrameWidth(false)
+            applyFrameWidthForPanel(false)
         end
     end)
     
+    -- Runs when a category is selected (e.g. Dungeons, Raids, Arenas, Battlegrounds).
     hooksecurefunc("LFGListSearchPanel_SetCategory", function(self, categoryID, filters, baseFilters)
         if categoryID == PGF.DUNGEON_CATEGORY_ID or categoryID == PGF.RAID_CATEGORY_ID then
             InitializeAdvancedFilterDefaults()
+            syncPanelAndFrameWidth()
+        else
+            HideAllPanels()
+            applyFrameWidthForPanel(false)
         end
-        UpdatePanelVisibility()
     end)
     
     if LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.BackButton then
         LFGListFrame.SearchPanel.BackButton:HookScript("OnClick", function()
-            UpdatePanelVisibility()
+            syncPanelAndFrameWidth()
         end)
     end
     
@@ -304,5 +316,5 @@ function PGF.InitializeFilterPanel()
         end)
     end
 
-    UpdatePanelVisibility()
+    syncPanelAndFrameWidth()
 end
