@@ -170,28 +170,56 @@ local function AddMissingRoles(entry, resultID, searchResultInfo)
             table.insert(missingRoles, role)
         end
     end
-    
-    local slotIndex = numMembers + 1
-    for _, role in ipairs(missingRoles) do
-        if slotIndex > numIcons then
-            break
+
+    local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
+    local isApplied = appStatus and appStatus ~= "none"
+
+    if isApplied then
+        local ROW_GAP = 2
+        local anchor = (entry.PendingLabel and entry.PendingLabel:IsShown()) and entry.PendingLabel or entry
+        local prevAnchor = anchor
+        local prevPoint = "BOTTOMLEFT"
+        local prevX = (anchor == entry) and 100 or 20
+        local prevY = (anchor == entry.PendingLabel) and -27 or -5
+        for i, role in ipairs(missingRoles) do
+            local frame = frames[i]
+            if frame then
+                frame:ClearAllPoints()
+                frame:SetPoint("BOTTOMLEFT", prevAnchor, prevPoint, prevX, prevY)
+                frame:Show()
+                frame.missingRole:Show()
+                frame.missingRole:SetAtlas(ROLE_ATLAS[role])
+                frame.missingRole:SetDesaturated(true)
+                frame.missingRole:SetAlpha(0.5)
+                prevAnchor = frame
+                prevPoint = "BOTTOMRIGHT"
+                prevX = ROW_GAP
+                prevY = 0
+            end
         end
-        
-        local iconIndex = numIcons + 1 - slotIndex
-        local frame = frames[slotIndex]
-        local icon = icons and icons[iconIndex]
-        
-        if frame and icon then
-            frame:ClearAllPoints()
-            frame:SetPoint("CENTER", icon, "CENTER", 0, 0)
-            frame:Show()
-            frame.missingRole:Show()
-            frame.missingRole:SetAtlas(ROLE_ATLAS[role])
-            frame.missingRole:SetDesaturated(true)
-            frame.missingRole:SetAlpha(0.5)
+    else
+        local slotIndex = numMembers + 1
+        for _, role in ipairs(missingRoles) do
+            if slotIndex > numIcons then
+                break
+            end
+
+            local iconIndex = numIcons + 1 - slotIndex
+            local frame = frames[slotIndex]
+            local icon = icons and icons[iconIndex]
+
+            if frame and icon then
+                frame:ClearAllPoints()
+                frame:SetPoint("CENTER", icon, "CENTER", 0, 0)
+                frame:Show()
+                frame.missingRole:Show()
+                frame.missingRole:SetAtlas(ROLE_ATLAS[role])
+                frame.missingRole:SetDesaturated(true)
+                frame.missingRole:SetAlpha(0.5)
+            end
+
+            slotIndex = slotIndex + 1
         end
-        
-        slotIndex = slotIndex + 1
     end
 end
 
