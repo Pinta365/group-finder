@@ -92,5 +92,9 @@ if GetLocale() == "deDE" then
     ["SORT_NONE"] = "Keine",
     ["DISABLE_CUSTOM_SORTING"] = "Benutzerdefinierte Sortierung deaktivieren",
     ["DISABLE_CUSTOM_SORTING_DESC"] = "Blizzards Standard-Sortierung verwenden",
+    ["SHOW_LEADER_ICON"] = "Anführer-Symbol anzeigen",
+    ["SHOW_LEADER_ICON_DESC"] = "Zeigt ein Kronen-Symbol über dem Gruppenanführer in Dungeon-Suchergebnissen.",
+    ["SHOW_DUNGEON_SPEC_ICONS"] = "Klassenspezialisierungs-Symbole anzeigen",
+    ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Dungeon-Suchergebnissen.",
     }
 end

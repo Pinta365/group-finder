@@ -95,6 +95,10 @@ local defaultLocale = {
     ["SORT_NONE"] = "None",
     ["DISABLE_CUSTOM_SORTING"] = "Disable custom sorting",
     ["DISABLE_CUSTOM_SORTING_DESC"] = "Use Blizzard's default result sorting",
+    ["SHOW_LEADER_ICON"] = "Show leader icon",
+    ["SHOW_LEADER_ICON_DESC"] = "Show a crown icon above the group leader in dungeon search results.",
+    ["SHOW_DUNGEON_SPEC_ICONS"] = "Show class spec icons",
+    ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in dungeon search results.",
 }
 
 local currentLocale = {}

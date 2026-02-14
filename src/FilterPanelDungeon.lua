@@ -1027,6 +1027,61 @@ local function CreateSettingsSection(scrollContent)
     
     y = y + 24
     
+    -- Show Leader Icon Checkbox
+    local showLeaderIconCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showLeaderIconCheckbox:SetSize(20, 20)
+    showLeaderIconCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showLeaderIconLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showLeaderIconLabel:SetPoint("LEFT", showLeaderIconCheckbox, "RIGHT", 5, 0)
+    showLeaderIconLabel:SetText(PGF.L("SHOW_LEADER_ICON"))
+    showLeaderIconCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showLeaderIcon = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showLeaderIconCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_LEADER_ICON"))
+        GameTooltip:AddLine(PGF.L("SHOW_LEADER_ICON_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showLeaderIconCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
+    showLeaderIconCheckbox:SetChecked(ui.showLeaderIcon ~= false)
+    dungeonPanel.showLeaderIconCheckbox = showLeaderIconCheckbox
+    y = y + 24
+    
+    -- Show Dungeon Spec Icons Checkbox
+    local showDungeonSpecIconsCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showDungeonSpecIconsCheckbox:SetSize(20, 20)
+    showDungeonSpecIconsCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showDungeonSpecIconsLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showDungeonSpecIconsLabel:SetPoint("LEFT", showDungeonSpecIconsCheckbox, "RIGHT", 5, 0)
+    showDungeonSpecIconsLabel:SetText(PGF.L("SHOW_DUNGEON_SPEC_ICONS"))
+    showDungeonSpecIconsCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showDungeonSpecIcons = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showDungeonSpecIconsCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_DUNGEON_SPEC_ICONS"))
+        GameTooltip:AddLine(PGF.L("SHOW_DUNGEON_SPEC_ICONS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showDungeonSpecIconsCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showDungeonSpecIconsCheckbox:SetChecked(ui.showDungeonSpecIcons ~= false)
+    dungeonPanel.showDungeonSpecIconsCheckbox = showDungeonSpecIconsCheckbox
+    y = y + 24
+    
     -- Primary Sort
     local primarySortLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     primarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)

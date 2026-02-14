@@ -49,6 +49,8 @@ PGF.RAID_CATEGORY_ID = 3
 ---@class UISettings
 ---@field showLeaderRating boolean
 ---@field showMissingRoles boolean
+---@field showLeaderIcon boolean
+---@field showDungeonSpecIcons boolean
 ---@field filterPanelShown boolean
 
 ---@type SavedVariables
@@ -116,6 +118,8 @@ PGF.defaults = {
     ui = {
         showLeaderRating = true,
         showMissingRoles = true,
+        showLeaderIcon = true,
+        showDungeonSpecIcons = true,
         filterPanelShown = true,
     },
 }
