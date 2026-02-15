@@ -98,5 +98,7 @@ if GetLocale() == "frFR" then
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Affiche les icônes de spécialisation sous les emplacements de rôle remplis dans les résultats de recherche de donjon.",
     ["SHOW_LEADER_RATING"] = "Afficher la note du chef",
     ["SHOW_LEADER_RATING_DESC"] = "Affiche la note Mythique+ du chef de groupe à côté du nom du groupe.",
+    ["SHOW_MISSING_ROLES"] = "Afficher les rôles manquants",
+    ["SHOW_MISSING_ROLES_DESC"] = "Affiche des icônes de rôle désaturées pour les emplacements non remplis dans les résultats de recherche de donjon.",
     }
 end

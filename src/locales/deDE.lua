@@ -98,5 +98,7 @@ if GetLocale() == "deDE" then
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Dungeon-Suchergebnissen.",
     ["SHOW_LEADER_RATING"] = "Leiterwertung anzeigen",
     ["SHOW_LEADER_RATING_DESC"] = "Zeigt die Mythisch+-Wertung des Gruppenleiters neben dem Gruppennamen.",
+    ["SHOW_MISSING_ROLES"] = "Fehlende Rollen anzeigen",
+    ["SHOW_MISSING_ROLES_DESC"] = "Zeigt entsättigte Rollensymbole für unbesetzte Plätze in Dungeon-Suchergebnissen.",
     }
 end

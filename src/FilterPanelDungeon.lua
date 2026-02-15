@@ -1031,6 +1031,33 @@ local function CreateSettingsSection(scrollContent)
     dungeonPanel.showLeaderRatingCheckbox = showLeaderRatingCheckbox
     y = y + 24
 
+    -- Show Missing Roles Checkbox
+    local showMissingRolesCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showMissingRolesCheckbox:SetSize(20, 20)
+    showMissingRolesCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showMissingRolesLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showMissingRolesLabel:SetPoint("LEFT", showMissingRolesCheckbox, "RIGHT", 5, 0)
+    showMissingRolesLabel:SetText(PGF.L("SHOW_MISSING_ROLES"))
+    showMissingRolesCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showMissingRoles = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showMissingRolesCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_MISSING_ROLES"))
+        GameTooltip:AddLine(PGF.L("SHOW_MISSING_ROLES_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showMissingRolesCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showMissingRolesCheckbox:SetChecked(ui.showMissingRoles ~= false)
+    dungeonPanel.showMissingRolesCheckbox = showMissingRolesCheckbox
+    y = y + 24
+
     -- Disable Custom Sorting Checkbox
     local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     disableCustomSortingCheckbox:SetSize(20, 20)

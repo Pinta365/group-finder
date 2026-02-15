@@ -101,6 +101,8 @@ local defaultLocale = {
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in dungeon search results.",
     ["SHOW_LEADER_RATING"] = "Show leader rating",
     ["SHOW_LEADER_RATING_DESC"] = "Show the group leader's Mythic+ rating next to the group name.",
+    ["SHOW_MISSING_ROLES"] = "Show missing role icons",
+    ["SHOW_MISSING_ROLES_DESC"] = "Show desaturated role icons for unfilled slots in dungeon search results.",
 }
 
 local currentLocale = {}
