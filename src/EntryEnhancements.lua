@@ -31,7 +31,6 @@ local REMAINING_KEYS = {
 }
 
 local CACHE_KEY_SEP = "\1"
-local debugFirstEntry = false
 
 ---@return nil
 local function UpdatePlayerClassSpec()
@@ -60,7 +59,6 @@ local function UpdatePlayerClassSpec()
     playerSpecNameToRole["?"] = "DAMAGER"
 end
 
----Build (classFilename+specName) -> icon cache for all classes/specs.
 local function BuildSpecNameCache()
     if specNameCacheBuilt then return end
     specNameCacheBuilt = true
@@ -423,7 +421,6 @@ local function AddClassSpecIndicators(entry, resultID, searchResultInfo)
     indicator:Show()
 end
 
----Map members to icon indices by role group (T,H,D). Icons[1]=rightmost, Icons[numIcons]=leftmost.
 ---@param resultID number
 ---@param searchResultInfo table
 ---@param numIcons number
@@ -432,50 +429,42 @@ local function GetDungeonEntryPlayerData(resultID, searchResultInfo, numIcons)
     local numMembers = searchResultInfo.numMembers or 0
     if numMembers == 0 then return nil end
 
-    local tanks, healers, dps = {}, {}, {}
+    local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
+    if not memberCounts or not memberCounts.classesByRole then return nil end
+
     local memberInfo = {}
+    local membersByRoleClass = {}
     for i = 1, numMembers do
         local info = C_LFGList.GetSearchResultPlayerInfo(resultID, i)
         if info then
             memberInfo[i] = info
-            local role = info.assignedRole
-            if role == "TANK" then tanks[#tanks + 1] = i
-            elseif role == "HEALER" then healers[#healers + 1] = i
-            else dps[#dps + 1] = i end
+            local role = info.assignedRole or "DAMAGER"
+            local class = info.classFilename or "UNKNOWN"
+            local key = role .. CACHE_KEY_SEP .. class
+            if not membersByRoleClass[key] then
+                membersByRoleClass[key] = {}
+            end
+            table.insert(membersByRoleClass[key], i)
         end
     end
 
     local memberToIconIndex = {}
-    local filledSlot = 0
-    for _, bucket in ipairs({tanks, healers, dps}) do
-        for _, idx in ipairs(bucket) do
-            filledSlot = filledSlot + 1
-            memberToIconIndex[idx] = numIcons + 1 - filledSlot
-        end
-    end
-
-    if debugFirstEntry then
-        debugFirstEntry = false
-        print("--- PGF DEBUG: GetDungeonEntryPlayerData ---")
-        print("  resultID=" .. tostring(resultID) .. " numMembers=" .. numMembers .. " numIcons=" .. numIcons)
-        for i = 1, numMembers do
-            local info = memberInfo[i]
-            if info then
-                print(string.format("  member[%d]: role=%s class=%s spec=%s isLeader=%s",
-                    i, tostring(info.assignedRole), tostring(info.classFilename),
-                    tostring(info.specName), tostring(info.isLeader)))
-            else
-                print(string.format("  member[%d]: nil", i))
+    local iconIndex = numIcons
+    for _, role in ipairs(ROLE_ORDER) do
+        local classesByRole = memberCounts.classesByRole[role]
+        if classesByRole then
+            for class, num in pairs(classesByRole) do
+                local key = role .. CACHE_KEY_SEP .. class
+                local members = membersByRoleClass[key]
+                for k = 1, num do
+                    if iconIndex < 1 then break end
+                    if members and members[k] then
+                        memberToIconIndex[members[k]] = iconIndex
+                    end
+                    iconIndex = iconIndex - 1
+                end
             end
         end
-        print("  tanks: " .. table.concat(tanks, ","))
-        print("  healers: " .. table.concat(healers, ","))
-        print("  dps: " .. table.concat(dps, ","))
-        local parts = {}
-        for idx, iconIdx in pairs(memberToIconIndex) do
-            parts[#parts + 1] = string.format("member%d->icon%d", idx, iconIdx)
-        end
-        print("  memberToIconIndex: " .. table.concat(parts, ", "))
     end
 
     return {
@@ -570,23 +559,6 @@ local function OnEntryUpdate(self)
             if activityInfo and activityInfo.displayType == Enum.LFGListDisplayType.RoleEnumerate then
                 local icons = self.DataDisplay and self.DataDisplay.Enumerate and self.DataDisplay.Enumerate.Icons
                 if icons and #icons > 0 then
-                    if debugFirstEntry then
-                        print("--- PGF DEBUG: Blizzard Icons (1=rightmost, " .. #icons .. "=leftmost) ---")
-                        for i = 1, #icons do
-                            local ic = icons[i]
-                            if ic and ic:IsShown() then
-                                local atlas = "?"
-                                local tex = "?"
-                                if ic.Icon then
-                                    if ic.Icon.GetAtlas then atlas = tostring(ic.Icon:GetAtlas()) end
-                                    if ic.Icon.GetTexture then tex = tostring(ic.Icon:GetTexture()) end
-                                end
-                                print(string.format("  Icons[%d]: shown=true atlas=%s tex=%s", i, atlas, tex))
-                            else
-                                print(string.format("  Icons[%d]: shown=false", i))
-                            end
-                        end
-                    end
                     local playerData = GetDungeonEntryPlayerData(resultID, searchResultInfo, #icons)
                     if playerData then
                         if showLeader then
@@ -629,12 +601,6 @@ function PGF.InitializeEntryEnhancements()
     UpdatePlayerClassSpec()
     BuildSpecNameCache()
 
-    local debugFrame = CreateFrame("Frame")
-    debugFrame:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED")
-    debugFrame:SetScript("OnEvent", function()
-        debugFirstEntry = true
-    end)
-
     local specFrame = CreateFrame("Frame")
     specFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
     specFrame:RegisterEvent("PLAYER_LOGIN")
@@ -643,6 +609,4 @@ function PGF.InitializeEntryEnhancements()
             UpdatePlayerClassSpec()
         end
     end)
-
-    PGF.Debug("Entry enhancements initialized")
 end
