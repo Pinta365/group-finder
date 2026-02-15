@@ -1,6 +1,6 @@
 # Pinta Group Finder - World of Warcraft Addon
 
-**Pinta Group Finder** adds filtering and quick apply functionality to the default Group Finder UI.
+**Pinta Group Finder** adds filtering, quick apply, and visual improvements to the default Group Finder UI.
 
 ![Image of the filter panel](https://cdn.pinta.land/pgf/pgf_dungeon.png)
 
@@ -10,7 +10,7 @@ Pinta Group Finder enhances the default Group Finder UI with advanced filtering,
 
 * **Filtering Panels** - Filtering for both Dungeons and Raids with accordion-style collapsible sections
 * **Quick Apply** - Sign up to groups with pre-selected roles, bypassing the role selection dialog
-* **Visual Improvements** - See leader M+ ratings with Raider.IO color coding, class-colored role indicators, missing role indicators, and raid class/spec match indicators
+* **Visual Improvements** - Leader crown icon, specialization icons below role slots, leader M+ rating with color coding, missing role indicators, and raid class/spec indicators
 * **Auto-Accept** - Automatically accept party sign-ups when your party leader applies to a group
 * **Raid Filtering** - Advanced raid-specific filters including boss progress filtering and granular role requirements
 
@@ -43,13 +43,13 @@ The dungeon filter panel allows you to:
 * **Select Specific Dungeons** - Choose which dungeons to show in your search results
 * **Set Minimum Rating** - Filter groups by leader's Mythic+ rating
 * **Filter by Difficulty** - Show/hide Normal, Heroic, Mythic, or Mythic+ groups (all enabled by default)
-* **Role Requirements** - Only show groups that already have a tank or healer
+* **Role Filtering** - Filter by existing roles (has tank, has healer) and hide groups incompatible with your role
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered (all enabled by default)
 * **Custom Sorting** - Configure how search results are sorted:
-  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
-  * **Primary Sort** - Choose to sort by Age, Leader Rating, Item Level Req., or Leader Name
+  * **Primary Sort** - Sort by Age, Leader Rating, Group Size, Item Level Req., or Leader Name
   * **Secondary Sort** - Optional secondary sort criteria
   * **Sort Direction** - Choose Ascending or Descending for each sort level
+  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
 
 #### Raid Filter Panel
 
@@ -61,10 +61,10 @@ The raid filter panel provides advanced raid-specific filtering:
 * **Advanced Role Requirements** - Filter by exact role counts with operators (>=, <=, =). For example, show only groups with at least 2 healers
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered
 * **Custom Sorting** - Configure how search results are sorted:
-  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
-  * **Primary Sort** - Choose to sort by Age, Group Size, Item Level Req., or Leader Name
+  * **Primary Sort** - Sort by Age, Group Size, Item Level Req., or Leader Name
   * **Secondary Sort** - Optional secondary sort criteria
   * **Sort Direction** - Choose Ascending or Descending for each sort level
+  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
 
 The panels automatically hide when switching to other tabs (PvP, etc.) or when returning to the category selection view. Accordion section states (expanded/collapsed) are saved and persist across sessions.
 
@@ -79,12 +79,18 @@ Enable Quick Apply in the filter panel to:
 
 ### Visual Improvements
 
-The addon enhances group list entries with:
+The addon enhances group list entries with visual overlays. All features can be individually toggled in the Settings section of each filter panel.
 
-* **Leader Rating Display** - See the leader's M+ rating next to the group name, color-coded by Raider.IO tiers
-* **Class Color Bars** - Small colored bars below role icons showing each member's class
-* **Missing Role Indicators** - Visual indicators for roles the group still needs
-* **Raid Class/Spec Indicators** - For raid groups, see how many players match your class and spec, organized by role (Tank, Healer, DPS). Icons and counts appear below the role columns, showing the most common spec per role
+#### Dungeon Enhancements
+
+* **Leader Crown Icon** - A crown icon appears above the group leader's role slot, making it easy to spot who is leading
+* **Specialization Icons** - Spec icons displayed below each filled role slot, showing the exact spec of each group member
+* **Leader Rating Display** - The leader's M+ rating is shown next to the group name, color-coded by rating tiers
+* **Missing Role Indicators** - Desaturated role icons for unfilled slots, showing what roles the group still needs
+
+#### Raid Enhancements
+
+* **Class/Spec Indicators** - Shows how many players of your class are already in the raid group, broken down by role (Tank, Healer, DPS) with spec icons
 
 ### Smart Filtering
 
@@ -96,6 +102,16 @@ The addon integrates with Blizzard's native filtering system, ensuring compatibi
 * **Automatic Sorting** - When custom sorting is enabled, results are sorted by application status, then by your configured primary and secondary sort criteria
 * **Fallback Support** - Custom filtering logic as fallback when Blizzard's filter is unavailable
 
+## Localization
+
+Pinta Group Finder supports multiple languages:
+
+* **English** - Default language (built-in)
+* **German** (deDE)
+* **French** (frFR)
+
+Missing translations fall back to English automatically. Contributions for additional languages or translation improvements are welcome — see [`src/locales/README.md`](src/locales/README.md) for details.
+
 ## Troubleshooting
 
 If you encounter any issues, try these steps:
@@ -105,19 +121,14 @@ If you encounter any issues, try these steps:
 * **Enable debug mode:** Type `/pgf debug` in the chat frame. This will enable debug messages, which might reveal the cause of the issue.
 * **Toggle the filter panel:** Type `/pgf filter` to hide/show the filter panel if it's not appearing correctly.
 
-## Debugging and Reporting Issues
+## Reporting Issues
 
-To help diagnose problems, Pinta Group Finder has a debug mode that provides more detailed information. Here's how to enable it and report issues:
+To help diagnose problems, Pinta Group Finder has a debug mode that provides more detailed information:
 
-1. **Enable debug mode:** Type `/pgf debug` in the chat frame. This will enable debug messages, which might reveal the cause of the issue.
-
-2. **Reproduce the error:** Try to reproduce the error you're experiencing while debug mode is enabled.
-
-3. **Gather debug output:** Look for debug messages in your chat window along with any LUA errors you get. These messages might contain clues about the problem.
-
-4. **Report the issue:** If you're still unable to resolve the issue, please open an issue on the [GitHub repository](https://github.com/Pinta365/group-finder/issues) and include the following information:
-    * A description of the issue.
-    * Steps to reproduce the error.
-    * Any relevant debug output.
-
-By providing this information, you'll help identify and fix bugs more efficiently.
+1. **Enable debug mode:** Type `/pgf debug` in the chat frame.
+2. **Reproduce the error:** Try to reproduce the error while debug mode is enabled.
+3. **Gather debug output:** Look for debug messages in your chat window along with any Lua errors.
+4. **Report the issue:** Open an issue on the [GitHub repository](https://github.com/Pinta365/group-finder/issues) with:
+    * A description of the issue
+    * Steps to reproduce the error
+    * Any relevant debug output
