@@ -397,13 +397,15 @@ function PGF.SortResults(results)
     end
 
     if sortSettings.disableCustomSorting == true then
+        PGF.Debug("Sort: using Blizzard default")
         return results
     end
-    
+
     local primarySort = sortSettings.primarySort or "age"
     local primaryDir = sortSettings.primarySortDirection or "asc"
     local secondarySort = sortSettings.secondarySort
     local secondaryDir = sortSettings.secondarySortDirection or "desc"
+    PGF.Debug("Sort:", primarySort, primaryDir, secondarySort and ("+ " .. secondarySort .. " " .. secondaryDir) or "")
     
     local resultCache = {}
     for _, resultID in ipairs(results) do
@@ -476,18 +478,21 @@ local function InterceptResultUpdates()
         end
         
         filterInProgress = true
+        local totalBefore = #resultIDs
         local processedResults = PGF.FilterResults(resultIDs)
+        local totalAfterFilter = #processedResults
         processedResults = PGF.SortResults(processedResults)
-        
+        PGF.Debug("Filter:", totalBefore, "->", totalAfterFilter, "results")
+
         if searchPanel.results then
             searchPanel.results = processedResults
             searchPanel.totalResults = #processedResults
         end
-        
+
         if LFGListSearchPanel_UpdateResults then
             LFGListSearchPanel_UpdateResults(searchPanel)
         end
-        
+
         filterInProgress = false
     end
     

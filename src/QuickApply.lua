@@ -184,6 +184,7 @@ local function SetupEntryClickHandler()
             end
             
             if LFGListSearchPanel_SignUp then
+                PGF.Debug("Quick apply: signing up for", entry.resultID)
                 LFGListSearchPanel_SignUp(searchPanel)
             end
         end
@@ -228,6 +229,7 @@ local function SetupPartyRoleAutoAccept()
         end
         
         if LFDRoleCheckPopupAcceptButton then
+            PGF.Debug("Auto-accept: accepting role check")
             LFDRoleCheckPopupAcceptButton:Enable()
             LFDRoleCheckPopupAcceptButton:Click()
         end
