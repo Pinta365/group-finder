@@ -103,6 +103,8 @@ local defaultLocale = {
     ["SHOW_LEADER_RATING_DESC"] = "Show the group leader's Mythic+ rating next to the group name.",
     ["SHOW_MISSING_ROLES"] = "Show missing role icons",
     ["SHOW_MISSING_ROLES_DESC"] = "Show desaturated role icons for unfilled slots in dungeon search results.",
+    ["SHOW_RAID_SPEC_INDICATORS"] = "Show raid spec indicators",
+    ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Show how many of your class and spec are already in the raid group.",
 }
 
 local currentLocale = {}

@@ -100,5 +100,7 @@ if GetLocale() == "frFR" then
     ["SHOW_LEADER_RATING_DESC"] = "Affiche la note Mythique+ du chef de groupe à côté du nom du groupe.",
     ["SHOW_MISSING_ROLES"] = "Afficher les rôles manquants",
     ["SHOW_MISSING_ROLES_DESC"] = "Affiche des icônes de rôle désaturées pour les emplacements non remplis dans les résultats de recherche de donjon.",
+    ["SHOW_RAID_SPEC_INDICATORS"] = "Afficher les indicateurs de spé raid",
+    ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Affiche combien de votre classe et spécialisation sont déjà dans le groupe de raid.",
     }
 end

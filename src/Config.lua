@@ -120,6 +120,7 @@ PGF.defaults = {
         showMissingRoles = true,
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
+        showRaidSpecIndicators = true,
         filterPanelShown = true,
     },
 }

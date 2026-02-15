@@ -1097,7 +1097,35 @@ local function CreateSettingsSection(scrollContent)
     local content = CreateAccordionContent(scrollContent)
     
     local y = CONTENT_PADDING
-    
+    local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
+
+    -- Show Raid Spec Indicators Checkbox
+    local showRaidSpecCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showRaidSpecCheckbox:SetSize(20, 20)
+    showRaidSpecCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showRaidSpecLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showRaidSpecLabel:SetPoint("LEFT", showRaidSpecCheckbox, "RIGHT", 5, 0)
+    showRaidSpecLabel:SetText(PGF.L("SHOW_RAID_SPEC_INDICATORS"))
+    showRaidSpecCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showRaidSpecIndicators = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showRaidSpecCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_RAID_SPEC_INDICATORS"))
+        GameTooltip:AddLine(PGF.L("SHOW_RAID_SPEC_INDICATORS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showRaidSpecCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showRaidSpecCheckbox:SetChecked(ui.showRaidSpecIndicators ~= false)
+    raidPanel.showRaidSpecCheckbox = showRaidSpecCheckbox
+    y = y + 24
+
     -- Disable Custom Sorting Checkbox
     local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     disableCustomSortingCheckbox:SetSize(20, 20)
