@@ -193,26 +193,22 @@ local function GetOrCreateClassSpecIndicator(entry)
 end
 
 ---@param entry Frame
+local function HideRoleIndicators(entry)
+    local frames = roleIndicators[entry]
+    if frames then
+        for i = 1, #frames do
+            if frames[i] then
+                frames[i]:Hide()
+                frames[i].missingRole:Hide()
+            end
+        end
+    end
+end
+
+---@param entry Frame
 ---@param resultID number
 ---@param searchResultInfo table
 local function AddMissingRoles(entry, resultID, searchResultInfo)
-    local db = PintaGroupFinderDB
-    if not (db.ui and db.ui.showMissingRoles) then return end
-
-    local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
-    if categoryID ~= PGF.DUNGEON_CATEGORY_ID then
-        local frames = roleIndicators[entry]
-        if frames then
-            for i = 1, #frames do
-                if frames[i] then
-                    frames[i]:Hide()
-                    frames[i].missingRole:Hide()
-                end
-            end
-        end
-        return
-    end
-
     local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
     local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
     if not activityInfo or activityInfo.displayType ~= Enum.LFGListDisplayType.RoleEnumerate then return end
@@ -295,11 +291,6 @@ end
 ---@param resultID number
 ---@param searchResultInfo table
 local function AddLeaderRating(entry, resultID, searchResultInfo)
-    local db = PintaGroupFinderDB
-    if not (db.ui and db.ui.showLeaderRating) then return end
-
-    local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
-    if categoryID ~= PGF.DUNGEON_CATEGORY_ID then return end
     if not entry.Name then return end
 
     local rating = searchResultInfo.leaderOverallDungeonScore or 0
@@ -318,13 +309,7 @@ end
 ---@param resultID number
 ---@param searchResultInfo table
 local function AddClassSpecIndicators(entry, resultID, searchResultInfo)
-    local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
     local indicator = classSpecIndicators[entry]
-
-    if categoryID ~= PGF.RAID_CATEGORY_ID then
-        if indicator then indicator:Hide() end
-        return
-    end
 
     if not playerClassFile then UpdatePlayerClassSpec() end
     if not playerClassFile then
@@ -542,41 +527,39 @@ local function OnEntryUpdate(self)
     local resultID = self.resultID
     if not resultID or not C_LFGList.HasSearchResultInfo(resultID) then return end
 
+    local db = PintaGroupFinderDB
+    local ui = db.ui
+    local showLeader = ui and ui.showLeaderIcon
+    local showSpecs = ui and ui.showDungeonSpecIcons
+    local showRating = ui and ui.showLeaderRating
+    local showMissing = ui and ui.showMissingRoles
+
     local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
     if not searchResultInfo then return end
 
     local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
-    local db = PintaGroupFinderDB
+    local isDungeon = categoryID == PGF.DUNGEON_CATEGORY_ID
 
-    if categoryID == PGF.DUNGEON_CATEGORY_ID then
-        local showLeader = db.ui and db.ui.showLeaderIcon
-        local showSpecs = db.ui and db.ui.showDungeonSpecIcons
+    if isDungeon and (showLeader or showSpecs) and (searchResultInfo.numMembers or 0) > 0 then
+        local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
+        local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
 
-        if (showLeader or showSpecs) and (searchResultInfo.numMembers or 0) > 0 then
-            local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
-            local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
-
-            if activityInfo and activityInfo.displayType == Enum.LFGListDisplayType.RoleEnumerate then
-                local icons = self.DataDisplay and self.DataDisplay.Enumerate and self.DataDisplay.Enumerate.Icons
-                if icons and #icons > 0 then
-                    local playerData = GetDungeonEntryPlayerData(resultID, searchResultInfo, #icons)
-                    if playerData then
-                        if showLeader then
-                            AddDungeonLeaderIcon(self, icons, playerData)
-                        else
-                            local frame = leaderIconFrames[self]
-                            if frame then frame:Hide() end
-                        end
-                        if showSpecs then
-                            AddDungeonSpecIcons(self, icons, playerData)
-                        else
-                            local specFrames = dungeonSpecFrames[self]
-                            if specFrames then
-                                for i = 1, #specFrames do specFrames[i]:Hide() end
-                            end
-                        end
+        if activityInfo and activityInfo.displayType == Enum.LFGListDisplayType.RoleEnumerate then
+            local icons = self.DataDisplay and self.DataDisplay.Enumerate and self.DataDisplay.Enumerate.Icons
+            if icons and #icons > 0 then
+                local playerData = GetDungeonEntryPlayerData(resultID, searchResultInfo, #icons)
+                if playerData then
+                    if showLeader then
+                        AddDungeonLeaderIcon(self, icons, playerData)
                     else
-                        HideDungeonOverlays(self)
+                        local frame = leaderIconFrames[self]
+                        if frame then frame:Hide() end
+                    end
+                    if showSpecs then
+                        AddDungeonSpecIcons(self, icons, playerData)
+                    else
+                        local sf = dungeonSpecFrames[self]
+                        if sf then for i = 1, #sf do sf[i]:Hide() end end
                     end
                 else
                     HideDungeonOverlays(self)
@@ -591,9 +574,22 @@ local function OnEntryUpdate(self)
         HideDungeonOverlays(self)
     end
 
-    AddMissingRoles(self, resultID, searchResultInfo)
-    AddLeaderRating(self, resultID, searchResultInfo)
-    AddClassSpecIndicators(self, resultID, searchResultInfo)
+    if isDungeon and showMissing then
+        AddMissingRoles(self, resultID, searchResultInfo)
+    else
+        HideRoleIndicators(self)
+    end
+
+    if isDungeon and showRating then
+        AddLeaderRating(self, resultID, searchResultInfo)
+    end
+
+    if categoryID == PGF.RAID_CATEGORY_ID then
+        AddClassSpecIndicators(self, resultID, searchResultInfo)
+    else
+        local indicator = classSpecIndicators[self]
+        if indicator then indicator:Hide() end
+    end
 end
 
 function PGF.InitializeEntryEnhancements()
