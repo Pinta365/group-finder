@@ -99,6 +99,8 @@ local defaultLocale = {
     ["SHOW_LEADER_ICON_DESC"] = "Show a crown icon above the group leader in dungeon search results.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Show class spec icons",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in dungeon search results.",
+    ["SHOW_LEADER_RATING"] = "Show leader rating",
+    ["SHOW_LEADER_RATING_DESC"] = "Show the group leader's Mythic+ rating next to the group name.",
 }
 
 local currentLocale = {}

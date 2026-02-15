@@ -948,85 +948,8 @@ local function CreateSettingsSection(scrollContent)
     local content = CreateAccordionContent(scrollContent)
     
     local y = CONTENT_PADDING
-    
-    -- Disable Custom Sorting Checkbox
-    local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-    disableCustomSortingCheckbox:SetSize(20, 20)
-    disableCustomSortingCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
-    
-    local disableCustomSortingLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    disableCustomSortingLabel:SetPoint("LEFT", disableCustomSortingCheckbox, "RIGHT", 5, 0)
-    disableCustomSortingLabel:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
-    
-    local function UpdateDropdownStates()
-        local settings = GetSortSettings()
-        local disabled = settings.disableCustomSorting == true
-        
-        if dungeonPanel.primarySortDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(dungeonPanel.primarySortDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(dungeonPanel.primarySortDropdown)
-            end
-        end
-        
-        if dungeonPanel.primaryDirDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(dungeonPanel.primaryDirDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(dungeonPanel.primaryDirDropdown)
-            end
-        end
-        
-        if dungeonPanel.secondarySortDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(dungeonPanel.secondarySortDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(dungeonPanel.secondarySortDropdown)
-            end
-        end
-        
-        if dungeonPanel.secondaryDirDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(dungeonPanel.secondaryDirDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(dungeonPanel.secondaryDirDropdown)
-            end
-        end
-    end
-    
-    dungeonPanel.UpdateDropdownStates = UpdateDropdownStates
-    
-    disableCustomSortingCheckbox:SetScript("OnClick", function(self)
-        local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
-        db.filter.dungeonSortSettings.disableCustomSorting = self:GetChecked()
-        UpdateDropdownStates()
-        PGF.RefilterResults()
-    end)
-    
-    disableCustomSortingCheckbox:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
-        GameTooltip:AddLine(PGF.L("DISABLE_CUSTOM_SORTING_DESC"), 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    disableCustomSortingCheckbox:SetScript("OnLeave", GameTooltip_Hide)
-    
-    -- Initialize checkbox state
-    local settings = GetSortSettings()
-    disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
-    
-    dungeonPanel.disableCustomSortingCheckbox = disableCustomSortingCheckbox
-    
-    y = y + 24
-    
+    local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
+
     -- Show Leader Icon Checkbox
     local showLeaderIconCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     showLeaderIconCheckbox:SetSize(20, 20)
@@ -1050,11 +973,10 @@ local function CreateSettingsSection(scrollContent)
         GameTooltip:Show()
     end)
     showLeaderIconCheckbox:SetScript("OnLeave", GameTooltip_Hide)
-    local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
     showLeaderIconCheckbox:SetChecked(ui.showLeaderIcon ~= false)
     dungeonPanel.showLeaderIconCheckbox = showLeaderIconCheckbox
     y = y + 24
-    
+
     -- Show Dungeon Spec Icons Checkbox
     local showDungeonSpecIconsCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     showDungeonSpecIconsCheckbox:SetSize(20, 20)
@@ -1080,6 +1002,110 @@ local function CreateSettingsSection(scrollContent)
     showDungeonSpecIconsCheckbox:SetScript("OnLeave", GameTooltip_Hide)
     showDungeonSpecIconsCheckbox:SetChecked(ui.showDungeonSpecIcons ~= false)
     dungeonPanel.showDungeonSpecIconsCheckbox = showDungeonSpecIconsCheckbox
+    y = y + 24
+
+    -- Show Leader Rating Checkbox
+    local showLeaderRatingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showLeaderRatingCheckbox:SetSize(20, 20)
+    showLeaderRatingCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showLeaderRatingLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showLeaderRatingLabel:SetPoint("LEFT", showLeaderRatingCheckbox, "RIGHT", 5, 0)
+    showLeaderRatingLabel:SetText(PGF.L("SHOW_LEADER_RATING"))
+    showLeaderRatingCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showLeaderRating = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showLeaderRatingCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_LEADER_RATING"))
+        GameTooltip:AddLine(PGF.L("SHOW_LEADER_RATING_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showLeaderRatingCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showLeaderRatingCheckbox:SetChecked(ui.showLeaderRating ~= false)
+    dungeonPanel.showLeaderRatingCheckbox = showLeaderRatingCheckbox
+    y = y + 24
+
+    -- Disable Custom Sorting Checkbox
+    local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    disableCustomSortingCheckbox:SetSize(20, 20)
+    disableCustomSortingCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local disableCustomSortingLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    disableCustomSortingLabel:SetPoint("LEFT", disableCustomSortingCheckbox, "RIGHT", 5, 0)
+    disableCustomSortingLabel:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
+
+    local function UpdateDropdownStates()
+        local settings = GetSortSettings()
+        local disabled = settings.disableCustomSorting == true
+
+        if dungeonPanel.primarySortDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(dungeonPanel.primarySortDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(dungeonPanel.primarySortDropdown)
+            end
+        end
+
+        if dungeonPanel.primaryDirDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(dungeonPanel.primaryDirDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(dungeonPanel.primaryDirDropdown)
+            end
+        end
+
+        if dungeonPanel.secondarySortDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(dungeonPanel.secondarySortDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(dungeonPanel.secondarySortDropdown)
+            end
+        end
+
+        if dungeonPanel.secondaryDirDropdown then
+            if disabled then
+                UIDropDownMenu_DisableDropDown(dungeonPanel.secondaryDirDropdown)
+            else
+                UIDropDownMenu_EnableDropDown(dungeonPanel.secondaryDirDropdown)
+            end
+        end
+    end
+
+    dungeonPanel.UpdateDropdownStates = UpdateDropdownStates
+
+    disableCustomSortingCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.filter then db.filter = {} end
+        if not db.filter.dungeonSortSettings then
+            db.filter.dungeonSortSettings = {}
+            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
+                db.filter.dungeonSortSettings[k] = v
+            end
+        end
+        db.filter.dungeonSortSettings.disableCustomSorting = self:GetChecked()
+        UpdateDropdownStates()
+        PGF.RefilterResults()
+    end)
+
+    disableCustomSortingCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("DISABLE_CUSTOM_SORTING"))
+        GameTooltip:AddLine(PGF.L("DISABLE_CUSTOM_SORTING_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    disableCustomSortingCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    local settings = GetSortSettings()
+    disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
+
+    dungeonPanel.disableCustomSortingCheckbox = disableCustomSortingCheckbox
+
     y = y + 24
     
     -- Primary Sort
