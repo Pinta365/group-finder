@@ -9,7 +9,8 @@ local addonName, PGF = ...
 ---@class FilterContext
 --- Core fields (always populated)
 ---@field activityID number Activity ID for this listing
----@field categoryID number 2=Dungeons, 3=Raids
+---@field categoryID number 2=Dungeons, 3=Raids, 121=Delves
+---@field tier number? Delve tier parsed from fullName (Delves only)
 ---@field difficulty string "normal"|"heroic"|"mythic"|"mythicplus"|"unknown"
 ---@field mythicplus boolean? True if M+ dungeon
 ---@field tanks number Number of tanks in group
@@ -114,6 +115,22 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.appStatus = appStatus or "none"
     context.isApplied = appStatus and appStatus ~= "none" or false
     
+    -- Delve-specific fields
+    if context.categoryID == PGF.DELVE_CATEGORY_ID then
+        context.tier = tonumber(activityInfo.fullName:match("%(.-(%d+)%)$")) or 0
+        PGF.Debug("Delve activityID:", activityID,
+            "fullName:", activityInfo.fullName,
+            "shortName:", activityInfo.shortName,
+            "orderIndex:", activityInfo.orderIndex,
+            "groupID:", activityInfo.groupFinderActivityGroupID,
+            "diffID:", activityInfo.difficultyID,
+            "displayType:", activityInfo.displayType,
+            "maxPlayers:", activityInfo.maxNumPlayers)
+        PGF.Debug("Delve members:", context.members, "tanks:", context.tanks,
+            "healers:", context.healers, "dps:", context.dps,
+            "playstyle:", context.generalPlaystyle, "tier:", context.tier)
+    end
+
     -- Raid-specific fields
     if context.categoryID == PGF.RAID_CATEGORY_ID then
         local encounterInfo = C_LFGList.GetSearchResultEncounterInfo(resultID)

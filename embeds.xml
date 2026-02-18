@@ -11,6 +11,7 @@
     <Include file="src\FilterCore.lua"/>
     <Include file="src\FilterPanelDungeon.lua"/>
     <Include file="src\FilterPanelRaid.lua"/>
+    <Include file="src\FilterPanelDelve.lua"/>
     <Include file="src\FilterPanel.lua"/>
     <Include file="src\EntryEnhancements.lua"/>
     <Include file="src\QuickApply.lua"/>

@@ -60,6 +60,15 @@ if GetLocale() == "deDE" then
     ["BOSS_FILTER_FRESH"] = "Neue Instanz",
     ["BOSS_FILTER_PARTIAL"] = "Teilweiser Fortschritt",
     
+    -- Tier range (Delves)
+    ["SECTION_TIER"] = "STUFENBEREICH",
+    ["TIER_MIN"] = "Min. Stufe:",
+    ["TIER_MAX"] = "Max. Stufe:",
+    ["TIER_RANGE_DESC"] = "Zeige nur Gruppen im ausgewählten Stufenbereich.",
+    ["TIER_INCLUDE_SPECIAL"] = "?/??-Stufen-Gruppen anzeigen",
+    ["TIER_INCLUDE_SPECIAL_DESC"] = "Sonderevent-Gruppen einschließen, deren Stufe als ? oder ?? angezeigt wird.",
+    ["SORT_TIER"] = "Stufe",
+
     -- Accordion sections
     ["SECTION_ACTIVITIES"] = "AKTIVITÄTEN",
     ["SECTION_BOSS_FILTER"] = "BOSS-FILTER",

@@ -287,7 +287,7 @@ local function PassesFilter(resultID, context)
         if bossFilter ~= "any" then
             local encounterInfo = C_LFGList.GetSearchResultEncounterInfo(resultID)
             local defeatedCount = encounterInfo and #encounterInfo or 0
-            
+
             if bossFilter == "fresh" and defeatedCount > 0 then
                 return false
             elseif bossFilter == "partial" and defeatedCount == 0 then
@@ -295,7 +295,54 @@ local function PassesFilter(resultID, context)
             end
         end
     end
-    
+
+    -- Delve-specific filtering
+    if context.categoryID == PGF.DELVE_CATEGORY_ID then
+        local delveActivities = filter.delveActivities
+        if delveActivities ~= nil then
+            local selectedGroupIDs = {}
+            for k, v in pairs(delveActivities) do
+                if v and type(k) == "number" and k > 0 then
+                    table.insert(selectedGroupIDs, k)
+                end
+            end
+            if #selectedGroupIDs == 0 then return false end
+            if not ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs) then
+                return false
+            end
+        end
+
+        if context.tier and context.tier > 0 then
+            local tierMin = filter.delveTierMin or 1
+            local tierMax = filter.delveTierMax or 11
+            if context.tier < tierMin or context.tier > tierMax then
+                return false
+            end
+        elseif context.tier == 0 then
+            if filter.delveIncludeSpecialTiers == false then
+                return false
+            end
+        end
+
+        local delvePlaystyle = filter.delvePlaystyle or {}
+        local hasPlaystyleFilter = (delvePlaystyle.generalPlaystyle1 == false) or
+                                   (delvePlaystyle.generalPlaystyle2 == false) or
+                                   (delvePlaystyle.generalPlaystyle3 == false) or
+                                   (delvePlaystyle.generalPlaystyle4 == false)
+        if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
+            local playstyleMapping = {
+                [1] = "generalPlaystyle1",
+                [2] = "generalPlaystyle2",
+                [3] = "generalPlaystyle3",
+                [4] = "generalPlaystyle4",
+            }
+            local blizzKey = playstyleMapping[context.generalPlaystyle]
+            if blizzKey and delvePlaystyle[blizzKey] == false then
+                return false
+            end
+        end
+    end
+
     return true
 end
 
@@ -392,6 +439,8 @@ function PGF.SortResults(results)
     local sortSettings
     if categoryID == PGF.RAID_CATEGORY_ID then
         sortSettings = (db.filter and db.filter.raidSortSettings) or PGF.defaults.filter.raidSortSettings
+    elseif categoryID == PGF.DELVE_CATEGORY_ID then
+        sortSettings = (db.filter and db.filter.delveSortSettings) or PGF.defaults.filter.delveSortSettings
     else
         sortSettings = (db.filter and db.filter.dungeonSortSettings) or PGF.defaults.filter.dungeonSortSettings
     end
@@ -466,7 +515,9 @@ local function InterceptResultUpdates()
         end
         
         local categoryID = searchPanel.categoryID or (LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID)
-        local isSupportedCategory = (categoryID == PGF.DUNGEON_CATEGORY_ID) or (categoryID == PGF.RAID_CATEGORY_ID)
+        local isSupportedCategory = (categoryID == PGF.DUNGEON_CATEGORY_ID)
+            or (categoryID == PGF.RAID_CATEGORY_ID)
+            or (categoryID == PGF.DELVE_CATEGORY_ID)
         
         if not isSupportedCategory then
             return

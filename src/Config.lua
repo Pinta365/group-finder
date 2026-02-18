@@ -8,6 +8,7 @@ local addonName, PGF = ...
 
 PGF.DUNGEON_CATEGORY_ID = 2
 PGF.RAID_CATEGORY_ID = 3
+PGF.DELVE_CATEGORY_ID = 121
 
 ---@class SavedVariables
 ---@field debug boolean
@@ -112,6 +113,30 @@ PGF.defaults = {
             primarySortDirection = "desc",
             secondarySort = nil,
             secondarySortDirection = "desc",
+        },
+        delveActivities = {},
+        delveTierMin = 1,
+        delveTierMax = 11,
+        delveIncludeSpecialTiers = true,
+        delvePlaystyle = {
+            generalPlaystyle1 = true,
+            generalPlaystyle2 = true,
+            generalPlaystyle3 = true,
+            generalPlaystyle4 = true,
+        },
+        delveAccordionState = {
+            activities = true,
+            tier = false,
+            playstyle = false,
+            quickApply = false,
+            settings = false,
+        },
+        delveSortSettings = {
+            disableCustomSorting = true,
+            primarySort = "age",
+            primarySortDirection = "asc",
+            secondarySort = nil,
+            secondarySortDirection = "asc",
         },
     },
     

@@ -63,6 +63,14 @@ local defaultLocale = {
     ["BOSS_FILTER_FRESH"] = "Fresh Run",
     ["BOSS_FILTER_PARTIAL"] = "Partial Progress",
     
+    -- Tier range (Delves)
+    ["SECTION_TIER"] = "TIER RANGE",
+    ["TIER_MIN"] = "Min Tier:",
+    ["TIER_MAX"] = "Max Tier:",
+    ["TIER_RANGE_DESC"] = "Only show groups for the selected tier range.",
+    ["TIER_INCLUDE_SPECIAL"] = "Show ?/?? tier groups",
+    ["TIER_INCLUDE_SPECIAL_DESC"] = "Include special event groups whose tier shows as ? or ??.",
+
     -- Accordion sections
     ["SECTION_ACTIVITIES"] = "ACTIVITIES",
     ["SECTION_BOSS_FILTER"] = "BOSS FILTER",
@@ -82,6 +90,7 @@ local defaultLocale = {
     ["SORT_SECONDARY"] = "Secondary Sort:",
     ["SORT_DIRECTION"] = "Direction:",
     ["SORT_AGE"] = "Age",
+    ["SORT_TIER"] = "Tier",
     ["SORT_RATING"] = "Leader Rating",
     ["SORT_GROUP_SIZE"] = "Group Size",
     ["SORT_ILVL"] = "Item Level Req.",

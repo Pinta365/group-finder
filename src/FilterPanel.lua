@@ -92,7 +92,9 @@ local function ShouldShowFilterPanel()
     end
     
     local db = PintaGroupFinderDB
-    local categoryMatches = (categoryID == PGF.DUNGEON_CATEGORY_ID) or (categoryID == PGF.RAID_CATEGORY_ID)
+    local categoryMatches = (categoryID == PGF.DUNGEON_CATEGORY_ID)
+        or (categoryID == PGF.RAID_CATEGORY_ID)
+        or (categoryID == PGF.DELVE_CATEGORY_ID)
     local panelEnabled = db.ui and db.ui.filterPanelShown ~= false
     
     return categoryMatches and panelEnabled, categoryID
@@ -102,6 +104,7 @@ end
 local function HideAllPanels()
     PGF.ShowDungeonPanel(false)
     PGF.ShowRaidPanel(false)
+    PGF.ShowDelvePanel(false)
 end
 
 ---Show the appropriate panel for a category.
@@ -113,6 +116,8 @@ local function ShowPanelForCategory(categoryID)
         PGF.ShowDungeonPanel(true)
     elseif categoryID == PGF.RAID_CATEGORY_ID then
         PGF.ShowRaidPanel(true)
+    elseif categoryID == PGF.DELVE_CATEGORY_ID then
+        PGF.ShowDelvePanel(true)
     end
 end
 
@@ -174,6 +179,8 @@ function PGF.UpdateFilterPanel()
             PGF.UpdateDungeonPanel()
         elseif categoryID == PGF.RAID_CATEGORY_ID then
             PGF.UpdateRaidPanel()
+        elseif categoryID == PGF.DELVE_CATEGORY_ID then
+            PGF.UpdateDelvePanel()
         end
     end
 end
@@ -221,6 +228,22 @@ function PGF.UpdateQuickApplyRoles()
             if availDPS then raidPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
         end
     end
+
+    local delvePanel = PGF.GetDelvePanel()
+    if delvePanel and delvePanel.quickApplyRoleCheckboxes then
+        if delvePanel.quickApplyRoleCheckboxes.tank then
+            delvePanel.quickApplyRoleCheckboxes.tank:SetShown(availTank)
+            if availTank then delvePanel.quickApplyRoleCheckboxes.tank:SetChecked(tank) end
+        end
+        if delvePanel.quickApplyRoleCheckboxes.healer then
+            delvePanel.quickApplyRoleCheckboxes.healer:SetShown(availHealer)
+            if availHealer then delvePanel.quickApplyRoleCheckboxes.healer:SetChecked(healer) end
+        end
+        if delvePanel.quickApplyRoleCheckboxes.damage then
+            delvePanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
+            if availDPS then delvePanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
+        end
+    end
 end
 
 ---Initialize filter panel coordinator and hook into WoW UI.
@@ -234,6 +257,7 @@ function PGF.InitializeFilterPanel()
 
     PGF.InitializeDungeonPanel()
     PGF.InitializeRaidPanel()
+    PGF.InitializeDelvePanel()
 
     HideAllPanels()
 
@@ -274,7 +298,9 @@ function PGF.InitializeFilterPanel()
     
     -- Runs when a category is selected (e.g. Dungeons, Raids, Arenas, Battlegrounds).
     hooksecurefunc("LFGListSearchPanel_SetCategory", function(self, categoryID, filters, baseFilters)
-        if categoryID == PGF.DUNGEON_CATEGORY_ID or categoryID == PGF.RAID_CATEGORY_ID then
+        if categoryID == PGF.DUNGEON_CATEGORY_ID
+            or categoryID == PGF.RAID_CATEGORY_ID
+            or categoryID == PGF.DELVE_CATEGORY_ID then
             InitializeAdvancedFilterDefaults()
             syncPanelAndFrameWidth()
         else

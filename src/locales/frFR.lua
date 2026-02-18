@@ -60,6 +60,15 @@ if GetLocale() == "frFR" then
     ["BOSS_FILTER_FRESH"] = "Instance neuve",
     ["BOSS_FILTER_PARTIAL"] = "Déjà entamé",
     
+    -- Tier range (Delves)
+    ["SECTION_TIER"] = "PLAGE DE NIVEAU",
+    ["TIER_MIN"] = "Niveau min. :",
+    ["TIER_MAX"] = "Niveau max. :",
+    ["TIER_RANGE_DESC"] = "Afficher uniquement les groupes dans la plage de niveaux sélectionnée.",
+    ["TIER_INCLUDE_SPECIAL"] = "Afficher les groupes de niveau ?/??",
+    ["TIER_INCLUDE_SPECIAL_DESC"] = "Inclure les groupes d'événements spéciaux dont le niveau s'affiche comme ? ou ??.",
+    ["SORT_TIER"] = "Niveau",
+
     -- Accordion sections
     ["SECTION_ACTIVITIES"] = "ACTIVITÉS",
     ["SECTION_BOSS_FILTER"] = "FILTRE DE BOSS",
