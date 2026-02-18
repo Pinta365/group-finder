@@ -8,7 +8,7 @@
 
 Pinta Group Finder enhances the default Group Finder UI with advanced filtering, quick apply functionality, and visual improvements. The addon provides:
 
-* **Filtering Panels** - Filtering for both Dungeons and Raids with accordion-style collapsible sections
+* **Filtering Panels** - Filtering for Dungeons, Raids, and Delves with accordion-style collapsible sections
 * **Quick Apply** - Sign up to groups with pre-selected roles, bypassing the role selection dialog
 * **Visual Improvements** - Leader crown icon, specialization icons below role slots, leader M+ rating with color coding, missing role indicators, and raid class/spec indicators
 * **Auto-Accept** - Automatically accept party sign-ups when your party leader applies to a group
@@ -34,7 +34,7 @@ Pinta Group Finder offers the following slash commands:
 
 ### Filter Panels
 
-The filter panels appear automatically next to the Group Finder window when viewing the Dungeons or Raids category. Both panels feature a modern accordion-style interface with collapsible sections for better organization.
+The filter panels appear automatically next to the Group Finder window when viewing the Dungeons, Raids, or Delves category. All panels feature a modern accordion-style interface with collapsible sections for better organization.
 
 #### Dungeon Filter Panel
 
@@ -59,6 +59,20 @@ The raid filter panel provides advanced raid-specific filtering:
 * **Boss Progress Filtering** - Filter by boss progress: Any, Fresh (no bosses defeated), or Partial (some bosses defeated)
 * **Difficulty Filtering** - Show/hide Normal, Heroic, or Mythic difficulty raids
 * **Advanced Role Requirements** - Filter by exact role counts with operators (>=, <=, =). For example, show only groups with at least 2 healers
+* **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered
+* **Custom Sorting** - Configure how search results are sorted:
+  * **Primary Sort** - Sort by Age, Group Size, Item Level Req., or Leader Name
+  * **Secondary Sort** - Optional secondary sort criteria
+  * **Sort Direction** - Choose Ascending or Descending for each sort level
+  * **Disable Custom Sorting** - Use Blizzard's default sorting (enabled by default)
+
+#### Delve Filter Panel
+
+The delve filter panel provides filtering for group Delve content:
+
+* **Select Specific Delves** - Choose which Delve activities to show in your search results, split between current-season and legacy Delves
+* **Tier Range** - Show only groups running a specific tier range (1–11). Supports all client languages — the tier is detected from the number in the activity name regardless of locale
+* **Special Tier Groups** - Separate toggle for groups whose tier shows as ? or ?? (e.g. seasonal event bosses like Ky'veza). Shown by default, uncheck to hide them
 * **Playstyle Filtering** - Filter by playstyle: Learning, Relaxed, Competitive, or Carry Offered
 * **Custom Sorting** - Configure how search results are sorted:
   * **Primary Sort** - Sort by Age, Group Size, Item Level Req., or Leader Name
@@ -98,6 +112,7 @@ The addon integrates with Blizzard's native filtering system, ensuring compatibi
 
 * **Native Integration** - Uses Blizzard's advanced filter API for dungeons (difficulty, roles, playstyle, and minimum rating)
 * **Client-Side Raid Filtering** - Raids use custom client-side filtering to enhance Blizzard's filter
+* **Client-Side Delve Filtering** - Delves use fully custom client-side filtering for activity selection, tier range, and playstyle
 * **Custom Sorting** - Configure custom sorting for search results with primary and secondary sort options, or use Blizzard's default sorting (default)
 * **Automatic Sorting** - When custom sorting is enabled, results are sorted by application status, then by your configured primary and secondary sort criteria
 * **Fallback Support** - Custom filtering logic as fallback when Blizzard's filter is unavailable
