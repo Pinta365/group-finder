@@ -958,9 +958,9 @@ local function CreateQuickApplySection(scrollContent)
         GameTooltip:Show()
     end)
     quickApplyEnable:SetScript("OnLeave", GameTooltip_Hide)
-    
-    y = y + 24
-    
+
+    y = y + 28
+
     local rolesLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     rolesLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
     rolesLabel:SetText(PGF.L("ROLES"))
@@ -1000,43 +1000,7 @@ local function CreateQuickApplySection(scrollContent)
     end
     
     y = y + 24
-    
-    local noteLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    noteLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
-    noteLabel:SetText(PGF.L("NOTE"))
-    
-    local noteBox = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
-    noteBox:SetSize(PANEL_WIDTH - 70, 20)
-    noteBox:SetPoint("LEFT", noteLabel, "RIGHT", 10, 0)
-    noteBox:SetAutoFocus(false)
-    noteBox:SetMaxLetters(60)
-    
-    noteBox:SetScript("OnEnterPressed", function(self)
-        self:ClearFocus()
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.note = self:GetText()
-    end)
-    
-    noteBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    
-    noteBox:SetScript("OnEditFocusLost", function(self)
-        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-        if not charDB.quickApply then charDB.quickApply = {} end
-        charDB.quickApply.note = self:GetText()
-    end)
-    
-    noteBox:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(PGF.L("APPLICATION_NOTE"))
-        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_DESC"), 1, 1, 1, true)
-        GameTooltip:AddLine(PGF.L("APPLICATION_NOTE_PERSIST"), 0.7, 0.7, 0.7, true)
-        GameTooltip:Show()
-    end)
-    noteBox:SetScript("OnLeave", GameTooltip_Hide)
-    
-    y = y + 26
-    
+
     local autoAcceptCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     autoAcceptCheckbox:SetSize(20, 20)
     autoAcceptCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
@@ -1063,7 +1027,6 @@ local function CreateQuickApplySection(scrollContent)
     
     raidPanel.quickApplyEnable = quickApplyEnable
     raidPanel.quickApplyRoleCheckboxes = quickApplyRoleCheckboxes
-    raidPanel.quickApplyNoteBox = noteBox
     raidPanel.quickApplyAutoAccept = autoAcceptCheckbox
     
     content:SetHeight(y + CONTENT_PADDING)
@@ -1656,10 +1619,6 @@ function PGF.UpdateRaidPanel()
             raidPanel.quickApplyRoleCheckboxes.damage:SetShown(availDPS)
             if availDPS then raidPanel.quickApplyRoleCheckboxes.damage:SetChecked(dps) end
         end
-    end
-    
-    if raidPanel.quickApplyNoteBox then
-        raidPanel.quickApplyNoteBox:SetText(quickApply.note or "")
     end
     
     if raidPanel.quickApplyAutoAccept then

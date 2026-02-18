@@ -7,8 +7,6 @@
 
 local addonName, PGF = ...
 
-local notePersistenceEnabled = false
-
 ---Update Blizzard's role storage with our saved preferences.
 local function UpdateBlizzardRoles()
     local charDB = PintaGroupFinderCharDB or PGF.charDefaults
@@ -41,27 +39,6 @@ local function GetRolesFromBlizzard()
         healer = healer,
         damage = dps,
     }
-end
-
----Custom dialog show handler that preserves note text.
----@param dialog Frame Dialog frame
----@param resultID number? Search result ID
-local function CustomDialogShow(dialog, resultID)
-    if resultID then
-        local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
-        dialog.resultID = resultID
-        dialog.activityID = searchResultInfo and searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or 0
-    end
-    LFGListApplicationDialog_UpdateRoles(dialog)
-    StaticPopupSpecial_Show(dialog)
-end
-
----Enable note persistence by replacing the default show function.
-local function EnableNotePersistence()
-    if not notePersistenceEnabled then
-        LFGListApplicationDialog_Show = CustomDialogShow
-        notePersistenceEnabled = true
-    end
 end
 
 ---Set role button checked state.
@@ -99,24 +76,6 @@ local function ConfigureDialogRoles(dialog)
     return tankChecked or healerChecked or dpsChecked
 end
 
----Try to set note on dialog.
----@param dialog Frame Application dialog frame
-local function SetNoteOnDialog(dialog)
-    if not dialog then return end
-    
-    local charDB = PintaGroupFinderCharDB or PGF.charDefaults
-    local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
-    local note = quickApply.note or ""
-    
-    if note == "" then return end
-    
-    if dialog.Description and dialog.Description.EditBox then
-        pcall(function()
-            dialog.Description.EditBox:SetText(note)
-        end)
-    end
-end
-
 ---Setup automatic signup when dialog appears.
 local function SetupAutoSignup()
     if not LFGListApplicationDialog then return end
@@ -137,13 +96,11 @@ local function SetupAutoSignup()
         end
         
         ConfigureDialogRoles(dialog)
-        
+
         if PGF.UpdateQuickApplyRoles then
             PGF.UpdateQuickApplyRoles()
         end
-        
-        SetNoteOnDialog(dialog)
-        
+
         if dialog.SignUpButton and dialog.SignUpButton:IsEnabled() then
             dialog.SignUpButton:Click()
         end
@@ -286,7 +243,6 @@ function PGF.InitializeQuickApply()
     end
     
     SetupRoleChangeMonitoring()
-    EnableNotePersistence()
     SetupAutoSignup()
     SetupEntryClickHandler()
     SetupPartyRoleAutoAccept()

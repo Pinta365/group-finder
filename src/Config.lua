@@ -131,7 +131,6 @@ PGF.defaults = {
 ---@class QuickApplySettings
 ---@field enabled boolean
 ---@field roles RoleSettings
----@field note string
 ---@field autoAcceptParty boolean
 
 ---@class RoleSettings
@@ -148,7 +147,6 @@ PGF.charDefaults = {
             healer = false,
             damage = false,
         },
-        note = "",
         autoAcceptParty = false,
     },
 }
