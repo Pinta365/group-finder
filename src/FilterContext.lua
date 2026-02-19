@@ -9,7 +9,7 @@ local addonName, PGF = ...
 ---@class FilterContext
 --- Core fields (always populated)
 ---@field activityID number Activity ID for this listing
----@field categoryID number 2=Dungeons, 3=Raids, 121=Delves
+---@field categoryID number 2=Dungeons, 3=Raids, 4=Arenas, 9=RatedBGs, 121=Delves
 ---@field tier number? Delve tier parsed from fullName (Delves only)
 ---@field difficulty string "normal"|"heroic"|"mythic"|"mythicplus"|"unknown"
 ---@field mythicplus boolean? True if M+ dungeon
@@ -50,6 +50,10 @@ local addonName, PGF = ...
 ---@field autoAccept boolean?
 ---@field warmode boolean?
 ---@field hasSelf boolean?
+--- PvP-specific fields
+---@field pvpRating number?         Highest leader PvP rating across relevant brackets
+---@field requiredPvpRating number? Minimum PvP rating required by the leader
+---@field isRatedPvp boolean?       True for rated arena/BG activities
 
 ---Build filter context for a search result.
 ---@param resultID number
@@ -115,6 +119,41 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.appStatus = appStatus or "none"
     context.isApplied = appStatus and appStatus ~= "none" or false
     
+    -- PvP-specific fields
+    local pvpCategoryID = context.categoryID
+    if pvpCategoryID == PGF.ARENA_CATEGORY_ID
+        or pvpCategoryID == PGF.RATED_BG_CATEGORY_ID then
+
+        context.requiredPvpRating = searchResultInfo.requiredPvpRating or 0
+        context.isRatedPvp = (pvpCategoryID == PGF.ARENA_CATEGORY_ID)
+                          or (pvpCategoryID == PGF.RATED_BG_CATEGORY_ID)
+
+        local maxRating = 0
+        if searchResultInfo.leaderPvpRatingInfo then
+            for _, info in ipairs(searchResultInfo.leaderPvpRatingInfo) do
+                if info.rating and info.rating > maxRating then
+                    maxRating = info.rating
+                end
+            end
+        end
+        context.pvpRating = maxRating
+
+        PGF.Debug("PvP categoryID:", pvpCategoryID,
+            "activityID:", activityID,
+            "fullName:", activityInfo.fullName,
+            "isRated:", context.isRatedPvp,
+            "pvpRating:", context.pvpRating,
+            "requiredPvpRating:", context.requiredPvpRating,
+            "generalPlaystyle:", context.generalPlaystyle)
+        if searchResultInfo.leaderPvpRatingInfo then
+            for i, info in ipairs(searchResultInfo.leaderPvpRatingInfo) do
+                PGF.Debug("  PvP bracket", i, "bracket:", info.bracket,
+                    "rating:", info.rating, "activityName:", info.activityName,
+                    "tier:", info.tier)
+            end
+        end
+    end
+
     -- Delve-specific fields
     if context.categoryID == PGF.DELVE_CATEGORY_ID then
         context.tier = tonumber(activityInfo.fullName:match("%(.-(%d+)%)$")) or 0

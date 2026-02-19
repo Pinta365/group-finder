@@ -63,6 +63,12 @@ local defaultLocale = {
     ["BOSS_FILTER_FRESH"] = "Fresh Run",
     ["BOSS_FILTER_PARTIAL"] = "Partial Progress",
     
+    -- PvP rating
+    ["SECTION_PVP_RATING"]  = "RATING",
+    ["MIN_PVP_RATING"]      = "Min Rating:",
+    ["MIN_PVP_RATING_DESC"] = "Only show groups where the leader has at least this PvP rating.\nSet to 0 or leave empty to disable.",
+    ["SORT_PVP_RATING"]     = "Leader Rating",
+
     -- Tier range (Delves)
     ["SECTION_TIER"] = "TIER RANGE",
     ["TIER_MIN"] = "Min Tier:",

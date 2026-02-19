@@ -60,6 +60,12 @@ if GetLocale() == "deDE" then
     ["BOSS_FILTER_FRESH"] = "Neue Instanz",
     ["BOSS_FILTER_PARTIAL"] = "Teilweiser Fortschritt",
     
+    -- PvP rating
+    ["SECTION_PVP_RATING"]  = "WERTUNG",
+    ["MIN_PVP_RATING"]      = "Mindestwertung:",
+    ["MIN_PVP_RATING_DESC"] = "Zeige nur Gruppen, bei denen der Leiter mindestens diese PvP-Wertung hat.\nAuf 0 setzen oder leer lassen, um zu deaktivieren.",
+    ["SORT_PVP_RATING"]     = "Leiterwertung",
+
     -- Tier range (Delves)
     ["SECTION_TIER"] = "STUFENBEREICH",
     ["TIER_MIN"] = "Min. Stufe:",

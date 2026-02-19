@@ -60,6 +60,12 @@ if GetLocale() == "frFR" then
     ["BOSS_FILTER_FRESH"] = "Instance neuve",
     ["BOSS_FILTER_PARTIAL"] = "Déjà entamé",
     
+    -- PvP rating
+    ["SECTION_PVP_RATING"]  = "CLASSEMENT",
+    ["MIN_PVP_RATING"]      = "Note min. :",
+    ["MIN_PVP_RATING_DESC"] = "Afficher uniquement les groupes où le chef a au moins cette note PvP.\nMettez 0 ou laissez vide pour désactiver.",
+    ["SORT_PVP_RATING"]     = "Note du chef",
+
     -- Tier range (Delves)
     ["SECTION_TIER"] = "PLAGE DE NIVEAU",
     ["TIER_MIN"] = "Niveau min. :",

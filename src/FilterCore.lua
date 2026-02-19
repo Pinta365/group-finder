@@ -343,6 +343,116 @@ local function PassesFilter(resultID, context)
         end
     end
 
+    -- Arena filtering
+    if context.categoryID == PGF.ARENA_CATEGORY_ID then
+        if filter.arenaActivities ~= nil then
+            local selectedGroupIDs = {}
+            local selectedStandaloneIDs = {}
+            for k, v in pairs(filter.arenaActivities) do
+                if v and type(k) == "number" then
+                    if k > 0 then
+                        table.insert(selectedGroupIDs, k)
+                    else
+                        table.insert(selectedStandaloneIDs, -k)
+                    end
+                end
+            end
+
+            local activityMatches = false
+            if #selectedGroupIDs > 0 then
+                activityMatches = ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs)
+            end
+            if not activityMatches and #selectedStandaloneIDs > 0 then
+                for _, actID in ipairs(selectedStandaloneIDs) do
+                    if actID == context.activityID then
+                        activityMatches = true
+                        break
+                    end
+                end
+            end
+            if #selectedGroupIDs == 0 and #selectedStandaloneIDs == 0 then
+                return false
+            end
+            if not activityMatches then
+                return false
+            end
+        end
+
+        local minRating = filter.arenaMinPvpRating or 0
+        if minRating > 0 and (context.pvpRating or 0) < minRating then
+            return false
+        end
+
+        local arenaPlaystyle = filter.arenaPlaystyle or {}
+        local hasPlaystyleFilter = (arenaPlaystyle.generalPlaystyle1 == false) or
+                                   (arenaPlaystyle.generalPlaystyle2 == false) or
+                                   (arenaPlaystyle.generalPlaystyle3 == false) or
+                                   (arenaPlaystyle.generalPlaystyle4 == false)
+        if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
+            local mapping = { [1]="generalPlaystyle1",[2]="generalPlaystyle2",
+                              [3]="generalPlaystyle3",[4]="generalPlaystyle4" }
+            local blizzKey = mapping[context.generalPlaystyle]
+            if blizzKey and arenaPlaystyle[blizzKey] == false then
+                return false
+            end
+        end
+    end
+
+    -- Rated BG filtering
+    if context.categoryID == PGF.RATED_BG_CATEGORY_ID then
+        if filter.ratedBGActivities ~= nil then
+            local selectedGroupIDs = {}
+            local selectedStandaloneIDs = {}
+            for k, v in pairs(filter.ratedBGActivities) do
+                if v and type(k) == "number" then
+                    if k > 0 then
+                        table.insert(selectedGroupIDs, k)
+                    else
+                        table.insert(selectedStandaloneIDs, -k)
+                    end
+                end
+            end
+
+            local activityMatches = false
+            if #selectedGroupIDs > 0 then
+                activityMatches = ActivityMatchesSelectedGroups(context.activityID, context.categoryID, selectedGroupIDs)
+            end
+            if not activityMatches and #selectedStandaloneIDs > 0 then
+                for _, actID in ipairs(selectedStandaloneIDs) do
+                    if actID == context.activityID then
+                        activityMatches = true
+                        break
+                    end
+                end
+            end
+            if #selectedGroupIDs == 0 and #selectedStandaloneIDs == 0 then
+                return false
+            end
+            if not activityMatches then
+                return false
+            end
+        end
+
+        local minRating = filter.ratedBGMinPvpRating or 0
+        if minRating > 0 and (context.pvpRating or 0) < minRating then
+            return false
+        end
+
+        local ratedBGPlaystyle = filter.ratedBGPlaystyle or {}
+        local hasPlaystyleFilter = (ratedBGPlaystyle.generalPlaystyle1 == false) or
+                                   (ratedBGPlaystyle.generalPlaystyle2 == false) or
+                                   (ratedBGPlaystyle.generalPlaystyle3 == false) or
+                                   (ratedBGPlaystyle.generalPlaystyle4 == false)
+        if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
+            local mapping = { [1]="generalPlaystyle1",[2]="generalPlaystyle2",
+                              [3]="generalPlaystyle3",[4]="generalPlaystyle4" }
+            local blizzKey = mapping[context.generalPlaystyle]
+            if blizzKey and ratedBGPlaystyle[blizzKey] == false then
+                return false
+            end
+        end
+    end
+
     return true
 end
 
@@ -389,6 +499,8 @@ local function GetSortValue(context, sortType)
         return context.ilvl or 0
     elseif sortType == "name" then
         return context.leaderName or ""
+    elseif sortType == "pvpRating" then
+        return context.pvpRating or 0
     end
     return 0
 end
@@ -441,6 +553,10 @@ function PGF.SortResults(results)
         sortSettings = (db.filter and db.filter.raidSortSettings) or PGF.defaults.filter.raidSortSettings
     elseif categoryID == PGF.DELVE_CATEGORY_ID then
         sortSettings = (db.filter and db.filter.delveSortSettings) or PGF.defaults.filter.delveSortSettings
+    elseif categoryID == PGF.ARENA_CATEGORY_ID then
+        sortSettings = (db.filter and db.filter.arenaSortSettings) or PGF.defaults.filter.arenaSortSettings
+    elseif categoryID == PGF.RATED_BG_CATEGORY_ID then
+        sortSettings = (db.filter and db.filter.ratedBGSortSettings) or PGF.defaults.filter.ratedBGSortSettings
     else
         sortSettings = (db.filter and db.filter.dungeonSortSettings) or PGF.defaults.filter.dungeonSortSettings
     end
@@ -518,6 +634,8 @@ local function InterceptResultUpdates()
         local isSupportedCategory = (categoryID == PGF.DUNGEON_CATEGORY_ID)
             or (categoryID == PGF.RAID_CATEGORY_ID)
             or (categoryID == PGF.DELVE_CATEGORY_ID)
+            or (categoryID == PGF.ARENA_CATEGORY_ID)
+            or (categoryID == PGF.RATED_BG_CATEGORY_ID)
         
         if not isSupportedCategory then
             return

@@ -6,9 +6,11 @@
 
 local addonName, PGF = ...
 
-PGF.DUNGEON_CATEGORY_ID = 2
-PGF.RAID_CATEGORY_ID = 3
-PGF.DELVE_CATEGORY_ID = 121
+PGF.DUNGEON_CATEGORY_ID  = 2
+PGF.RAID_CATEGORY_ID     = 3
+PGF.DELVE_CATEGORY_ID    = 121
+PGF.ARENA_CATEGORY_ID    = 4
+PGF.RATED_BG_CATEGORY_ID = 9
 
 ---@class SavedVariables
 ---@field debug boolean
@@ -114,7 +116,6 @@ PGF.defaults = {
             secondarySort = nil,
             secondarySortDirection = "desc",
         },
-        delveActivities = {},
         delveTierMin = 1,
         delveTierMax = 11,
         delveIncludeSpecialTiers = true,
@@ -132,6 +133,48 @@ PGF.defaults = {
             settings = false,
         },
         delveSortSettings = {
+            disableCustomSorting = true,
+            primarySort = "age",
+            primarySortDirection = "asc",
+            secondarySort = nil,
+            secondarySortDirection = "asc",
+        },
+        arenaMinPvpRating = 0,
+        arenaPlaystyle = {
+            generalPlaystyle1 = true,
+            generalPlaystyle2 = true,
+            generalPlaystyle3 = true,
+            generalPlaystyle4 = true,
+        },
+        arenaAccordionState = {
+            activities = true,
+            rating = false,
+            playstyle = false,
+            quickApply = false,
+            settings = false,
+        },
+        arenaSortSettings = {
+            disableCustomSorting = true,
+            primarySort = "age",
+            primarySortDirection = "asc",
+            secondarySort = nil,
+            secondarySortDirection = "asc",
+        },
+        ratedBGMinPvpRating = 0,
+        ratedBGPlaystyle = {
+            generalPlaystyle1 = true,
+            generalPlaystyle2 = true,
+            generalPlaystyle3 = true,
+            generalPlaystyle4 = true,
+        },
+        ratedBGAccordionState = {
+            activities = true,
+            rating = false,
+            playstyle = false,
+            quickApply = false,
+            settings = false,
+        },
+        ratedBGSortSettings = {
             disableCustomSorting = true,
             primarySort = "age",
             primarySortDirection = "asc",
