@@ -56,6 +56,7 @@ PGF.RATED_BG_CATEGORY_ID = 9
 ---@field showDungeonSpecIcons boolean
 ---@field showArenaLeaderIcon boolean
 ---@field showArenaSpecIcons boolean
+---@field showRatedBGSpecIndicators boolean
 ---@field filterPanelShown boolean
 
 ---@type SavedVariables
@@ -193,6 +194,7 @@ PGF.defaults = {
         showRaidSpecIndicators = true,
         showArenaLeaderIcon = true,
         showArenaSpecIcons = true,
+        showRatedBGSpecIndicators = true,
         filterPanelShown = true,
     },
 }

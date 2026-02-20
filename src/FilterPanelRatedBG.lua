@@ -569,6 +569,31 @@ local function CreateSettingsSection(scrollContent)
 
     local y = CONTENT_PADDING
 
+    local specIndCB = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    specIndCB:SetSize(20, 20)
+    specIndCB:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local specIndLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    specIndLabel:SetPoint("LEFT", specIndCB, "RIGHT", 5, 0)
+    specIndLabel:SetText(PGF.L("SHOW_RATED_BG_SPEC_INDICATORS"))
+    specIndCB:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        db.ui.showRatedBGSpecIndicators = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    specIndCB:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_RATED_BG_SPEC_INDICATORS"))
+        GameTooltip:AddLine(PGF.L("SHOW_RATED_BG_SPEC_INDICATORS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    specIndCB:SetScript("OnLeave", GameTooltip_Hide)
+    local ui = (PintaGroupFinderDB and PintaGroupFinderDB.ui) or PGF.defaults.ui
+    specIndCB:SetChecked(ui.showRatedBGSpecIndicators ~= false)
+    ratedBGPanel.showRatedBGSpecIndicatorsCheckbox = specIndCB
+
+    y = y + 24
+
     local disableCB = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     disableCB:SetSize(20, 20)
     disableCB:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
@@ -957,6 +982,11 @@ function PGF.UpdateRatedBGPanel()
 
     if ratedBGPanel.disableCustomSortingCheckbox then
         ratedBGPanel.disableCustomSortingCheckbox:SetChecked(GetSortSettings().disableCustomSorting ~= false)
+    end
+
+    if ratedBGPanel.showRatedBGSpecIndicatorsCheckbox then
+        local ui = (PintaGroupFinderDB and PintaGroupFinderDB.ui) or PGF.defaults.ui
+        ratedBGPanel.showRatedBGSpecIndicatorsCheckbox:SetChecked(ui.showRatedBGSpecIndicators ~= false)
     end
 
     if ratedBGPanel.UpdateDropdownStates then ratedBGPanel.UpdateDropdownStates() end

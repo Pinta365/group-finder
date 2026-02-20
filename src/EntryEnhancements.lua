@@ -661,7 +661,8 @@ local function OnEntryUpdate(self)
         AddLeaderRating(self, resultID, searchResultInfo)
     end
 
-    if categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidSpecIndicators then
+    if (categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidSpecIndicators)
+        or (categoryID == PGF.RATED_BG_CATEGORY_ID and ui and ui.showRatedBGSpecIndicators) then
         AddClassSpecIndicators(self, resultID, searchResultInfo)
     else
         local indicator = classSpecIndicators[self]

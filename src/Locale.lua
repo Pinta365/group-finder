@@ -120,6 +120,8 @@ local defaultLocale = {
     ["SHOW_ARENA_LEADER_ICON_DESC"] = "Show a crown icon above the group leader in arena search results.",
     ["SHOW_ARENA_SPEC_ICONS"] = "Show spec icons",
     ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in arena search results.",
+    ["SHOW_RATED_BG_SPEC_INDICATORS"] = "Show rated BG spec indicators",
+    ["SHOW_RATED_BG_SPEC_INDICATORS_DESC"] = "Show how many of your class and spec are already in the rated battleground group.",
 }
 
 local currentLocale = {}

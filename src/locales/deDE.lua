@@ -117,5 +117,7 @@ if GetLocale() == "deDE" then
     ["SHOW_ARENA_LEADER_ICON_DESC"] = "Zeigt ein Kronen-Symbol über dem Gruppenanführer in Arena-Suchergebnissen.",
     ["SHOW_ARENA_SPEC_ICONS"] = "Spezialisierungs-Symbole anzeigen",
     ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Arena-Suchergebnissen.",
+    ["SHOW_RATED_BG_SPEC_INDICATORS"] = "Gewertetes SG Spezialisierungsanzeige",
+    ["SHOW_RATED_BG_SPEC_INDICATORS_DESC"] = "Zeigt an, wie viele deiner Klasse und Spezialisierung bereits in der gewerteten Schlachtfeld-Gruppe sind.",
     }
 end
