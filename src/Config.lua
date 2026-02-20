@@ -54,6 +54,8 @@ PGF.RATED_BG_CATEGORY_ID = 9
 ---@field showMissingRoles boolean
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
+---@field showArenaLeaderIcon boolean
+---@field showArenaSpecIcons boolean
 ---@field filterPanelShown boolean
 
 ---@type SavedVariables
@@ -189,6 +191,8 @@ PGF.defaults = {
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
         showRaidSpecIndicators = true,
+        showArenaLeaderIcon = true,
+        showArenaSpecIcons = true,
         filterPanelShown = true,
     },
 }

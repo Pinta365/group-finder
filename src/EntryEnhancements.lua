@@ -459,6 +459,71 @@ local function GetDungeonEntryPlayerData(resultID, searchResultInfo, numIcons)
     }
 end
 
+---@param resultID number
+---@param searchResultInfo table
+---@param numIcons number
+---@param maxNumPlayers number Blizzard starts filling from this index (activityInfo.maxNumPlayers)
+---@return table|nil playerData
+local function GetClassEnumerateEntryPlayerData(resultID, searchResultInfo, numIcons, maxNumPlayers)
+    local numMembers = searchResultInfo.numMembers or 0
+    if numMembers == 0 then return nil end
+
+    local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
+    if not memberCounts or not memberCounts.classesByRole then return nil end
+
+    local classTotals = {}
+    for _, classCounts in pairs(memberCounts.classesByRole) do
+        for class, count in pairs(classCounts) do
+            classTotals[class] = (classTotals[class] or 0) + count
+        end
+    end
+
+    local memberInfo = {}
+    for i = 1, numMembers do
+        local info = C_LFGList.GetSearchResultPlayerInfo(resultID, i)
+        if info then memberInfo[i] = info end
+    end
+
+    local startIdx = maxNumPlayers or numMembers
+
+    local memberToIconIndex = {}
+    local classOrder = _G["LFG_LIST_GROUP_DATA_CLASS_ORDER"]
+    if classOrder then
+        local classStartIndex = {}
+        local idx = startIdx
+        for _, class in ipairs(classOrder) do
+            local count = classTotals[class] or 0
+            if count > 0 then
+                classStartIndex[class] = idx
+                idx = idx - count
+            end
+        end
+        local classConsumed = {}
+        for memberIdx = 1, numMembers do
+            local info = memberInfo[memberIdx]
+            if info and info.classFilename then
+                local class = info.classFilename
+                local startClass = classStartIndex[class]
+                if startClass then
+                    local consumed = classConsumed[class] or 0
+                    memberToIconIndex[memberIdx] = startClass - consumed
+                    classConsumed[class] = consumed + 1
+                end
+            end
+        end
+    else
+        for memberIdx = 1, numMembers do
+            memberToIconIndex[memberIdx] = startIdx - (memberIdx - 1)
+        end
+    end
+
+    return {
+        numMembers = numMembers,
+        memberToIconIndex = memberToIconIndex,
+        memberInfo = memberInfo,
+    }
+end
+
 ---@param entry Frame
 ---@param icons table
 ---@param playerData table
@@ -531,6 +596,8 @@ local function OnEntryUpdate(self)
     local ui = db.ui
     local showLeader = ui and ui.showLeaderIcon
     local showSpecs = ui and ui.showDungeonSpecIcons
+    local showArenaLeader = ui and ui.showArenaLeaderIcon
+    local showArenaSpecs = ui and ui.showArenaSpecIcons
     local showRating = ui and ui.showLeaderRating
     local showMissing = ui and ui.showMissingRoles
 
@@ -539,23 +606,33 @@ local function OnEntryUpdate(self)
 
     local categoryID = LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID
     local isDungeon = categoryID == PGF.DUNGEON_CATEGORY_ID
+    local isArena = categoryID == PGF.ARENA_CATEGORY_ID
 
-    if isDungeon and (showLeader or showSpecs) and (searchResultInfo.numMembers or 0) > 0 then
+    local effectiveShowLeader = (isDungeon and showLeader) or (isArena and showArenaLeader)
+    local effectiveShowSpecs = (isDungeon and showSpecs) or (isArena and showArenaSpecs)
+
+    if (isDungeon or isArena) and (effectiveShowLeader or effectiveShowSpecs) and (searchResultInfo.numMembers or 0) > 0 then
         local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
         local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
 
-        if activityInfo and activityInfo.displayType == Enum.LFGListDisplayType.RoleEnumerate then
+        if activityInfo and (activityInfo.displayType == Enum.LFGListDisplayType.RoleEnumerate
+            or activityInfo.displayType == Enum.LFGListDisplayType.ClassEnumerate) then
             local icons = self.DataDisplay and self.DataDisplay.Enumerate and self.DataDisplay.Enumerate.Icons
             if icons and #icons > 0 then
-                local playerData = GetDungeonEntryPlayerData(resultID, searchResultInfo, #icons)
+                local playerData
+                if activityInfo.displayType == Enum.LFGListDisplayType.ClassEnumerate then
+                    playerData = GetClassEnumerateEntryPlayerData(resultID, searchResultInfo, #icons, activityInfo.maxNumPlayers)
+                else
+                    playerData = GetDungeonEntryPlayerData(resultID, searchResultInfo, #icons)
+                end
                 if playerData then
-                    if showLeader then
+                    if effectiveShowLeader then
                         AddDungeonLeaderIcon(self, icons, playerData)
                     else
                         local frame = leaderIconFrames[self]
                         if frame then frame:Hide() end
                     end
-                    if showSpecs then
+                    if effectiveShowSpecs then
                         AddDungeonSpecIcons(self, icons, playerData)
                     else
                         local sf = dungeonSpecFrames[self]

@@ -38,12 +38,12 @@ All panels support **Quick Apply** and **Settings** sections (see below).
 
 Enable in any filter panel to sign up with one click using saved role preferences. Hold Shift to show the normal dialog, when you for example want to sign up with a note. Roles sync with Blizzard's system and persist per character. Includes **Auto-Accept** to automatically accept when your party leader applies.
 
-### Visual Improvements (Dungeons & Raids)
+### Visual Improvements
 
 Toggleable in each panel's Settings section:
 
-* **Leader Crown** — crown icon above the group leader's role slot
-* **Spec Icons** — specialization icons below each filled role slot (dungeons)
+* **Leader Crown** — crown icon above the group leader's role slot (dungeons & arena)
+* **Spec Icons** — specialization icons below each filled role slot (dungeons & arena)
 * **Leader Rating** — M+ rating next to the group name, color-coded by tier (dungeons)
 * **Missing Role Indicators** — desaturated icons for unfilled slots (dungeons)
 * **Class/Spec Indicators** — count of your class already in the group, by role (raids)

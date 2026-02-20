@@ -116,6 +116,10 @@ local defaultLocale = {
     ["SHOW_MISSING_ROLES_DESC"] = "Show desaturated role icons for unfilled slots in dungeon search results.",
     ["SHOW_RAID_SPEC_INDICATORS"] = "Show raid spec indicators",
     ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Show how many of your class and spec are already in the raid group.",
+    ["SHOW_ARENA_LEADER_ICON"] = "Show leader icon",
+    ["SHOW_ARENA_LEADER_ICON_DESC"] = "Show a crown icon above the group leader in arena search results.",
+    ["SHOW_ARENA_SPEC_ICONS"] = "Show spec icons",
+    ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in arena search results.",
 }
 
 local currentLocale = {}

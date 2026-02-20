@@ -113,5 +113,9 @@ if GetLocale() == "deDE" then
     ["SHOW_MISSING_ROLES_DESC"] = "Zeigt entsättigte Rollensymbole für unbesetzte Plätze in Dungeon-Suchergebnissen.",
     ["SHOW_RAID_SPEC_INDICATORS"] = "Raid-Spezialisierungsanzeige",
     ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Zeigt an, wie viele deiner Klasse und Spezialisierung bereits in der Raidgruppe sind.",
+    ["SHOW_ARENA_LEADER_ICON"] = "Anführer-Symbol anzeigen",
+    ["SHOW_ARENA_LEADER_ICON_DESC"] = "Zeigt ein Kronen-Symbol über dem Gruppenanführer in Arena-Suchergebnissen.",
+    ["SHOW_ARENA_SPEC_ICONS"] = "Spezialisierungs-Symbole anzeigen",
+    ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Arena-Suchergebnissen.",
     }
 end

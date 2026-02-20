@@ -113,5 +113,9 @@ if GetLocale() == "frFR" then
     ["SHOW_MISSING_ROLES_DESC"] = "Affiche des icônes de rôle désaturées pour les emplacements non remplis dans les résultats de recherche de donjon.",
     ["SHOW_RAID_SPEC_INDICATORS"] = "Afficher les indicateurs de spé raid",
     ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Affiche combien de votre classe et spécialisation sont déjà dans le groupe de raid.",
+    ["SHOW_ARENA_LEADER_ICON"] = "Afficher l'icône du chef",
+    ["SHOW_ARENA_LEADER_ICON_DESC"] = "Affiche une icône de couronne au-dessus du chef de groupe dans les résultats de recherche d'arène.",
+    ["SHOW_ARENA_SPEC_ICONS"] = "Afficher les icônes de spé",
+    ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Affiche les icônes de spécialisation sous les emplacements de rôle remplis dans les résultats de recherche d'arène.",
     }
 end

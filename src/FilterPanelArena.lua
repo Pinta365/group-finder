@@ -672,7 +672,63 @@ local function CreateSettingsSection(scrollContent)
     local header = CreateAccordionHeader(scrollContent, "settings", PGF.L("SECTION_SETTINGS"))
     local content = CreateAccordionContent(scrollContent)
 
+    local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
+
     local y = CONTENT_PADDING
+
+    -- Show Leader Icon Checkbox
+    local showLeaderIconCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showLeaderIconCheckbox:SetSize(20, 20)
+    showLeaderIconCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showLeaderIconLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showLeaderIconLabel:SetPoint("LEFT", showLeaderIconCheckbox, "RIGHT", 5, 0)
+    showLeaderIconLabel:SetText(PGF.L("SHOW_ARENA_LEADER_ICON"))
+    showLeaderIconCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showArenaLeaderIcon = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showLeaderIconCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_ARENA_LEADER_ICON"))
+        GameTooltip:AddLine(PGF.L("SHOW_ARENA_LEADER_ICON_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showLeaderIconCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showLeaderIconCheckbox:SetChecked(ui.showArenaLeaderIcon ~= false)
+    arenaPanel.showLeaderIconCheckbox = showLeaderIconCheckbox
+    y = y + 24
+
+    -- Show Spec Icons Checkbox
+    local showSpecIconsCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showSpecIconsCheckbox:SetSize(20, 20)
+    showSpecIconsCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showSpecIconsLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showSpecIconsLabel:SetPoint("LEFT", showSpecIconsCheckbox, "RIGHT", 5, 0)
+    showSpecIconsLabel:SetText(PGF.L("SHOW_ARENA_SPEC_ICONS"))
+    showSpecIconsCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showArenaSpecIcons = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showSpecIconsCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_ARENA_SPEC_ICONS"))
+        GameTooltip:AddLine(PGF.L("SHOW_ARENA_SPEC_ICONS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showSpecIconsCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showSpecIconsCheckbox:SetChecked(ui.showArenaSpecIcons ~= false)
+    arenaPanel.showSpecIconsCheckbox = showSpecIconsCheckbox
+    y = y + 24
 
     local disableCustomSortingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     disableCustomSortingCheckbox:SetSize(20, 20)
@@ -1069,6 +1125,16 @@ function PGF.UpdateArenaPanel()
 
     if arenaPanel.quickApplyAutoAccept then
         arenaPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
+    end
+
+    if arenaPanel.showLeaderIconCheckbox then
+        local ui = (PintaGroupFinderDB and PintaGroupFinderDB.ui) or PGF.defaults.ui
+        arenaPanel.showLeaderIconCheckbox:SetChecked(ui.showArenaLeaderIcon ~= false)
+    end
+
+    if arenaPanel.showSpecIconsCheckbox then
+        local ui = (PintaGroupFinderDB and PintaGroupFinderDB.ui) or PGF.defaults.ui
+        arenaPanel.showSpecIconsCheckbox:SetChecked(ui.showArenaSpecIcons ~= false)
     end
 
     if arenaPanel.disableCustomSortingCheckbox then
