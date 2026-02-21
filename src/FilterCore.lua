@@ -8,6 +8,10 @@ local addonName, PGF = ...
 
 local filterInProgress = false
 
+-- Maps generalPlaystyle numeric values to db key names.
+local PLAYSTYLE_KEYS = { [1]="generalPlaystyle1", [2]="generalPlaystyle2",
+                         [3]="generalPlaystyle3", [4]="generalPlaystyle4" }
+
 ---Get fixed role counts from party members only (party1..party4). Player is excluded.
 ---@return number fixedTanks
 ---@return number fixedHealers
@@ -226,20 +230,13 @@ local function PassesFilter(resultID, context)
         
         -- generalPlaystyle: 1=Learning, 2=Relaxed, 3=Competitive, 4=Carry Offered
         local raidPlaystyle = filter.raidPlaystyle or {}
-        local playstyleMapping = {
-            [1] = "generalPlaystyle1",
-            [2] = "generalPlaystyle2",
-            [3] = "generalPlaystyle3",
-            [4] = "generalPlaystyle4",
-        }
-
         local hasPlaystyleFilter = (raidPlaystyle.generalPlaystyle1 == false) or
                                    (raidPlaystyle.generalPlaystyle2 == false) or
                                    (raidPlaystyle.generalPlaystyle3 == false) or
                                    (raidPlaystyle.generalPlaystyle4 == false)
         
         if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
-            local blizzKey = playstyleMapping[context.generalPlaystyle]
+            local blizzKey = PLAYSTYLE_KEYS[context.generalPlaystyle]
             if blizzKey and raidPlaystyle[blizzKey] == false then
                 return false
             end
@@ -330,13 +327,7 @@ local function PassesFilter(resultID, context)
                                    (delvePlaystyle.generalPlaystyle3 == false) or
                                    (delvePlaystyle.generalPlaystyle4 == false)
         if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
-            local playstyleMapping = {
-                [1] = "generalPlaystyle1",
-                [2] = "generalPlaystyle2",
-                [3] = "generalPlaystyle3",
-                [4] = "generalPlaystyle4",
-            }
-            local blizzKey = playstyleMapping[context.generalPlaystyle]
+            local blizzKey = PLAYSTYLE_KEYS[context.generalPlaystyle]
             if blizzKey and delvePlaystyle[blizzKey] == false then
                 return false
             end
@@ -389,9 +380,7 @@ local function PassesFilter(resultID, context)
                                    (arenaPlaystyle.generalPlaystyle3 == false) or
                                    (arenaPlaystyle.generalPlaystyle4 == false)
         if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
-            local mapping = { [1]="generalPlaystyle1",[2]="generalPlaystyle2",
-                              [3]="generalPlaystyle3",[4]="generalPlaystyle4" }
-            local blizzKey = mapping[context.generalPlaystyle]
+            local blizzKey = PLAYSTYLE_KEYS[context.generalPlaystyle]
             if blizzKey and arenaPlaystyle[blizzKey] == false then
                 return false
             end
@@ -444,9 +433,7 @@ local function PassesFilter(resultID, context)
                                    (ratedBGPlaystyle.generalPlaystyle3 == false) or
                                    (ratedBGPlaystyle.generalPlaystyle4 == false)
         if hasPlaystyleFilter and context.generalPlaystyle and context.generalPlaystyle > 0 then
-            local mapping = { [1]="generalPlaystyle1",[2]="generalPlaystyle2",
-                              [3]="generalPlaystyle3",[4]="generalPlaystyle4" }
-            local blizzKey = mapping[context.generalPlaystyle]
+            local blizzKey = PLAYSTYLE_KEYS[context.generalPlaystyle]
             if blizzKey and ratedBGPlaystyle[blizzKey] == false then
                 return false
             end
@@ -511,16 +498,8 @@ end
 ---@param direction string "asc"|"desc"
 ---@return boolean aLessThanB
 local function CompareSortValues(valueA, valueB, direction)
-    local isLess
-    if type(valueA) == "string" and type(valueB) == "string" then
-        isLess = valueA < valueB
-    else
-        isLess = valueA < valueB
-    end
-    
-    if direction == "desc" then
-        return not isLess
-    end
+    local isLess = valueA < valueB
+    if direction == "desc" then return not isLess end
     return isLess
 end
 
