@@ -674,19 +674,6 @@ local function CreateRoleFilteringSection(scrollContent)
                     
                     local db = PintaGroupFinderDB
                     PGF.EnsureFilter(db)
-                    if not db.filter.raidRoleRequirements then
-                        db.filter.raidRoleRequirements = {}
-                        for _, r in ipairs(roleReqRoles) do
-                            db.filter.raidRoleRequirements[r.key] = {
-                                enabled = false,
-                                operator = ">=",
-                                value = (r.key == "tank" and 1) or (r.key == "healer" and 2) or 0
-                            }
-                        end
-                    end
-                    if not db.filter.raidRoleRequirements[role.key] then
-                        db.filter.raidRoleRequirements[role.key] = { enabled = false, operator = ">=", value = 1 }
-                    end
                     db.filter.raidRoleRequirements[role.key].operator = op.value
                     PGF.RefilterResults()
                 end
@@ -705,19 +692,6 @@ local function CreateRoleFilteringSection(scrollContent)
             
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.raidRoleRequirements then
-                db.filter.raidRoleRequirements = {}
-                for _, r in ipairs(roleReqRoles) do
-                    db.filter.raidRoleRequirements[r.key] = {
-                        enabled = false,
-                        operator = ">=",
-                        value = (r.key == "tank" and 1) or (r.key == "healer" and 2) or 0
-                    }
-                end
-            end
-            if not db.filter.raidRoleRequirements[role.key] then
-                db.filter.raidRoleRequirements[role.key] = { enabled = false, operator = ">=", value = 1 }
-            end
             db.filter.raidRoleRequirements[role.key].value = value
             PGF.RefilterResults()
         end)
@@ -728,19 +702,6 @@ local function CreateRoleFilteringSection(scrollContent)
             
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.raidRoleRequirements then
-                db.filter.raidRoleRequirements = {}
-                for _, r in ipairs(roleReqRoles) do
-                    db.filter.raidRoleRequirements[r.key] = {
-                        enabled = false,
-                        operator = ">=",
-                        value = (r.key == "tank" and 1) or (r.key == "healer" and 2) or 0
-                    }
-                end
-            end
-            if not db.filter.raidRoleRequirements[role.key] then
-                db.filter.raidRoleRequirements[role.key] = { enabled = false, operator = ">=", value = 1 }
-            end
             db.filter.raidRoleRequirements[role.key].value = value
             PGF.RefilterResults()
         end)
@@ -748,19 +709,6 @@ local function CreateRoleFilteringSection(scrollContent)
         enableCheckbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.raidRoleRequirements then
-                db.filter.raidRoleRequirements = {}
-                for _, r in ipairs(roleReqRoles) do
-                    db.filter.raidRoleRequirements[r.key] = {
-                        enabled = false,
-                        operator = ">=",
-                        value = (r.key == "tank" and 1) or (r.key == "healer" and 2) or 0
-                    }
-                end
-            end
-            if not db.filter.raidRoleRequirements[role.key] then
-                db.filter.raidRoleRequirements[role.key] = { enabled = false, operator = ">=", value = 1 }
-            end
             db.filter.raidRoleRequirements[role.key].enabled = self:GetChecked()
             PGF.RefilterResults()
         end)
@@ -895,12 +843,6 @@ local function CreateSettingsSection(scrollContent)
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.raidSortSettings then
-            db.filter.raidSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
-                db.filter.raidSortSettings[k] = v
-            end
-        end
         db.filter.raidSortSettings.disableCustomSorting = self:GetChecked()
         UpdateDropdownStates()
         PGF.RefilterResults()
@@ -935,12 +877,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.raidSortSettings then
-            db.filter.raidSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
-                db.filter.raidSortSettings[k] = v
-            end
-        end
         db.filter.raidSortSettings.primarySort = value
         PGF.RefilterResults()
     end
@@ -995,12 +931,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.raidSortSettings then
-            db.filter.raidSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
-                db.filter.raidSortSettings[k] = v
-            end
-        end
         db.filter.raidSortSettings.primarySortDirection = value
         PGF.RefilterResults()
     end
@@ -1052,12 +982,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.raidSortSettings then
-            db.filter.raidSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
-                db.filter.raidSortSettings[k] = v
-            end
-        end
         db.filter.raidSortSettings.secondarySort = value ~= "none" and value or nil
         PGF.RefilterResults()
     end
@@ -1127,12 +1051,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.raidSortSettings then
-            db.filter.raidSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
-                db.filter.raidSortSettings[k] = v
-            end
-        end
         db.filter.raidSortSettings.secondarySortDirection = value
         PGF.RefilterResults()
     end

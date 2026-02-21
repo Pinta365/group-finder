@@ -412,7 +412,6 @@ local function CreatePlaystyleSection(scrollContent)
         checkbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.delvePlaystyle then db.filter.delvePlaystyle = {} end
             db.filter.delvePlaystyle[playstyle.blizzKey] = self:GetChecked()
 
             PGF.RefilterResults()
@@ -523,12 +522,6 @@ local function CreateSettingsSection(scrollContent)
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.delveSortSettings then
-            db.filter.delveSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.delveSortSettings) do
-                db.filter.delveSortSettings[k] = v
-            end
-        end
         db.filter.delveSortSettings.disableCustomSorting = self:GetChecked()
         UpdateDropdownStates()
         PGF.RefilterResults()
@@ -561,12 +554,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.delveSortSettings then
-            db.filter.delveSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.delveSortSettings) do
-                db.filter.delveSortSettings[k] = v
-            end
-        end
         db.filter.delveSortSettings.primarySort = value
         PGF.RefilterResults()
     end
@@ -621,12 +608,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.delveSortSettings then
-            db.filter.delveSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.delveSortSettings) do
-                db.filter.delveSortSettings[k] = v
-            end
-        end
         db.filter.delveSortSettings.primarySortDirection = value
         PGF.RefilterResults()
     end
@@ -678,12 +659,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.delveSortSettings then
-            db.filter.delveSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.delveSortSettings) do
-                db.filter.delveSortSettings[k] = v
-            end
-        end
         db.filter.delveSortSettings.secondarySort = value ~= "none" and value or nil
         PGF.RefilterResults()
     end
@@ -753,12 +728,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.delveSortSettings then
-            db.filter.delveSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.delveSortSettings) do
-                db.filter.delveSortSettings[k] = v
-            end
-        end
         db.filter.delveSortSettings.secondarySortDirection = value
         PGF.RefilterResults()
     end

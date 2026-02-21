@@ -384,7 +384,6 @@ local function CreateDifficultySection(scrollContent)
             
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.difficulty then db.filter.difficulty = {} end
             db.filter.difficulty[diff.key] = self:GetChecked()
             
             UpdateDungeonList()
@@ -570,7 +569,6 @@ local function CreateMiscSection(scrollContent)
             
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
-            if not db.filter.hasRole then db.filter.hasRole = {} end
             db.filter.hasRole[role.key] = self:GetChecked()
             
             local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
@@ -824,12 +822,6 @@ local function CreateSettingsSection(scrollContent)
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
         db.filter.dungeonSortSettings.disableCustomSorting = self:GetChecked()
         UpdateDropdownStates()
         PGF.RefilterResults()
@@ -862,12 +854,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
         db.filter.dungeonSortSettings.primarySort = value
         PGF.RefilterResults()
     end
@@ -922,12 +908,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetPrimarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
         db.filter.dungeonSortSettings.primarySortDirection = value
         PGF.RefilterResults()
     end
@@ -979,12 +959,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
         db.filter.dungeonSortSettings.secondarySort = value ~= "none" and value or nil
         PGF.RefilterResults()
     end
@@ -1054,12 +1028,6 @@ local function CreateSettingsSection(scrollContent)
     local function SetSecondarySortDirection(value)
         local db = PintaGroupFinderDB
         PGF.EnsureFilter(db)
-        if not db.filter.dungeonSortSettings then
-            db.filter.dungeonSortSettings = {}
-            for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
-                db.filter.dungeonSortSettings[k] = v
-            end
-        end
         db.filter.dungeonSortSettings.secondarySortDirection = value
         PGF.RefilterResults()
     end
