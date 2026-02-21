@@ -9,164 +9,25 @@ local addonName, PGF = ...
 local arenaPanel = nil
 local PANEL_WIDTH = 280
 local PANEL_HEIGHT = 400
-local HEADER_HEIGHT = 24
 local CONTENT_PADDING = 8
 
 local sections = {}
 
----Check if a section is expanded.
----@param sectionID string
----@return boolean
 local function IsSectionExpanded(sectionID)
     return PintaGroupFinderDB.filter.arenaAccordionState[sectionID]
 end
 
----Set accordion state for a section.
----@param sectionID string
----@param expanded boolean
 local function SetAccordionState(sectionID, expanded)
     PintaGroupFinderDB.filter.arenaAccordionState[sectionID] = expanded
 end
 
----Recalculate content height and reposition all sections.
 local function RecalculateLayout()
-    if not arenaPanel or not arenaPanel.scrollContent then return end
-
-    local yOffset = 0
-
-    for _, section in ipairs(sections) do
-        section.header:ClearAllPoints()
-        section.header:SetPoint("TOPLEFT", arenaPanel.scrollContent, "TOPLEFT", 0, -yOffset)
-        section.header:SetPoint("TOPRIGHT", arenaPanel.scrollContent, "TOPRIGHT", 0, -yOffset)
-
-        yOffset = yOffset + HEADER_HEIGHT
-
-        if IsSectionExpanded(section.id) then
-            section.content:ClearAllPoints()
-            section.content:SetPoint("TOPLEFT", arenaPanel.scrollContent, "TOPLEFT", 0, -yOffset)
-            section.content:SetPoint("TOPRIGHT", arenaPanel.scrollContent, "TOPRIGHT", 0, -yOffset)
-            section.content:Show()
-            yOffset = yOffset + section.content:GetHeight()
-            section.header.arrow:SetText("-")
-        else
-            section.content:Hide()
-            section.header.arrow:SetText("+")
-        end
-
-        yOffset = yOffset + 2
-    end
-
-    arenaPanel.scrollContent:SetHeight(math.max(1, yOffset))
-
-    if arenaPanel.scrollBar then
-        local scrollFrame = arenaPanel.scrollFrame
-        local visibleHeight = scrollFrame:GetHeight()
-        local contentHeight = arenaPanel.scrollContent:GetHeight()
-
-        if contentHeight > visibleHeight then
-            arenaPanel.scrollBar:Show()
-            arenaPanel.scrollBar:SetMinMaxValues(0, contentHeight - visibleHeight)
-        else
-            arenaPanel.scrollBar:Hide()
-            scrollFrame:SetVerticalScroll(0)
-        end
-    end
+    PGF.RecalculateLayout(arenaPanel, sections, IsSectionExpanded)
 end
 
----Create a minimal/modern style scrollbar.
----@param parent Frame The scroll frame to attach to
----@return Slider scrollBar
-local function CreateMinimalScrollBar(parent)
-    local scrollBar = CreateFrame("Slider", nil, parent, "BackdropTemplate")
-    scrollBar:SetWidth(8)
-    scrollBar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, -2)
-    scrollBar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 2)
-
-    scrollBar:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        insets = { left = 0, right = 0, top = 0, bottom = 0 }
-    })
-    scrollBar:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
-
-    local thumb = scrollBar:CreateTexture(nil, "OVERLAY")
-    thumb:SetTexture("Interface\\Buttons\\WHITE8X8")
-    thumb:SetVertexColor(0.4, 0.4, 0.4, 0.8)
-    thumb:SetSize(8, 40)
-    scrollBar:SetThumbTexture(thumb)
-
-    scrollBar:SetScript("OnEnter", function(self)
-        thumb:SetVertexColor(0.6, 0.6, 0.6, 1)
-    end)
-    scrollBar:SetScript("OnLeave", function(self)
-        thumb:SetVertexColor(0.4, 0.4, 0.4, 0.8)
-    end)
-
-    scrollBar:SetOrientation("VERTICAL")
-    scrollBar:SetValueStep(1)
-    scrollBar:SetMinMaxValues(0, 0)
-    scrollBar:SetValue(0)
-
-    scrollBar:SetScript("OnValueChanged", function(self, value)
-        parent:SetVerticalScroll(value)
-    end)
-
-    return scrollBar
-end
-
----Create an accordion section header.
----@param parent Frame Parent frame (scroll content)
----@param sectionID string Unique section identifier
----@param title string Section title text
----@return Frame header The header frame
-local function CreateAccordionHeader(parent, sectionID, title)
-    local header = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    header:SetHeight(HEADER_HEIGHT)
-
-    header:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    header:SetBackdropColor(0.2, 0.2, 0.2, 1)
-    header:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
-
-    local arrow = header:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    arrow:SetPoint("LEFT", header, "LEFT", 8, 0)
-    arrow:SetText(IsSectionExpanded(sectionID) and "-" or "+")
-    header.arrow = arrow
-
-    local titleText = header:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    titleText:SetPoint("LEFT", arrow, "RIGHT", 6, 0)
-    titleText:SetText(title)
-    titleText:SetTextColor(1, 0.82, 0)
-
-    header:SetScript("OnEnter", function(self)
-        self:SetBackdropColor(0.3, 0.3, 0.3, 1)
-    end)
-    header:SetScript("OnLeave", function(self)
-        self:SetBackdropColor(0.2, 0.2, 0.2, 1)
-    end)
-
-    header:SetScript("OnClick", function(self)
-        local newState = not IsSectionExpanded(sectionID)
-        SetAccordionState(sectionID, newState)
-        RecalculateLayout()
-    end)
-
-    return header
-end
-
----Create an accordion section content container.
----@param parent Frame Parent frame (scroll content)
----@return Frame content The content frame
-local function CreateAccordionContent(parent)
-    local content = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-    content:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-    })
-    content:SetBackdropColor(0.15, 0.15, 0.15, 1)
-
-    return content
+local function MakeAccordionHeader(parent, sectionID, title)
+    return PGF.CreateAccordionHeader(parent, sectionID, title,
+        IsSectionExpanded, SetAccordionState, RecalculateLayout)
 end
 
 --------------------------------------------------------------------------------
@@ -363,8 +224,8 @@ end
 
 ---Create Activities section.
 local function CreateActivitiesSection(scrollContent)
-    local header = CreateAccordionHeader(scrollContent, "activities", PGF.L("SECTION_ACTIVITIES"))
-    local content = CreateAccordionContent(scrollContent)
+    local header = MakeAccordionHeader(scrollContent, "activities", PGF.L("SECTION_ACTIVITIES"))
+    local content = PGF.CreateAccordionContent(scrollContent)
 
     content:SetHeight(150)
 
@@ -429,8 +290,8 @@ end
 
 ---Create Rating section (min PvP rating filter).
 local function CreateRatingSection(scrollContent)
-    local header = CreateAccordionHeader(scrollContent, "rating", PGF.L("SECTION_PVP_RATING"))
-    local content = CreateAccordionContent(scrollContent)
+    local header = MakeAccordionHeader(scrollContent, "rating", PGF.L("SECTION_PVP_RATING"))
+    local content = PGF.CreateAccordionContent(scrollContent)
 
     local y = CONTENT_PADDING
 
@@ -486,8 +347,8 @@ end
 
 ---Create Playstyle section.
 local function CreatePlaystyleSection(scrollContent)
-    local header = CreateAccordionHeader(scrollContent, "playstyle", PGF.L("SECTION_PLAYSTYLE"))
-    local content = CreateAccordionContent(scrollContent)
+    local header = MakeAccordionHeader(scrollContent, "playstyle", PGF.L("SECTION_PLAYSTYLE"))
+    local content = PGF.CreateAccordionContent(scrollContent)
 
     local y = CONTENT_PADDING
     local playstyleCheckboxes = {}
@@ -544,8 +405,8 @@ end
 
 ---Create Quick Apply section.
 local function CreateQuickApplySection(scrollContent)
-    local header = CreateAccordionHeader(scrollContent, "quickApply", PGF.L("SECTION_QUICK_APPLY"))
-    local content = CreateAccordionContent(scrollContent)
+    local header = MakeAccordionHeader(scrollContent, "quickApply", PGF.L("SECTION_QUICK_APPLY"))
+    local content = PGF.CreateAccordionContent(scrollContent)
 
     local y = CONTENT_PADDING
 
@@ -669,8 +530,8 @@ end
 
 ---Create Settings section.
 local function CreateSettingsSection(scrollContent)
-    local header = CreateAccordionHeader(scrollContent, "settings", PGF.L("SECTION_SETTINGS"))
-    local content = CreateAccordionContent(scrollContent)
+    local header = MakeAccordionHeader(scrollContent, "settings", PGF.L("SECTION_SETTINGS"))
+    local content = PGF.CreateAccordionContent(scrollContent)
 
     local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
 
@@ -1049,7 +910,7 @@ local function CreateArenaFilterPanel()
     scrollFrame:SetScrollChild(scrollContent)
     arenaPanel.scrollContent = scrollContent
 
-    local scrollBar = CreateMinimalScrollBar(scrollFrame)
+    local scrollBar = PGF.CreateMinimalScrollBar(scrollFrame)
     arenaPanel.scrollBar = scrollBar
 
     scrollFrame:EnableMouseWheel(true)

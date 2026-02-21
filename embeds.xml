@@ -9,6 +9,7 @@
     <Include file="src\DungeonDatabase.lua"/>
     <Include file="src\FilterContext.lua"/>
     <Include file="src\FilterCore.lua"/>
+    <Include file="src\FilterPanelCommon.lua"/>
     <Include file="src\FilterPanelDungeon.lua"/>
     <Include file="src\FilterPanelRaid.lua"/>
     <Include file="src\FilterPanelDelve.lua"/>
