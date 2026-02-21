@@ -151,7 +151,7 @@ local function CreateRaidGroupCheckbox(content, groupID, yPos, selectedGroupIDs,
     
     checkbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         
         local isChecked = self:GetChecked()
         
@@ -204,7 +204,7 @@ local function CreateRaidActivityCheckbox(content, activityID, yPos, selectedAct
     
     checkbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         
         local isChecked = self:GetChecked()
         
@@ -363,7 +363,7 @@ local function CreateActivitiesSection(scrollContent)
     
     selectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidActivities then db.filter.raidActivities = {} end
         
         local checkboxes = raidPanel.activityCheckboxes or {}
@@ -381,7 +381,7 @@ local function CreateActivitiesSection(scrollContent)
     
     deselectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.raidActivities = {}
         
         local checkboxes = raidPanel.activityCheckboxes or {}
@@ -431,7 +431,7 @@ local function CreateBossFilterSection(scrollContent)
     
     local function SetBossFilter(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.raidBossFilter = value
     end
     
@@ -525,7 +525,7 @@ local function CreateDifficultySection(scrollContent)
         
         checkbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.raidDifficulty then db.filter.raidDifficulty = {} end
             db.filter.raidDifficulty[diff.key] = self:GetChecked()
             
@@ -585,7 +585,7 @@ local function CreatePlaystyleSection(scrollContent)
         
         checkbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.raidPlaystyle then db.filter.raidPlaystyle = {} end
             db.filter.raidPlaystyle[playstyle.blizzKey] = self:GetChecked()
             
@@ -673,7 +673,7 @@ local function CreateRoleFilteringSection(scrollContent)
                     UIDropDownMenu_SetText(operatorDropdown, op.label)
                     
                     local db = PintaGroupFinderDB
-                    if not db.filter then db.filter = {} end
+                    PGF.EnsureFilter(db)
                     if not db.filter.raidRoleRequirements then
                         db.filter.raidRoleRequirements = {}
                         for _, r in ipairs(roleReqRoles) do
@@ -704,7 +704,7 @@ local function CreateRoleFilteringSection(scrollContent)
             self:SetText(tostring(value))
             
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.raidRoleRequirements then
                 db.filter.raidRoleRequirements = {}
                 for _, r in ipairs(roleReqRoles) do
@@ -727,7 +727,7 @@ local function CreateRoleFilteringSection(scrollContent)
             self:SetText(tostring(value))
             
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.raidRoleRequirements then
                 db.filter.raidRoleRequirements = {}
                 for _, r in ipairs(roleReqRoles) do
@@ -747,7 +747,7 @@ local function CreateRoleFilteringSection(scrollContent)
         
         enableCheckbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.raidRoleRequirements then
                 db.filter.raidRoleRequirements = {}
                 for _, r in ipairs(roleReqRoles) do
@@ -894,7 +894,7 @@ local function CreateSettingsSection(scrollContent)
     
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidSortSettings then
             db.filter.raidSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
@@ -934,7 +934,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidSortSettings then
             db.filter.raidSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
@@ -994,7 +994,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetPrimarySortDirection(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidSortSettings then
             db.filter.raidSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
@@ -1051,7 +1051,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidSortSettings then
             db.filter.raidSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.raidSortSettings) do
@@ -1126,7 +1126,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetSecondarySortDirection(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.raidSortSettings then
             db.filter.raidSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.raidSortSettings) do

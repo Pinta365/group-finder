@@ -26,6 +26,14 @@ function PGF.Debug(...)
     end
 end
 
+---Ensure db.filter exists, initializing it from defaults if absent.
+---@param db table The account-wide saved variables table (PintaGroupFinderDB)
+function PGF.EnsureFilter(db)
+    if not db.filter then
+        db.filter = CopyTable(PGF.defaults.filter)
+    end
+end
+
 ---Get localized difficulty name.
 ---@param difficultyKey string Difficulty key ("normal", "heroic", "mythic", "mythicplus")
 ---@return string localizedName

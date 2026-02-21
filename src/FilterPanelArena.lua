@@ -132,7 +132,7 @@ local function UpdateArenaList()
 
             checkbox:SetScript("OnClick", function(self)
                 local db = PintaGroupFinderDB
-                if not db.filter then db.filter = {} end
+                PGF.EnsureFilter(db)
 
                 local isChecked = self:GetChecked()
                 if isChecked then
@@ -194,7 +194,7 @@ local function UpdateArenaList()
 
                 checkbox:SetScript("OnClick", function(self)
                     local db = PintaGroupFinderDB
-                    if not db.filter then db.filter = {} end
+                    PGF.EnsureFilter(db)
 
                     local isChecked = self:GetChecked()
                     if isChecked then
@@ -245,7 +245,7 @@ local function CreateActivitiesSection(scrollContent)
 
     selectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.arenaActivities = {}
 
         local checkboxes = arenaPanel.activityCheckboxes or {}
@@ -263,7 +263,7 @@ local function CreateActivitiesSection(scrollContent)
 
     deselectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.arenaActivities = {}
 
         local checkboxes = arenaPanel.activityCheckboxes or {}
@@ -308,7 +308,7 @@ local function CreateRatingSection(scrollContent)
 
     local function SaveRating()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         local val = tonumber(ratingBox:GetText()) or 0
         val = math.max(0, val)
         db.filter.arenaMinPvpRating = val
@@ -371,7 +371,7 @@ local function CreatePlaystyleSection(scrollContent)
 
         checkbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.arenaPlaystyle then db.filter.arenaPlaystyle = {} end
             db.filter.arenaPlaystyle[playstyle.blizzKey] = self:GetChecked()
             PGF.RefilterResults()
@@ -521,7 +521,7 @@ local function CreateSettingsSection(scrollContent)
 
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.arenaSortSettings then
             db.filter.arenaSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.arenaSortSettings) do
@@ -558,7 +558,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.arenaSortSettings then
             db.filter.arenaSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.arenaSortSettings) do db.filter.arenaSortSettings[k] = v end
@@ -613,7 +613,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetPrimaryDir(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.arenaSortSettings then
             db.filter.arenaSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.arenaSortSettings) do db.filter.arenaSortSettings[k] = v end
@@ -657,7 +657,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.arenaSortSettings then
             db.filter.arenaSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.arenaSortSettings) do db.filter.arenaSortSettings[k] = v end
@@ -713,7 +713,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetSecondaryDir(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.arenaSortSettings then
             db.filter.arenaSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.arenaSortSettings) do db.filter.arenaSortSettings[k] = v end

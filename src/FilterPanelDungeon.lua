@@ -188,7 +188,7 @@ local function UpdateDungeonList()
                 
                 checkbox:SetScript("OnClick", function(self)
                     local db = PintaGroupFinderDB
-                    if not db.filter then db.filter = {} end
+                    PGF.EnsureFilter(db)
                     
                     local isChecked = self:GetChecked()
                     
@@ -255,7 +255,7 @@ local function UpdateDungeonList()
                 
                 checkbox:SetScript("OnClick", function(self)
                     local db = PintaGroupFinderDB
-                    if not db.filter then db.filter = {} end
+                    PGF.EnsureFilter(db)
                     
                     local isChecked = self:GetChecked()
                     
@@ -309,7 +309,7 @@ local function CreateActivitiesSection(scrollContent)
     
     selectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.dungeonActivities = {}
         
         local checkboxes = dungeonPanel.activityCheckboxes or {}
@@ -325,7 +325,7 @@ local function CreateActivitiesSection(scrollContent)
     
     deselectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.dungeonActivities = {}
         
         local checkboxes = dungeonPanel.activityCheckboxes or {}
@@ -383,7 +383,7 @@ local function CreateDifficultySection(scrollContent)
             end
             
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.difficulty then db.filter.difficulty = {} end
             db.filter.difficulty[diff.key] = self:GetChecked()
             
@@ -516,7 +516,7 @@ local function CreateMiscSection(scrollContent)
     ratingBox:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.minRating = tonumber(self:GetText()) or 0
         local advancedFilter = C_LFGList.GetAdvancedFilter()
         if advancedFilter then
@@ -528,7 +528,7 @@ local function CreateMiscSection(scrollContent)
     ratingBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     ratingBox:SetScript("OnEditFocusLost", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.minRating = tonumber(self:GetText()) or 0
         local advancedFilter = C_LFGList.GetAdvancedFilter()
         if advancedFilter then
@@ -569,7 +569,7 @@ local function CreateMiscSection(scrollContent)
             end
             
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.hasRole then db.filter.hasRole = {} end
             db.filter.hasRole[role.key] = self:GetChecked()
             
@@ -606,7 +606,7 @@ local function CreateMiscSection(scrollContent)
     
     hideIncompatibleCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.hideIncompatibleGroups = self:GetChecked()
         PGF.RefilterResults()
     end)
@@ -823,7 +823,7 @@ local function CreateSettingsSection(scrollContent)
 
     disableCustomSortingCheckbox:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.dungeonSortSettings then
             db.filter.dungeonSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
@@ -861,7 +861,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetPrimarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.dungeonSortSettings then
             db.filter.dungeonSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
@@ -921,7 +921,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetPrimarySortDirection(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.dungeonSortSettings then
             db.filter.dungeonSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
@@ -978,7 +978,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetSecondarySort(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.dungeonSortSettings then
             db.filter.dungeonSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do
@@ -1053,7 +1053,7 @@ local function CreateSettingsSection(scrollContent)
     
     local function SetSecondarySortDirection(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.dungeonSortSettings then
             db.filter.dungeonSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.dungeonSortSettings) do

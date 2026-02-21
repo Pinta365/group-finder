@@ -109,7 +109,7 @@ local function UpdateRatedBGList()
 
             checkbox:SetScript("OnClick", function(self)
                 local db = PintaGroupFinderDB
-                if not db.filter then db.filter = {} end
+                PGF.EnsureFilter(db)
                 local isChecked = self:GetChecked()
                 if isChecked then
                     if not db.filter.ratedBGActivities then db.filter.ratedBGActivities = {} end
@@ -164,7 +164,7 @@ local function UpdateRatedBGList()
 
                 checkbox:SetScript("OnClick", function(self)
                     local db = PintaGroupFinderDB
-                    if not db.filter then db.filter = {} end
+                    PGF.EnsureFilter(db)
                     local isChecked = self:GetChecked()
                     if isChecked then
                         if not db.filter.ratedBGActivities then db.filter.ratedBGActivities = {} end
@@ -210,7 +210,7 @@ local function CreateActivitiesSection(scrollContent)
 
     selectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.ratedBGActivities = {}
         for _, cb in ipairs(ratedBGPanel.activityCheckboxes or {}) do
             if cb.groupID then db.filter.ratedBGActivities[cb.groupID] = true; if cb.frame then cb.frame:SetChecked(true) end
@@ -222,7 +222,7 @@ local function CreateActivitiesSection(scrollContent)
 
     deselectAllBtn:SetScript("OnClick", function()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         db.filter.ratedBGActivities = {}
         for _, cb in ipairs(ratedBGPanel.activityCheckboxes or {}) do
             if cb.frame then cb.frame:SetChecked(false) end
@@ -260,7 +260,7 @@ local function CreateRatingSection(scrollContent)
 
     local function SaveRating()
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         local val = math.max(0, tonumber(ratingBox:GetText()) or 0)
         db.filter.ratedBGMinPvpRating = val
         ratingBox:SetText(tostring(val))
@@ -315,7 +315,7 @@ local function CreatePlaystyleSection(scrollContent)
 
         checkbox:SetScript("OnClick", function(self)
             local db = PintaGroupFinderDB
-            if not db.filter then db.filter = {} end
+            PGF.EnsureFilter(db)
             if not db.filter.ratedBGPlaystyle then db.filter.ratedBGPlaystyle = {} end
             db.filter.ratedBGPlaystyle[playstyle.blizzKey] = self:GetChecked()
             PGF.RefilterResults()
@@ -418,7 +418,7 @@ local function CreateSettingsSection(scrollContent)
 
     disableCB:SetScript("OnClick", function(self)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.ratedBGSortSettings then
             db.filter.ratedBGSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.ratedBGSortSettings) do db.filter.ratedBGSortSettings[k] = v end
@@ -489,7 +489,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetPrimary(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.ratedBGSortSettings then
             db.filter.ratedBGSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.ratedBGSortSettings) do db.filter.ratedBGSortSettings[k] = v end
@@ -533,7 +533,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetPrimaryDir(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.ratedBGSortSettings then
             db.filter.ratedBGSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.ratedBGSortSettings) do db.filter.ratedBGSortSettings[k] = v end
@@ -576,7 +576,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetSecondary(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.ratedBGSortSettings then
             db.filter.ratedBGSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.ratedBGSortSettings) do db.filter.ratedBGSortSettings[k] = v end
@@ -631,7 +631,7 @@ local function CreateSettingsSection(scrollContent)
 
     local function SetSecondaryDir(value)
         local db = PintaGroupFinderDB
-        if not db.filter then db.filter = {} end
+        PGF.EnsureFilter(db)
         if not db.filter.ratedBGSortSettings then
             db.filter.ratedBGSortSettings = {}
             for k, v in pairs(PGF.defaults.filter.ratedBGSortSettings) do db.filter.ratedBGSortSettings[k] = v end
