@@ -572,30 +572,24 @@ function PGF.SortResults(results)
     local secondaryDir = sortSettings.secondarySortDirection or "desc"
     PGF.Debug("Sort:", primarySort, primaryDir, secondarySort and ("+ " .. secondarySort .. " " .. secondaryDir) or "")
     
-    local resultCache = {}
+    local contextCache = {}
     for _, resultID in ipairs(results) do
         if C_LFGList.HasSearchResultInfo(resultID) then
             local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
             local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
             if searchResultInfo and memberCounts then
-                resultCache[resultID] = {
-                    searchResultInfo = searchResultInfo,
-                    memberCounts = memberCounts,
-                }
+                contextCache[resultID] = PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
             end
         end
     end
-    
+
     table.sort(results, function(a, b)
-        local infoA = resultCache[a]
-        local infoB = resultCache[b]
-        
-        if not infoA or not infoB then
+        local contextA = contextCache[a]
+        local contextB = contextCache[b]
+
+        if not contextA or not contextB then
             return false
         end
-        
-        local contextA = PGF.BuildFilterContext(a, infoA.searchResultInfo, infoA.memberCounts)
-        local contextB = PGF.BuildFilterContext(b, infoB.searchResultInfo, infoB.memberCounts)
         
         if contextA.isApplied ~= contextB.isApplied then
             return contextA.isApplied
