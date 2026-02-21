@@ -28,28 +28,6 @@ local addonName, PGF = ...
 ---@field defeatedBosses string[]? Array of defeated boss names (raids only)
 ---@field defeatedBossCount number? Number of bosses defeated (raids only)
 ---@field defeatedBossLookup table<string,boolean>? Lookup table for boss names (raids only)
---- Future fields
----@field activityName string?
----@field mythic boolean?
----@field heroic boolean?
----@field normal boolean?
----@field dps number?
----@field members number?
----@field maxMembers number?
----@field challengeModeID number?
----@field dungeonID number?
----@field dungeonName string?
----@field ageSecs number?
----@field leaderName string?
----@field myRealm boolean?
----@field friends number?
----@field ilvl number?
----@field hlvl number?
----@field dungeonScore number?
----@field isDelisted boolean?
----@field autoAccept boolean?
----@field warmode boolean?
----@field hasSelf boolean?
 --- PvP-specific fields
 ---@field pvpRating number?         Highest leader PvP rating across relevant brackets
 ---@field requiredPvpRating number? Minimum PvP rating required by the leader
@@ -184,50 +162,6 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
             end
         end
     end
-    
-    -- Fields for future filtering/sorting features (commented out for now)
-    --[[
-    context.activityName = activityInfo.fullName and activityInfo.fullName:lower() or ""
-    context.mythic = activityInfo.isMythicActivity or false
-    context.heroic = activityInfo.isHeroicActivity or false
-    context.normal = activityInfo.isNormalActivity or false
-    context.members = searchResultInfo.numMembers or 0
-    context.maxMembers = activityInfo.maxNumPlayers or 5
-    
-    context.challengeModeID = nil
-    context.dungeonID = nil
-    if context.mythicplus then
-        context.challengeModeID = PGF.GetChallengeModeIDFromActivity(activityID)
-        context.dungeonID = context.challengeModeID
-        if context.challengeModeID then
-            local dungeonInfo = PGF.GetDungeonInfo(context.challengeModeID)
-            if dungeonInfo then
-                context.dungeonName = dungeonInfo.name:lower()
-            end
-        end
-    end
-    
-    context.tankNeeded = memberCounts.TANK_REMAINING or 0
-    context.healerNeeded = memberCounts.HEALER_REMAINING or 0
-    context.dpsNeeded = memberCounts.DAMAGER_REMAINING or 0
-    context.ageSecs = searchResultInfo.age or 0
-    
-    context.leaderName = searchResultInfo.leaderName and searchResultInfo.leaderName:lower() or ""
-    context.myRealm = searchResultInfo.leaderName and not searchResultInfo.leaderName:find("-") or false
-    context.friends = (searchResultInfo.numBNetFriends or 0) + 
-                  (searchResultInfo.numCharFriends or 0) + 
-                  (searchResultInfo.numGuildMates or 0)
-    
-    context.ilvl = searchResultInfo.requiredItemLevel or 0
-    context.hlvl = searchResultInfo.requiredHonorLevel or 0
-    context.dungeonScore = searchResultInfo.requiredDungeonScore or 0
-    
-    context.isDelisted = searchResultInfo.isDelisted or false
-    context.autoAccept = searchResultInfo.autoAccept or false
-    context.warmode = searchResultInfo.isWarMode or false
-    context.hasSelf = searchResultInfo.hasSelf or false
-    
-    --]]
     
     return context
 end
