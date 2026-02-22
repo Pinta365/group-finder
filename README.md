@@ -64,3 +64,8 @@ English (default), German (deDE), French (frFR). Falls back to English automatic
 1. Try `/pgf reset` to restore defaults
 2. Use `/pgf debug` to enable debug output in the chat frame
 3. Report issues at [GitHub](https://github.com/Pinta365/group-finder/issues) with a description, steps to reproduce, and any debug output or Lua errors
+
+## Contact
+
+* **Website:** [pinta.land](https://pinta.land/)
+* **Discord:** [discord.gg/J7QtVxAt6F](https://discord.gg/J7QtVxAt6F)
