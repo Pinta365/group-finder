@@ -244,28 +244,7 @@ local function AddMissingRoles(entry, resultID, searchResultInfo)
     local isApplied = appStatus and appStatus ~= "none"
 
     if isApplied then
-        local ROW_GAP = 2
-        local anchor = (entry.PendingLabel and entry.PendingLabel:IsShown()) and entry.PendingLabel or entry
-        local prevAnchor = anchor
-        local prevPoint = "BOTTOMLEFT"
-        local prevX = (anchor == entry) and 100 or 20
-        local prevY = (anchor == entry.PendingLabel) and -27 or -5
-        for i, role in ipairs(missingRoles) do
-            local frame = frames[i]
-            if frame then
-                frame:ClearAllPoints()
-                frame:SetPoint("BOTTOMLEFT", prevAnchor, prevPoint, prevX, prevY)
-                frame:Show()
-                frame.missingRole:Show()
-                frame.missingRole:SetAtlas(ROLE_ATLAS[role])
-                frame.missingRole:SetDesaturated(true)
-                frame.missingRole:SetAlpha(0.5)
-                prevAnchor = frame
-                prevPoint = "BOTTOMRIGHT"
-                prevX = ROW_GAP
-                prevY = 0
-            end
-        end
+        return
     else
         local slotIndex = numMembers + 1
         for _, role in ipairs(missingRoles) do
