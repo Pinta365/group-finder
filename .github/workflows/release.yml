@@ -22,3 +22,35 @@ jobs:
           fetch-depth: 0 # reads history for commit changelog
 
       - uses: BigWigsMods/packager@v2
+
+      - name: Notify Discord
+        if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sleep 5
+          VERSION="${{ github.ref_name }}"
+          NOTES=$(gh release view "$VERSION" --json body --jq '.body | if length > 4000 then .[0:4000] + "\n…(see release for full notes)" else . end')
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/$VERSION"
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg version "$VERSION" \
+              --arg notes "$NOTES" \
+              --arg release_url "$RELEASE_URL" \
+              '{
+                username: "PintaBot",
+                embeds: [{
+                  title: ("Pinta Group Finder " + $version),
+                  url: $release_url,
+                  description: $notes,
+                  color: 4576136,
+                  fields: [
+                    { name: "CurseForge", value: "[Download](https://www.curseforge.com/wow/addons/PintaGroupFinder)", inline: true },
+                    { name: "Wago Addons", value: "[Download](https://addons.wago.io/addons/group-finder)", inline: true }
+                  ],
+                  footer: { text: "World of Warcraft Addon" }
+                }]
+              }'
+            )"
