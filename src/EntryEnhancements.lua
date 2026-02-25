@@ -6,6 +6,7 @@ local roleIndicators = {}
 local classSpecIndicators = {}
 local leaderIconFrames = {}
 local dungeonSpecFrames = {}
+local ratingLabels = {}
 local specNameToTexture = {}
 local specNameCacheBuilt = false
 
@@ -267,20 +268,31 @@ local function AddMissingRoles(entry, resultID, searchResultInfo)
 end
 
 ---@param entry Frame
+---@return FontString
+local function GetOrCreateRatingLabel(entry)
+    local label = ratingLabels[entry]
+    if not label then
+        label = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        ratingLabels[entry] = label
+    end
+    return label
+end
+
+---@param entry Frame
 ---@param resultID number
 ---@param searchResultInfo table
 local function AddLeaderRating(entry, resultID, searchResultInfo)
-    if not entry.Name then return end
-
+    local label = GetOrCreateRatingLabel(entry)
     local rating = searchResultInfo.leaderOverallDungeonScore or 0
-    if rating > 0 then
+    if rating > 0 and entry.Name then
         local r, g, b = GetRatingColor(rating)
         local colorHex = string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
-        local ratingText = string.format(" |cFF%s[%d]|r", colorHex, rating)
-        local originalText = entry.Name:GetText() or ""
-        if not originalText:find("%[%d+%]") then
-            entry.Name:SetText(originalText .. ratingText)
-        end
+        label:SetText(string.format("|cFF%s[%d]|r", colorHex, rating))
+        label:ClearAllPoints()
+        label:SetPoint("LEFT", entry.Name, "RIGHT", 4, 0)
+        label:Show()
+    else
+        label:Hide()
     end
 end
 
@@ -638,6 +650,9 @@ local function OnEntryUpdate(self)
 
     if isDungeon and showRating then
         AddLeaderRating(self, resultID, searchResultInfo)
+    else
+        local label = ratingLabels[self]
+        if label then label:Hide() end
     end
 
     if (categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidSpecIndicators)
