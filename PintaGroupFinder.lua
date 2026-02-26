@@ -81,15 +81,6 @@ function eventFrame:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
         PGF.InitializeFilterPanel()
         PGF.InitializeEntryEnhancements()
         PGF.InitializeQuickApply()
-        eventFrame:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED")
-    end
-end
-
-function eventFrame:LFG_LIST_SEARCH_RESULTS_RECEIVED()
-    PGF.Debug("Search results received, re-rendering filtered results")
-    local panel = LFGListFrame and LFGListFrame.SearchPanel
-    if panel and panel.results and LFGListSearchPanel_UpdateResults then
-        LFGListSearchPanel_UpdateResults(panel)
     end
 end
 
