@@ -6,6 +6,9 @@
 
 local addonName, PGF = ...
 
+-- Cache for GetActivityInfoTable
+local activityInfoCache = {}
+
 ---@class FilterContext
 --- Core fields (always populated)
 ---@field activityID number Activity ID for this listing
@@ -42,7 +45,15 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     local context = {}
     
     local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1] or searchResultInfo.activityID
-    local activityInfo = activityID and C_LFGList.GetActivityInfoTable(activityID) or nil
+    local activityInfo
+    if activityID then
+        activityInfo = activityInfoCache[activityID]
+        if activityInfo == nil then
+            activityInfo = C_LFGList.GetActivityInfoTable(activityID) or false
+            activityInfoCache[activityID] = activityInfo
+        end
+        if activityInfo == false then activityInfo = nil end
+    end
     
     if not activityInfo then
         return context

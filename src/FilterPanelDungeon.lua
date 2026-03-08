@@ -13,6 +13,18 @@ local CONTENT_PADDING = 8
 
 local sections = {}
 
+-- Key representing the last difficulty state used to build the dungeon list.
+local lastDungeonListKey = nil
+
+local function GetDungeonListKey()
+    local af = C_LFGList.GetAdvancedFilter()
+    if not af then return "nofilter" end
+    return (af.difficultyMythicPlus ~= false and "1" or "0")
+        .. (af.difficultyMythic     ~= false and "1" or "0")
+        .. (af.difficultyHeroic     ~= false and "1" or "0")
+        .. (af.difficultyNormal     ~= false and "1" or "0")
+end
+
 local function IsSectionExpanded(sectionID)
     return PintaGroupFinderDB.filter.dungeonAccordionState[sectionID]
 end
@@ -112,10 +124,26 @@ local function UpdateDungeonList()
     if not dungeonPanel or not dungeonPanel.activityContent then
         return
     end
-    
+
+    local db = PintaGroupFinderDB
+    local key = GetDungeonListKey()
+    local checkboxes = dungeonPanel.activityCheckboxes or {}
+
+    if key == lastDungeonListKey and #checkboxes > 0 then
+        local allowAllDungeons = (db.filter and db.filter.dungeonActivities) == nil
+        local selectedGroupIDs = (db.filter and db.filter.dungeonActivities) or {}
+        for _, cb in ipairs(checkboxes) do
+            if cb.frame and cb.groupID then
+                cb.frame:SetChecked(allowAllDungeons or selectedGroupIDs[cb.groupID] == true)
+            end
+        end
+        return
+    end
+
+    lastDungeonListKey = key
+
     local categoryID = PGF.DUNGEON_CATEGORY_ID
     local content = dungeonPanel.activityContent
-    local checkboxes = dungeonPanel.activityCheckboxes or {}
     
     for i = 1, #checkboxes do
         local checkbox = checkboxes[i]
@@ -1149,6 +1177,7 @@ local function CreateDungeonFilterPanel()
         scrollFrame:GetScript("OnMouseWheel")(scrollFrame, delta)
     end)
     
+    lastDungeonListKey = nil
     wipe(sections)
     CreateActivitiesSection(scrollContent)
     CreateDifficultySection(scrollContent)

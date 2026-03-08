@@ -8,6 +8,23 @@ local addonName, PGF = ...
 
 local filterInProgress = false
 
+-- Cache for GetAvailableActivities
+local availableActivitiesCache = {}
+
+local function GetCachedAvailableActivities(categoryID, groupID)
+    local catCache = availableActivitiesCache[categoryID]
+    if not catCache then
+        catCache = {}
+        availableActivitiesCache[categoryID] = catCache
+    end
+    local result = catCache[groupID]
+    if result == nil then
+        result = C_LFGList.GetAvailableActivities(categoryID, groupID) or false
+        catCache[groupID] = result
+    end
+    return result or nil
+end
+
 -- Maps generalPlaystyle numeric values to db key names.
 local PLAYSTYLE_KEYS = { [1]="generalPlaystyle1", [2]="generalPlaystyle2",
                          [3]="generalPlaystyle3", [4]="generalPlaystyle4" }
@@ -85,7 +102,7 @@ local function ActivityMatchesSelectedGroups(activityID, categoryID, selectedGro
     end
 
     for _, groupID in ipairs(selectedGroupIDs) do
-        local activities = C_LFGList.GetAvailableActivities(categoryID, groupID)
+        local activities = GetCachedAvailableActivities(categoryID, groupID)
         if activities then
             for _, actID in ipairs(activities) do
                 if actID == activityID then
@@ -101,8 +118,9 @@ end
 ---Check if result passes filter criteria.
 ---@param resultID number
 ---@param context FilterContext Filter context
+---@param preRoleVectors table[]? Pre-computed party role vectors
 ---@return boolean passes
-local function PassesFilter(resultID, context)
+local function PassesFilter(resultID, context, preRoleVectors)
     local db = PintaGroupFinderDB
     local filter = db.filter or {}
     local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -148,7 +166,7 @@ local function PassesFilter(resultID, context)
         end
         
         if filter.hideIncompatibleGroups then
-            local vectors = GetPossiblePartyRoleVectors()
+            local vectors = preRoleVectors or GetPossiblePartyRoleVectors()
             if #vectors > 0 then
                 local tankNeeded = context.tankNeeded or 0
                 local healerNeeded = context.healerNeeded or 0
@@ -446,13 +464,23 @@ end
 ---Filter search results based on user criteria.
 ---@param results number[] Array of resultIDs
 ---@return number[] filteredResults
+---@return table contextCache Built FilterContext objects keyed by resultID, for reuse in SortResults
 function PGF.FilterResults(results)
     if not results or #results == 0 then
-        return results
+        return results, {}
     end
-    
+
+    local db = PintaGroupFinderDB
+    local filter = db.filter or {}
+
+    local preRoleVectors = nil
+    if filter.hideIncompatibleGroups then
+        preRoleVectors = GetPossiblePartyRoleVectors()
+    end
+
     local filtered = {}
-    
+    local contextCache = {}
+
     for _, resultID in ipairs(results) do
         if C_LFGList.HasSearchResultInfo(resultID) then
             local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
@@ -460,15 +488,16 @@ function PGF.FilterResults(results)
                 local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
                 if memberCounts then
                     local context = PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
-                    if PassesFilter(resultID, context) then
+                    contextCache[resultID] = context
+                    if PassesFilter(resultID, context, preRoleVectors) then
                         table.insert(filtered, resultID)
                     end
                 end
             end
         end
     end
-    
-    return filtered
+
+    return filtered, contextCache
 end
 
 ---Get sort value for a context based on sort type.
@@ -504,8 +533,9 @@ local function CompareSortValues(valueA, valueB, direction)
 end
 
 ---@param results table Array of resultIDs
+---@param externalContextCache table? Context cache from FilterResults
 ---@return table sortedResults
-function PGF.SortResults(results)
+function PGF.SortResults(results, externalContextCache)
     if not results or #results <= 1 then
         return results
     end
@@ -551,13 +581,15 @@ function PGF.SortResults(results)
     local secondaryDir = sortSettings.secondarySortDirection or "desc"
     PGF.Debug("Sort:", primarySort, primaryDir, secondarySort and ("+ " .. secondarySort .. " " .. secondaryDir) or "")
     
-    local contextCache = {}
+    local contextCache = externalContextCache or {}
     for _, resultID in ipairs(results) do
-        if C_LFGList.HasSearchResultInfo(resultID) then
-            local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
-            local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
-            if searchResultInfo and memberCounts then
-                contextCache[resultID] = PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
+        if not contextCache[resultID] then
+            if C_LFGList.HasSearchResultInfo(resultID) then
+                local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
+                local memberCounts = C_LFGList.GetSearchResultMemberCounts(resultID)
+                if searchResultInfo and memberCounts then
+                    contextCache[resultID] = PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
+                end
             end
         end
     end
@@ -621,9 +653,9 @@ local function InterceptResultUpdates()
         
         filterInProgress = true
         local totalBefore = #resultIDs
-        local processedResults = PGF.FilterResults(resultIDs)
+        local processedResults, contextCache = PGF.FilterResults(resultIDs)
         local totalAfterFilter = #processedResults
-        processedResults = PGF.SortResults(processedResults)
+        processedResults = PGF.SortResults(processedResults, contextCache)
         PGF.Debug("Filter:", totalBefore, "->", totalAfterFilter, "results")
 
         if searchPanel.results then
