@@ -57,6 +57,38 @@ local function GetRoleButtonChecked(button)
     return button.CheckButton:GetChecked()
 end
 
+---Set checked state on LFD role-check popup role buttons.
+---Blizzard uses `LFGRole_*` (lowercase `checkButton` on the template); LFGList dialog uses `CheckButton`.
+---@param button Frame LFDRoleCheckPopupRoleButton*
+---@param checked boolean
+local function SetLFDRolePopupRoleChecked(button, checked)
+    if not button then return end
+    if LFGRole_SetChecked then
+        LFGRole_SetChecked(button, checked)
+    elseif button.checkButton then
+        button.checkButton:SetChecked(checked)
+    elseif button.CheckButton then
+        button.CheckButton:SetChecked(checked)
+    end
+end
+
+---Read checked state from LFD role-check popup role buttons.
+---@param button Frame LFDRoleCheckPopupRoleButton*
+---@return boolean
+local function GetLFDRolePopupRoleChecked(button)
+    if not button then return false end
+    if LFGRole_GetChecked then
+        return LFGRole_GetChecked(button)
+    end
+    if button.checkButton then
+        return button.checkButton:GetChecked()
+    end
+    if button.CheckButton then
+        return button.CheckButton:GetChecked()
+    end
+    return false
+end
+
 ---Configure dialog with saved role preferences.
 ---@param dialog Frame Application dialog frame
 ---@return boolean True if any role is configured
@@ -150,12 +182,11 @@ local function SetupEntryClickHandler()
     hooksecurefunc("LFGListSearchEntry_OnClick", clickHandler)
 end
 
+local partyRoleAutoAcceptHooked = false
+local partyRoleAutoAcceptRetryScheduled = false
+
 ---Setup automatic acceptance for party member role confirmation.
 local function SetupPartyRoleAutoAccept()
-    if not LFDRoleCheckPopup then
-        return
-    end
-    
     local popupHandler = function(popup)
         local charDB = PintaGroupFinderCharDB or PGF.charDefaults
         local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
@@ -173,26 +204,70 @@ local function SetupPartyRoleAutoAccept()
         
         local roles = GetRolesFromBlizzard()
         
-        SetRoleButtonChecked(LFDRoleCheckPopupRoleButtonTank, roles.tank)
-        SetRoleButtonChecked(LFDRoleCheckPopupRoleButtonHealer, roles.healer)
-        SetRoleButtonChecked(LFDRoleCheckPopupRoleButtonDPS, roles.damage)
+        SetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonTank, roles.tank)
+        SetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonHealer, roles.healer)
+        SetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonDPS, roles.damage)
         
-        local tankSelected = GetRoleButtonChecked(LFDRoleCheckPopupRoleButtonTank)
-        local healerSelected = GetRoleButtonChecked(LFDRoleCheckPopupRoleButtonHealer)
-        local dpsSelected = GetRoleButtonChecked(LFDRoleCheckPopupRoleButtonDPS)
+        if LFGRoleCheckPopup_UpdatePvPRoles then
+            LFGRoleCheckPopup_UpdatePvPRoles()
+        end
+        if LFDRoleCheckPopup_UpdateAcceptButton then
+            LFDRoleCheckPopup_UpdateAcceptButton()
+        end
+        
+        local tankSelected = GetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonTank)
+        local healerSelected = GetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonHealer)
+        local dpsSelected = GetLFDRolePopupRoleChecked(LFDRoleCheckPopupRoleButtonDPS)
         
         if not (tankSelected or healerSelected or dpsSelected) then
             return
         end
         
-        if LFDRoleCheckPopupAcceptButton then
+        local acceptBtn = LFDRoleCheckPopupAcceptButton
+        if acceptBtn and acceptBtn:IsEnabled() then
             PGF.Debug("Auto-accept: accepting role check")
-            LFDRoleCheckPopupAcceptButton:Enable()
-            LFDRoleCheckPopupAcceptButton:Click()
+            acceptBtn:Click()
         end
     end
     
-    LFDRoleCheckPopup:HookScript("OnShow", popupHandler)
+    local function tryHook()
+        if partyRoleAutoAcceptHooked then
+            return true
+        end
+        local popup = LFDRoleCheckPopup
+        if not popup then
+            return false
+        end
+        popup:HookScript("OnShow", popupHandler)
+        partyRoleAutoAcceptHooked = true
+        PGF.Debug("Party role auto-accept: hooked LFDRoleCheckPopup")
+        return true
+    end
+    
+    if tryHook() then
+        return
+    end
+    
+    if partyRoleAutoAcceptRetryScheduled then
+        return
+    end
+    partyRoleAutoAcceptRetryScheduled = true
+    
+    local attempts = 0
+    local maxAttempts = 40
+    local function retry()
+        if partyRoleAutoAcceptHooked or tryHook() then
+            return
+        end
+        attempts = attempts + 1
+        if attempts < maxAttempts then
+            C_Timer.After(0.25, retry)
+        else
+            partyRoleAutoAcceptRetryScheduled = false
+            PGF.Debug("Party role auto-accept: LFDRoleCheckPopup not found after retries")
+        end
+    end
+    C_Timer.After(0.25, retry)
 end
 
 ---Monitor and sync role changes from Blizzard's UI.
