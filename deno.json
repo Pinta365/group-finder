@@ -1,6 +1,8 @@
 {
   "tasks": {
-        "bump": "deno run --allow-read --allow-write --allow-run=git jsr:@pinta365/toc-bumper/cli bump",
-        "show": "deno run --allow-read --allow-run=git jsr:@pinta365/toc-bumper/cli show"
-    }
+    "bump": "deno run --allow-read --allow-write --allow-run=git jsr:@pinta365/toc-bumper/cli bump",
+    "show": "deno run --allow-read --allow-run=git jsr:@pinta365/toc-bumper/cli show",
+    "update-score-colors": "deno run --allow-net=raider.io --allow-read=src/Config.lua --allow-write=src/Config.lua scripts/update-score-colors.ts",
+    "update-score-colors:dry-run": "deno run --allow-net=raider.io --allow-read=src/Config.lua scripts/update-score-colors.ts --dry-run"
+  }
 }

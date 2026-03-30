@@ -5,4 +5,5 @@ ignore:
   - src/locales/README.md
   - .pkgmeta
   - deno.json
+  - scripts/update-score-colors.ts
 externals:
