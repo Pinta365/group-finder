@@ -1,0 +1,6 @@
+{
+  "tasks": {
+        "bump": "deno run --allow-read --allow-write --allow-run=git jsr:@pinta365/toc-bumper/cli bump",
+        "show": "deno run --allow-read --allow-run=git jsr:@pinta365/toc-bumper/cli show"
+    }
+}

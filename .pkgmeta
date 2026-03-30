@@ -4,4 +4,5 @@ ignore:
   - README.md
   - src/locales/README.md
   - .pkgmeta
+  - deno.json
 externals:
