@@ -861,9 +861,36 @@ local function CreateSettingsSection(scrollContent)
     disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
     
     raidPanel.disableCustomSortingCheckbox = disableCustomSortingCheckbox
+
+    local movePendingGroupsToTopCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    movePendingGroupsToTopCheckbox:SetSize(20, 20)
+    movePendingGroupsToTopCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local movePendingGroupsToTopLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    movePendingGroupsToTopLabel:SetPoint("LEFT", movePendingGroupsToTopCheckbox, "RIGHT", 5, 0)
+    movePendingGroupsToTopLabel:SetText(PGF.L("MOVE_PENDING_GROUPS_TO_TOP"))
+
+    movePendingGroupsToTopCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.raidSortSettings.movePendingGroupsToTop = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    movePendingGroupsToTopCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("MOVE_PENDING_GROUPS_TO_TOP"))
+        GameTooltip:AddLine(PGF.L("MOVE_PENDING_GROUPS_TO_TOP_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    movePendingGroupsToTopCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    movePendingGroupsToTopCheckbox:SetChecked(settings.movePendingGroupsToTop ~= false)
+
+    raidPanel.movePendingGroupsToTopCheckbox = movePendingGroupsToTopCheckbox
+    disableCustomSortingCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 24)
     raidPanel.UpdateDropdownStates = UpdateDropdownStates
     
-    y = y + 24
+    y = y + 48
     
     -- Primary Sort
     local primarySortLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -1303,6 +1330,11 @@ function PGF.UpdateRaidPanel()
     if raidPanel.disableCustomSortingCheckbox then
         local settings = GetSortSettingsRaid()
         raidPanel.disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
+    end
+
+    if raidPanel.movePendingGroupsToTopCheckbox then
+        local settings = GetSortSettingsRaid()
+        raidPanel.movePendingGroupsToTopCheckbox:SetChecked(settings.movePendingGroupsToTop ~= false)
     end
     
     if raidPanel.UpdateDropdownStates then

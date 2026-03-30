@@ -104,9 +104,9 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
     context.playstyle = searchResultInfo.playstyle or 0
     
-    local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
+        local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
     context.appStatus = appStatus or "none"
-    context.isApplied = appStatus and appStatus ~= "none" or false
+    context.isApplied = not (not appStatus or appStatus == "none")
     
     -- PvP-specific fields
     local pvpCategoryID = context.categoryID

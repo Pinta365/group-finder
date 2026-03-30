@@ -434,7 +434,33 @@ local function CreateSettingsSection(scrollContent)
     disableCB:SetChecked(settings.disableCustomSorting ~= false)
     ratedBGPanel.disableCustomSortingCheckbox = disableCB
 
-    y = y + 24
+    local movePendingGroupsToTopCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    movePendingGroupsToTopCheckbox:SetSize(20, 20)
+    movePendingGroupsToTopCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local movePendingGroupsToTopLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    movePendingGroupsToTopLabel:SetPoint("LEFT", movePendingGroupsToTopCheckbox, "RIGHT", 5, 0)
+    movePendingGroupsToTopLabel:SetText(PGF.L("MOVE_PENDING_GROUPS_TO_TOP"))
+
+    movePendingGroupsToTopCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.ratedBGSortSettings.movePendingGroupsToTop = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    movePendingGroupsToTopCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("MOVE_PENDING_GROUPS_TO_TOP"))
+        GameTooltip:AddLine(PGF.L("MOVE_PENDING_GROUPS_TO_TOP_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    movePendingGroupsToTopCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    movePendingGroupsToTopCheckbox:SetChecked(settings.movePendingGroupsToTop ~= false)
+
+    ratedBGPanel.movePendingGroupsToTopCheckbox = movePendingGroupsToTopCheckbox
+    disableCB:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 24)
+
+    y = y + 48
 
     -- Helper to build a sort dropdown
     local function MakeSortDropdown(frameName, xOff, sortOptionsTable, getVal, setVal)
@@ -760,6 +786,10 @@ function PGF.UpdateRatedBGPanel()
 
     if ratedBGPanel.disableCustomSortingCheckbox then
         ratedBGPanel.disableCustomSortingCheckbox:SetChecked(GetSortSettings().disableCustomSorting ~= false)
+    end
+
+    if ratedBGPanel.movePendingGroupsToTopCheckbox then
+        ratedBGPanel.movePendingGroupsToTopCheckbox:SetChecked(GetSortSettings().movePendingGroupsToTop ~= false)
     end
 
     if ratedBGPanel.showRatedBGSpecIndicatorsCheckbox then

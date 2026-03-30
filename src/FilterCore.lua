@@ -533,6 +533,35 @@ local function CompareSortValues(valueA, valueB, direction)
 end
 
 ---@param results table Array of resultIDs
+---@param contextCache table Context cache keyed by resultID
+---@return table prioritizedResults
+local function PrioritizeAppliedResults(results, contextCache)
+    local appliedResults = {}
+    local otherResults = {}
+
+    for _, resultID in ipairs(results) do
+        local context = contextCache[resultID]
+        if context and context.isApplied then
+            table.insert(appliedResults, resultID)
+        else
+            table.insert(otherResults, resultID)
+        end
+    end
+
+    for _, resultID in ipairs(otherResults) do
+        table.insert(appliedResults, resultID)
+    end
+
+    return appliedResults
+end
+
+---@param sortSettings SortSettings
+---@return boolean enabled
+local function ShouldMovePendingGroupsToTop(sortSettings)
+    return sortSettings.movePendingGroupsToTop ~= false
+end
+
+---@param results table Array of resultIDs
 ---@param externalContextCache table? Context cache from FilterResults
 ---@return table sortedResults
 function PGF.SortResults(results, externalContextCache)
@@ -570,17 +599,6 @@ function PGF.SortResults(results, externalContextCache)
         sortSettings = (db.filter and db.filter.dungeonSortSettings) or PGF.defaults.filter.dungeonSortSettings
     end
 
-    if sortSettings.disableCustomSorting == true then
-        PGF.Debug("Sort: using Blizzard default")
-        return results
-    end
-
-    local primarySort = sortSettings.primarySort or "age"
-    local primaryDir = sortSettings.primarySortDirection or "asc"
-    local secondarySort = sortSettings.secondarySort
-    local secondaryDir = sortSettings.secondarySortDirection or "desc"
-    PGF.Debug("Sort:", primarySort, primaryDir, secondarySort and ("+ " .. secondarySort .. " " .. secondaryDir) or "")
-    
     local contextCache = externalContextCache or {}
     for _, resultID in ipairs(results) do
         if not contextCache[resultID] then
@@ -594,6 +612,24 @@ function PGF.SortResults(results, externalContextCache)
         end
     end
 
+    local movePendingGroupsToTop = ShouldMovePendingGroupsToTop(sortSettings)
+
+    if sortSettings.disableCustomSorting == true then
+        if movePendingGroupsToTop then
+            PGF.Debug("Sort: using Blizzard default with pending groups prioritized")
+            return PrioritizeAppliedResults(results, contextCache)
+        end
+
+        PGF.Debug("Sort: using Blizzard default")
+        return results
+    end
+
+    local primarySort = sortSettings.primarySort or "age"
+    local primaryDir = sortSettings.primarySortDirection or "asc"
+    local secondarySort = sortSettings.secondarySort
+    local secondaryDir = sortSettings.secondarySortDirection or "desc"
+    PGF.Debug("Sort:", primarySort, primaryDir, secondarySort and ("+ " .. secondarySort .. " " .. secondaryDir) or "")
+
     table.sort(results, function(a, b)
         local contextA = contextCache[a]
         local contextB = contextCache[b]
@@ -602,7 +638,7 @@ function PGF.SortResults(results, externalContextCache)
             return false
         end
         
-        if contextA.isApplied ~= contextB.isApplied then
+        if movePendingGroupsToTop and contextA.isApplied ~= contextB.isApplied then
             return contextA.isApplied
         end
         

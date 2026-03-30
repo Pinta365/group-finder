@@ -103,6 +103,8 @@ if GetLocale() == "frFR" then
     ["SORT_NONE"] = "Aucun",
     ["DISABLE_CUSTOM_SORTING"] = "Désactiver le tri personnalisé",
     ["DISABLE_CUSTOM_SORTING_DESC"] = "Utiliser le tri par défaut de Blizzard",
+    ["MOVE_PENDING_GROUPS_TO_TOP"] = "Remonter les groupes en attente",
+    ["MOVE_PENDING_GROUPS_TO_TOP_DESC"] = "Garde les groupes auxquels vous avez déjà postulé au-dessus des autres résultats de recherche.",
     ["SHOW_LEADER_ICON"] = "Afficher l'icône du chef",
     ["SHOW_LEADER_ICON_DESC"] = "Affiche une icône de couronne au-dessus du chef de groupe dans les résultats de recherche de donjon.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Afficher les icônes de spé",

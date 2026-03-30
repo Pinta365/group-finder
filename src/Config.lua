@@ -48,6 +48,7 @@ PGF.RATED_BG_CATEGORY_ID = 9
 ---@field primarySortDirection string "asc"|"desc"
 ---@field secondarySort string? "age"|"rating"|"groupSize"|"ilvl"|"name"|nil
 ---@field secondarySortDirection string? "asc"|"desc"|nil
+---@field movePendingGroupsToTop boolean?
 
 ---@class UISettings
 ---@field showLeaderRating boolean
@@ -107,6 +108,7 @@ PGF.defaults = {
         },
         dungeonSortSettings = {
             disableCustomSorting = true,
+            movePendingGroupsToTop = true,
             primarySort = "rating",
             primarySortDirection = "desc",
             secondarySort = nil,
@@ -114,6 +116,7 @@ PGF.defaults = {
         },
         raidSortSettings = {
             disableCustomSorting = true,
+            movePendingGroupsToTop = true,
             primarySort = "groupSize",
             primarySortDirection = "desc",
             secondarySort = nil,
@@ -137,6 +140,7 @@ PGF.defaults = {
         },
         delveSortSettings = {
             disableCustomSorting = true,
+            movePendingGroupsToTop = true,
             primarySort = "age",
             primarySortDirection = "asc",
             secondarySort = nil,
@@ -158,6 +162,7 @@ PGF.defaults = {
         },
         arenaSortSettings = {
             disableCustomSorting = true,
+            movePendingGroupsToTop = true,
             primarySort = "age",
             primarySortDirection = "asc",
             secondarySort = nil,
@@ -179,6 +184,7 @@ PGF.defaults = {
         },
         ratedBGSortSettings = {
             disableCustomSorting = true,
+            movePendingGroupsToTop = true,
             primarySort = "age",
             primarySortDirection = "asc",
             secondarySort = nil,
