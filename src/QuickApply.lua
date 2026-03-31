@@ -134,13 +134,54 @@ local function SetupAutoSignup()
         end
 
         if dialog.SignUpButton and dialog.SignUpButton:IsEnabled() then
-            LFGListApplicationDialogSignUpButton_OnClick(dialog.SignUpButton)
+            --LFGListApplicationDialogSignUpButton_OnClick(dialog.SignUpButton)
+            dialog.SignUpButton:Click()
         end
     end
     
     LFGListApplicationDialog:HookScript("OnShow", dialogHandler)
 end
 
+---Handle entry clicks to initiate quick signup.
+local function SetupEntryClickHandler()
+    local clickHandler = function(entry, button)
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
+        
+        if not quickApply.enabled or button == "RightButton" or IsShiftKeyDown() then
+            return
+        end
+        
+        local roles = GetRolesFromBlizzard()
+        local hasAnyRole = roles.tank or roles.healer or roles.damage
+        
+        if not hasAnyRole then
+            return
+        end
+        
+        local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
+        if not searchPanel then return end
+        
+        local canSelect = LFGListSearchPanelUtil_CanSelectResult and 
+                         LFGListSearchPanelUtil_CanSelectResult(entry.resultID)
+        local buttonEnabled = searchPanel.SignUpButton and searchPanel.SignUpButton:IsEnabled()
+        
+        if canSelect and buttonEnabled then
+            if searchPanel.selectedResult ~= entry.resultID then
+                if LFGListSearchPanel_SelectResult then
+                    LFGListSearchPanel_SelectResult(searchPanel, entry.resultID)
+                end
+            end
+            
+            if LFGListSearchPanel_SignUp then
+                PGF.Debug("Quick apply: signing up for", entry.resultID)
+                LFGListSearchPanel_SignUp(searchPanel)
+            end
+        end
+    end
+    
+    hooksecurefunc("LFGListSearchEntry_OnClick", clickHandler)
+end
 
 local partyRoleAutoAcceptHooked = false
 local partyRoleAutoAcceptRetryScheduled = false
@@ -186,7 +227,8 @@ local function SetupPartyRoleAutoAccept()
         local acceptBtn = LFDRoleCheckPopupAcceptButton
         if acceptBtn and acceptBtn:IsEnabled() then
             PGF.Debug("Auto-accept: accepting role check")
-            LFDRoleCheckPopupAccept_OnClick()
+            --LFDRoleCheckPopupAccept_OnClick()
+            acceptBtn:Click()
         end
     end
     
@@ -279,6 +321,7 @@ function PGF.InitializeQuickApply()
     
     SetupRoleChangeMonitoring()
     SetupAutoSignup()
+    SetupEntryClickHandler()
     SetupPartyRoleAutoAccept()
     
     PGF.Debug("Quick Apply initialized")
