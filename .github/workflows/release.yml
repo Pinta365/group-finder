@@ -1,56 +1,21 @@
-name: Release AddOn # description of this workflow, can be anything you want
+name: Release
 
-# triggers when pushing a tag
 on:
   push:
     tags:
       - '**'
 
-env:
-  CF_API_KEY: ${{ secrets.CF_API_KEY }}
-  WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
-  # for github releases, this secret is automatically provided to the workflow
-  # this must be explicitly configured with read-write permissions on the repository
-  GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+permissions:
+  contents: write
 
 jobs:
-  release: # "release" is a job, you can name it anything you want
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # reads history for commit changelog
-
-      - uses: BigWigsMods/packager@v2
-
-      - name: Notify Discord
-        if: success()
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          sleep 5
-          VERSION="${{ github.ref_name }}"
-          NOTES=$(gh release view "$VERSION" --json body --jq '.body | if length > 4000 then .[0:4000] + "\n…(see release for full notes)" else . end')
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/$VERSION"
-          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "$(jq -n \
-              --arg version "$VERSION" \
-              --arg notes "$NOTES" \
-              --arg release_url "$RELEASE_URL" \
-              '{
-                username: "PintaBot",
-                embeds: [{
-                  title: ("Pinta Group Finder " + $version),
-                  url: $release_url,
-                  description: $notes,
-                  color: 4576136,
-                  fields: [
-                    { name: "CurseForge", value: "[Download](https://www.curseforge.com/wow/addons/PintaGroupFinder)", inline: true },
-                    { name: "Wago Addons", value: "[Download](https://addons.wago.io/addons/group-finder)", inline: true }
-                  ],
-                  footer: { text: "World of Warcraft Addon" }
-                }]
-              }'
-            )"
+  call-workflow:
+    uses: Pinta365/Pinta365/.github/workflows/addon-release.yml@main
+    with:
+      addon_name: "Pinta Group Finder"
+      cf_url: "https://www.curseforge.com/wow/addons/PintaGroupFinder"
+      wago_url: "https://addons.wago.io/addons/group-finder"
+    secrets:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
