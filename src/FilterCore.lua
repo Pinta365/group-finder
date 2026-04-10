@@ -670,7 +670,11 @@ local function InterceptResultUpdates()
         if filterInProgress then
             return
         end
-        
+
+        if C_LFGList.HasActiveEntryInfo and C_LFGList.HasActiveEntryInfo() then
+            return
+        end
+
         local categoryID = searchPanel.categoryID or (LFGListFrame and LFGListFrame.SearchPanel and LFGListFrame.SearchPanel.categoryID)
         local isSupportedCategory = (categoryID == PGF.DUNGEON_CATEGORY_ID)
             or (categoryID == PGF.RAID_CATEGORY_ID)
@@ -728,6 +732,9 @@ end
 
 ---Trigger a re-filter of current results.
 function PGF.RefilterResults()
+    if C_LFGList.HasActiveEntryInfo and C_LFGList.HasActiveEntryInfo() then
+        return
+    end
     local panel = LFGListFrame and LFGListFrame.SearchPanel
     if panel and panel.results then
         if LFGListSearchPanel_UpdateResultList then
