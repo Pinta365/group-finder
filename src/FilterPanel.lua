@@ -326,7 +326,9 @@ function PGF.InitializeFilterPanel()
             syncPanelAndFrameWidth()
         else
             HideAllPanels()
-            applyFrameWidthForPanel(false)
+            C_Timer.After(0, function()
+                applyFrameWidthForPanel(false)
+            end)
         end
     end)
 
