@@ -12,6 +12,90 @@ local WIDENED_WIDTH_OFFSET = PANEL_WIDTH + 5
 local widthBeforeWiden = nil
 local tabWhenWidened = nil
 
+local toggleHandle = nil
+
+---Create the floating toggle button that hides/shows the filter panel.
+local function CreateToggleHandle()
+    if toggleHandle or not PVEFrame or not LFGListFrame then return end
+
+    toggleHandle = CreateFrame("Button", "PGFFilterPanelToggle", PVEFrame, "BackdropTemplate")
+    toggleHandle:SetSize(14, 50)
+    toggleHandle:SetPoint("LEFT", LFGListFrame, "RIGHT", -8, 0)
+    toggleHandle:SetFrameStrata("HIGH")
+    toggleHandle:SetFrameLevel(200)
+
+    toggleHandle:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    toggleHandle:SetBackdropColor(0.15, 0.15, 0.15, 0.95)
+    toggleHandle:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+
+    local arrow = toggleHandle:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    arrow:SetPoint("CENTER", toggleHandle, "CENTER", 0, 0)
+    arrow:SetTextColor(1, 0.82, 0)
+    toggleHandle.arrow = arrow
+
+    toggleHandle:SetScript("OnEnter", function(self)
+        self:SetBackdropColor(0.25, 0.25, 0.25, 1)
+        local db = PintaGroupFinderDB
+        local shown = db.ui and db.ui.filterPanelShown ~= false
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText(shown and PGF.L("HIDE_FILTER_PANEL") or PGF.L("SHOW_FILTER_PANEL"))
+        GameTooltip:Show()
+    end)
+    toggleHandle:SetScript("OnLeave", function(self)
+        self:SetBackdropColor(0.15, 0.15, 0.15, 0.95)
+        GameTooltip_Hide()
+    end)
+
+    toggleHandle:SetScript("OnClick", function()
+        local db = PintaGroupFinderDB
+        db.ui = db.ui or {}
+        local currentlyShown = db.ui.filterPanelShown ~= false
+        PGF.ShowFilterPanel(not currentlyShown, true)
+    end)
+
+    toggleHandle:Hide()
+end
+
+---Refresh the toggle button's visibility and arrow direction.
+local function UpdateToggleHandle()
+    if not toggleHandle then return end
+
+    if not (PVEFrame and PVEFrame:IsVisible() and LFGListFrame and LFGListFrame:IsVisible()) then
+        toggleHandle:Hide()
+        return
+    end
+    if LFGListFrame.activePanel ~= LFGListFrame.SearchPanel then
+        toggleHandle:Hide()
+        return
+    end
+
+    local panel = LFGListFrame.SearchPanel
+    if not panel or not panel:IsVisible() then
+        toggleHandle:Hide()
+        return
+    end
+
+    local categoryID = panel.categoryID
+    local supported = (categoryID == PGF.DUNGEON_CATEGORY_ID)
+        or (categoryID == PGF.RAID_CATEGORY_ID)
+        or (categoryID == PGF.DELVE_CATEGORY_ID)
+        or (categoryID == PGF.ARENA_CATEGORY_ID)
+        or (categoryID == PGF.RATED_BG_CATEGORY_ID)
+    if not supported then
+        toggleHandle:Hide()
+        return
+    end
+
+    local db = PintaGroupFinderDB
+    local shown = db.ui and db.ui.filterPanelShown ~= false
+    toggleHandle.arrow:SetText(shown and "<" or ">")
+    toggleHandle:Show()
+end
+
 ---Initialize advanced filter with our defaults if not already set.
 local function InitializeAdvancedFilterDefaults()
     local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -196,6 +280,7 @@ local function syncPanelAndFrameWidth()
         HideAllPanels()
         applyFrameWidthForPanel(false)
     end
+    UpdateToggleHandle()
 end
 
 ---Show or hide filter panels.
@@ -220,6 +305,7 @@ function PGF.ShowFilterPanel(show, save)
     else
         HideAllPanels()
         applyFrameWidthForPanel(false)
+        UpdateToggleHandle()
     end
 end
 
@@ -294,6 +380,8 @@ function PGF.InitializeFilterPanel()
     PGF.InitializeArenaPanel()
     PGF.InitializeRatedBGPanel()
 
+    CreateToggleHandle()
+
     HideAllPanels()
 
     PVEFrame:HookScript("OnShow", function()
@@ -304,6 +392,7 @@ function PGF.InitializeFilterPanel()
     PVEFrame:HookScript("OnHide", function()
         HideAllPanels()
         applyFrameWidthForPanel(false)
+        UpdateToggleHandle()
     end)
     
     hooksecurefunc("PVEFrame_ShowFrame", function(frameName)
@@ -329,6 +418,7 @@ function PGF.InitializeFilterPanel()
             C_Timer.After(0, function()
                 applyFrameWidthForPanel(false)
             end)
+            UpdateToggleHandle()
         end
     end)
 
