@@ -618,9 +618,37 @@ local function CreateMiscSection(scrollContent)
     end
     
     dungeonPanel.roleCheckboxes = roleCheckboxes
-    
+
+    -- Has Tank OR Healer (custom OR filter, not backed by Blizzard's advanced filter)
+    local tankOrHealerCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    tankOrHealerCheckbox:SetSize(20, 20)
+    tankOrHealerCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local tankOrHealerLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    tankOrHealerLabel:SetPoint("LEFT", tankOrHealerCheckbox, "RIGHT", 5, 0)
+    tankOrHealerLabel:SetText(PGF.L("HAS_TANK_OR_HEALER"))
+
+    tankOrHealerCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hasRole.tankOrHealer = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    tankOrHealerCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HAS_TANK_OR_HEALER"))
+        GameTooltip:AddLine(PGF.L("HAS_TANK_OR_HEALER_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    tankOrHealerCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.tankOrHealerCheckbox = tankOrHealerCheckbox
+
+    y = y + 22
+
     y = y + 5
-    
+
     -- Hide incompatible groups
     local hideIncompatibleCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     hideIncompatibleCheckbox:SetSize(20, 20)
@@ -1265,6 +1293,12 @@ function PGF.UpdateDungeonPanel()
                 end
             end
         end
+    end
+
+    if dungeonPanel.tankOrHealerCheckbox then
+        local db = PintaGroupFinderDB
+        local hasRole = (db.filter and db.filter.hasRole) or {}
+        dungeonPanel.tankOrHealerCheckbox:SetChecked(hasRole.tankOrHealer == true)
     end
     
     if dungeonPanel.ratingBox then

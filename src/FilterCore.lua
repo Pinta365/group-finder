@@ -149,6 +149,11 @@ local function PassesFilter(resultID, context, preRoleVectors)
     end
     
     if context.categoryID == PGF.DUNGEON_CATEGORY_ID then
+        local hasRole = filter.hasRole or {}
+        if hasRole.tankOrHealer and (context.tanks or 0) == 0 and (context.healers or 0) == 0 then
+            return false
+        end
+
         local dungeonActivities = filter.dungeonActivities
         if dungeonActivities ~= nil then
             local selectedGroupIDs = {}

@@ -44,6 +44,8 @@ if GetLocale() == "deDE" then
     ["HAS_HEALER"] = "Hat Heiler",
     ["HAS_TANK_DESC"] = "Zeige nur Gruppen, die bereits einen Tank haben.",
     ["HAS_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Heiler haben.",
+    ["HAS_TANK_OR_HEALER"] = "Hat Tank oder Heiler",
+    ["HAS_TANK_OR_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Tank oder einen Heiler (oder beide) haben.",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Unpassende Gruppen ausblenden",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Zeige nur Gruppen, die Platz für die Rollen eurer Gruppe haben (Tank/Heiler/DPS). Solo blendet Gruppen aus, die keine deiner gewählten Rollen brauchen.",
     
@@ -121,5 +123,9 @@ if GetLocale() == "deDE" then
     ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Arena-Suchergebnissen.",
     ["SHOW_RATED_BG_SPEC_INDICATORS"] = "Gewertetes SG Spezialisierungsanzeige",
     ["SHOW_RATED_BG_SPEC_INDICATORS_DESC"] = "Zeigt an, wie viele deiner Klasse und Spezialisierung bereits in der gewerteten Schlachtfeld-Gruppe sind.",
+
+    -- Filter panel toggle
+    ["HIDE_FILTER_PANEL"] = "Filterleiste ausblenden",
+    ["SHOW_FILTER_PANEL"] = "Filterleiste anzeigen",
     }
 end

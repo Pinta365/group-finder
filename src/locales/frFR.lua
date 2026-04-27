@@ -44,6 +44,8 @@ if GetLocale() == "frFR" then
     ["HAS_HEALER"] = "A un soigneur",
     ["HAS_TANK_DESC"] = "Afficher uniquement les groupes qui ont déjà un tank.",
     ["HAS_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un soigneur.",
+    ["HAS_TANK_OR_HEALER"] = "A un tank ou un soigneur",
+    ["HAS_TANK_OR_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un tank ou un soigneur (ou les deux).",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Masquer les groupes incompatibles",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Afficher uniquement les groupes qui ont de la place pour les rôles de votre groupe (tank/soigneur/DPS). En solo, masque les groupes qui n'ont besoin d'aucun de vos rôles.",
     
@@ -121,5 +123,9 @@ if GetLocale() == "frFR" then
     ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Affiche les icônes de spécialisation sous les emplacements de rôle remplis dans les résultats de recherche d'arène.",
     ["SHOW_RATED_BG_SPEC_INDICATORS"] = "Afficher les indicateurs de spé BG classé",
     ["SHOW_RATED_BG_SPEC_INDICATORS_DESC"] = "Affiche combien de votre classe et spécialisation sont déjà dans le groupe de champ de bataille classé.",
+
+    -- Filter panel toggle
+    ["HIDE_FILTER_PANEL"] = "Masquer le panneau de filtres",
+    ["SHOW_FILTER_PANEL"] = "Afficher le panneau de filtres",
     }
 end

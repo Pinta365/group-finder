@@ -30,6 +30,7 @@ PGF.RATED_BG_CATEGORY_ID = 9
 ---@class HasRoleSettings
 ---@field tank boolean
 ---@field healer boolean
+---@field tankOrHealer boolean
 
 ---@class DifficultySettings
 ---@field normal boolean
@@ -70,6 +71,7 @@ PGF.defaults = {
         hasRole = {
             tank = false,
             healer = false,
+            tankOrHealer = false,
         },
         hideIncompatibleGroups = false,
         difficulty = {

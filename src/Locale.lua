@@ -48,6 +48,8 @@ local defaultLocale = {
     ["HAS_HEALER"] = "Has Healer",
     ["HAS_TANK_DESC"] = "Only show groups that already have a tank.",
     ["HAS_HEALER_DESC"] = "Only show groups that already have a healer.",
+    ["HAS_TANK_OR_HEALER"] = "Has Tank or Healer",
+    ["HAS_TANK_OR_HEALER_DESC"] = "Only show groups that already have either a tank or a healer (or both).",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Hide incompatible groups",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Only show groups that have room for your party's roles (tank/healer/DPS). When solo, hides groups that need none of your selected roles.",
     
@@ -124,6 +126,10 @@ local defaultLocale = {
     ["SHOW_ARENA_SPEC_ICONS_DESC"] = "Show specialization icons below filled role slots in arena search results.",
     ["SHOW_RATED_BG_SPEC_INDICATORS"] = "Show rated BG spec indicators",
     ["SHOW_RATED_BG_SPEC_INDICATORS_DESC"] = "Show how many of your class and spec are already in the rated battleground group.",
+
+    -- Filter panel toggle
+    ["HIDE_FILTER_PANEL"] = "Hide filter panel",
+    ["SHOW_FILTER_PANEL"] = "Show filter panel",
 }
 
 local currentLocale = {}
