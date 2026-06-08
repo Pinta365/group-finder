@@ -111,6 +111,8 @@ if GetLocale() == "frFR" then
     ["SHOW_LEADER_ICON_DESC"] = "Affiche une icône de couronne au-dessus du chef de groupe dans les résultats de recherche de donjon.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Afficher les icônes de spé",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Affiche les icônes de spécialisation sous les emplacements de rôle remplis dans les résultats de recherche de donjon.",
+    ["SHOW_AGE"] = "Afficher l'âge de l'annonce",
+    ["SHOW_AGE_DESC"] = "Affiche depuis combien de temps le groupe est listé à côté du nom du groupe.",
     ["SHOW_LEADER_RATING"] = "Afficher la note du chef",
     ["SHOW_LEADER_RATING_DESC"] = "Affiche la note Mythique+ du chef de groupe à côté du nom du groupe.",
     ["SHOW_MISSING_ROLES"] = "Afficher les rôles manquants",

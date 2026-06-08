@@ -7,6 +7,7 @@ local classSpecIndicators = {}
 local leaderIconFrames = {}
 local dungeonSpecFrames = {}
 local ratingLabels = {}
+local ageLabels = {}
 local specNameToTexture = {}
 local specNameCacheBuilt = false
 
@@ -279,8 +280,20 @@ local function GetOrCreateRatingLabel(entry)
 end
 
 ---@param entry Frame
+---@return FontString
+local function GetOrCreateAgeLabel(entry)
+    local label = ageLabels[entry]
+    if not label then
+        label = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        ageLabels[entry] = label
+    end
+    return label
+end
+
+---@param entry Frame
 ---@param resultID number
 ---@param searchResultInfo table
+---@return boolean shown
 local function AddLeaderRating(entry, resultID, searchResultInfo)
     local label = GetOrCreateRatingLabel(entry)
     local rating = searchResultInfo.leaderOverallDungeonScore or 0
@@ -290,6 +303,28 @@ local function AddLeaderRating(entry, resultID, searchResultInfo)
         label:SetText(string.format("|cFF%s[%d]|r", colorHex, rating))
         label:ClearAllPoints()
         label:SetPoint("LEFT", entry.Name, "RIGHT", 4, 0)
+        label:Show()
+        return true
+    else
+        label:Hide()
+        return false
+    end
+end
+
+---@param entry Frame
+---@param resultID number
+---@param searchResultInfo table
+---@param ratingShown boolean
+local function AddAgeIndicator(entry, resultID, searchResultInfo, ratingShown)
+    local label = GetOrCreateAgeLabel(entry)
+    local ageSeconds = searchResultInfo.age or 0
+    if ageSeconds > 0 and entry.Name then
+        local minutes = math.floor(ageSeconds / 60)
+        local text = minutes > 0 and string.format("|cff888888%dm|r", minutes) or "|cff888888<1m|r"
+        label:SetText(text)
+        label:ClearAllPoints()
+        local anchor = ratingShown and ratingLabels[entry] or entry.Name
+        label:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
         label:Show()
     else
         label:Hide()
@@ -590,6 +625,7 @@ local function OnEntryUpdate(self)
     local showArenaLeader = ui and ui.showArenaLeaderIcon
     local showArenaSpecs = ui and ui.showArenaSpecIcons
     local showRating = ui and ui.showLeaderRating
+    local showAge = ui and ui.showAge
     local showMissing = ui and ui.showMissingRoles
 
     local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
@@ -648,10 +684,18 @@ local function OnEntryUpdate(self)
         HideRoleIndicators(self)
     end
 
+    local ratingShown = false
     if isDungeon and showRating then
-        AddLeaderRating(self, resultID, searchResultInfo)
+        ratingShown = AddLeaderRating(self, resultID, searchResultInfo)
     else
         local label = ratingLabels[self]
+        if label then label:Hide() end
+    end
+
+    if isDungeon and showAge then
+        AddAgeIndicator(self, resultID, searchResultInfo, ratingShown)
+    else
+        local label = ageLabels[self]
         if label then label:Hide() end
     end
 

@@ -111,6 +111,8 @@ if GetLocale() == "deDE" then
     ["SHOW_LEADER_ICON_DESC"] = "Zeigt ein Kronen-Symbol über dem Gruppenanführer in Dungeon-Suchergebnissen.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Klassenspezialisierungs-Symbole anzeigen",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Dungeon-Suchergebnissen.",
+    ["SHOW_AGE"] = "Alter der Auflistung anzeigen",
+    ["SHOW_AGE_DESC"] = "Zeigt an, wie lange die Gruppe bereits in den Suchergebnissen gelistet ist.",
     ["SHOW_LEADER_RATING"] = "Leiterwertung anzeigen",
     ["SHOW_LEADER_RATING_DESC"] = "Zeigt die Mythisch+-Wertung des Gruppenleiters neben dem Gruppennamen.",
     ["SHOW_MISSING_ROLES"] = "Fehlende Rollen anzeigen",

@@ -800,6 +800,33 @@ local function CreateSettingsSection(scrollContent)
     dungeonPanel.showLeaderRatingCheckbox = showLeaderRatingCheckbox
     y = y + 24
 
+    -- Show Age Checkbox
+    local showAgeCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showAgeCheckbox:SetSize(20, 20)
+    showAgeCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showAgeLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showAgeLabel:SetPoint("LEFT", showAgeCheckbox, "RIGHT", 5, 0)
+    showAgeLabel:SetText(PGF.L("SHOW_AGE"))
+    showAgeCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showAge = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showAgeCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_AGE"))
+        GameTooltip:AddLine(PGF.L("SHOW_AGE_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showAgeCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showAgeCheckbox:SetChecked(ui.showAge ~= false)
+    dungeonPanel.showAgeCheckbox = showAgeCheckbox
+    y = y + 24
+
     -- Show Missing Roles Checkbox
     local showMissingRolesCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     showMissingRolesCheckbox:SetSize(20, 20)
@@ -1357,6 +1384,11 @@ function PGF.UpdateDungeonPanel()
     if dungeonPanel.movePendingGroupsToTopCheckbox then
         local settings = GetSortSettings()
         dungeonPanel.movePendingGroupsToTopCheckbox:SetChecked(settings.movePendingGroupsToTop ~= false)
+    end
+
+    if dungeonPanel.showAgeCheckbox then
+        local ui = PintaGroupFinderDB.ui or PGF.defaults.ui
+        dungeonPanel.showAgeCheckbox:SetChecked(ui.showAge ~= false)
     end
 
     if dungeonPanel.UpdateDropdownStates then

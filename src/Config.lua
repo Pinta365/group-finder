@@ -53,6 +53,7 @@ PGF.RATED_BG_CATEGORY_ID = 9
 
 ---@class UISettings
 ---@field showLeaderRating boolean
+---@field showAge boolean
 ---@field showMissingRoles boolean
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
@@ -196,6 +197,7 @@ PGF.defaults = {
     
     ui = {
         showLeaderRating = true,
+        showAge = true,
         showMissingRoles = true,
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
