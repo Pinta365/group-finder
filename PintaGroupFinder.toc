@@ -1,9 +1,9 @@
-## Interface: 120001, 120005
+## Interface: 120007
 ## Name: PintaGroupFinder
 ## Title: |cff45D388Pinta Group Finder|r
 ## Notes: A group finder addon for World of Warcraft.
 ## Author: Pinta365@Github
-## Version: 0.6.10
+## Version: 0.7.0
 ## SavedVariables: PintaGroupFinderDB
 ## SavedVariablesPerCharacter: PintaGroupFinderCharDB
 ## X-Curse-Project-ID: 1443532
