@@ -647,6 +647,92 @@ local function CreateMiscSection(scrollContent)
 
     y = y + 22
 
+
+    -- Has Augmentation Evoker (custom OR filter, not backed by Blizzard's advanced filter)
+    local augmentationCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    augmentationCheckbox:SetSize(20, 20)
+    augmentationCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local augmentationLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    augmentationLabel:SetPoint("LEFT", augmentationCheckbox, "RIGHT", 5, 0)
+    augmentationLabel:SetText(PGF.L("HAS_AUGMENTATION_EVOKER"))
+
+    augmentationCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hasRole.augmentationEvoker = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    augmentationCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HAS_AUGMENTATION_EVOKER"))
+        GameTooltip:AddLine(PGF.L("HAS_AUGMENTATION_EVOKER_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    augmentationCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.augmentationCheckbox = augmentationCheckbox
+
+    y = y + 22
+
+    -- Hide Augmentation Evokers (custom OR filter, not backed by Blizzard's advanced filter)
+    local hideAugmentationCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideAugmentationCheckbox:SetSize(20, 20)
+    hideAugmentationCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local hideAugmentationLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideAugmentationLabel:SetPoint("LEFT", hideAugmentationCheckbox, "RIGHT", 5, 0)
+    hideAugmentationLabel:SetText(PGF.L("HIDE_AUGMENTATION_EVOKERS"))
+
+    hideAugmentationCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hideAugmentationEvokers = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    hideAugmentationCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_AUGMENTATION_EVOKERS"))
+        GameTooltip:AddLine(PGF.L("HIDE_AUGMENTATION_EVOKERS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideAugmentationCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.hideAugmentationCheckbox = hideAugmentationCheckbox
+
+    y = y + 22
+
+
+    -- Hide Same Spec (custom OR filter, not backed by Blizzard's advanced filter)
+    local hideSameSpecCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideSameSpecCheckbox:SetSize(20, 20)
+    hideSameSpecCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local hideSameSpecLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideSameSpecLabel:SetPoint("LEFT", hideSameSpecCheckbox, "RIGHT", 5, 0)
+    hideSameSpecLabel:SetText(PGF.L("HIDE_SAME_SPEC_GROUPS"))
+
+    hideSameSpecCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hideSameSpec = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    hideSameSpecCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_SAME_SPEC_GROUPS"))
+        GameTooltip:AddLine(PGF.L("HIDE_SAME_SPEC_GROUPS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideSameSpecCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.hideSameSpecCheckbox = hideSameSpecCheckbox
+
+    y = y + 22
+
     y = y + 5
 
     -- Hide incompatible groups
@@ -1327,6 +1413,12 @@ function PGF.UpdateDungeonPanel()
         local hasRole = (db.filter and db.filter.hasRole) or {}
         dungeonPanel.tankOrHealerCheckbox:SetChecked(hasRole.tankOrHealer == true)
     end
+
+    if dungeonPanel.augmentationCheckbox then
+        local db = PintaGroupFinderDB
+        local hasRole = (db.filter and db.filter.hasRole) or {}
+        dungeonPanel.augmentationCheckbox:SetChecked(hasRole.augmentationEvoker == true)
+    end
     
     if dungeonPanel.ratingBox then
         local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -1339,6 +1431,18 @@ function PGF.UpdateDungeonPanel()
         end
     end
     
+    if dungeonPanel.hideAugmentationCheckbox then
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+        dungeonPanel.hideAugmentationCheckbox:SetChecked(filter.hideAugmentationEvokers == true)
+    end
+
+    if dungeonPanel.hideSameSpecCheckbox then
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+        dungeonPanel.hideSameSpecCheckbox:SetChecked(filter.hideSameSpec == true)
+    end
+
     if dungeonPanel.hideIncompatibleGroupsCheckbox then
         local db = PintaGroupFinderDB
         local filter = db.filter or {}

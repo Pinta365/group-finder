@@ -27,6 +27,8 @@ local activityInfoCache = {}
 ---@field isApplied boolean True if you've applied to this group
 ---@field generalPlaystyle number Playstyle for raids: 1=Learning, 2=Relaxed, 3=Competitive, 4=Carry
 ---@field playstyle number Playstyle for dungeons (0 for raids)
+---@field hasAugmentationEvoker boolean True if group has an augmentation evoker (M+ only)
+---@field hasSameSpec boolean True if group has at least one member with your spec
 --- Raid-specific fields
 ---@field defeatedBosses string[]? Array of defeated boss names (raids only)
 ---@field defeatedBossCount number? Number of bosses defeated (raids only)
@@ -95,6 +97,48 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.dpsNeeded = memberCounts.DAMAGER_REMAINING or 0
     
     context.mprating = searchResultInfo.leaderOverallDungeonScore or 0
+
+    context.hasAugmentationEvoker = false
+    context.hasSameSpec = false
+
+
+    -- Unused return values intentionally preserved for future use.
+    -- 1. Get the player's Class
+    local playerClassName, playerClassFilename, playerClassID = UnitClass("player")
+
+    -- 2. Get the player's Specialization
+    local currentSpecIndex = GetSpecialization()
+    local playerSpecID, playerSpecName, playerSpecDescription, playerSpecIcon, playerSpecRole = nil, "No Spec", nil, nil, nil
+
+    if currentSpecIndex then
+        playerSpecID, playerSpecName, playerSpecDescription, playerSpecIcon, playerSpecRole = GetSpecializationInfo(currentSpecIndex)
+    end
+
+    PGF.Debug(string.format("[BuildFilterContext] - You are a %s %s", playerSpecName, playerClassName))
+
+    local numMembers = searchResultInfo.numMembers or 0
+    for memberIndex = 1, numMembers do
+
+        if context.hasAugmentationEvoker and context.hasSameSpec then
+            break
+        end
+
+        local role, class, level, specID, exploratory = C_LFGList.GetSearchResultMemberInfo(resultID, memberIndex)
+  
+        if not context.hasAugmentationEvoker and specID and specID:lower() == "augmentation" then
+            context.hasAugmentationEvoker = true         
+            PGF.Debug("[BuildFilterContext] - Found Augmentation Evoker")
+        end
+
+        if not context.hasSameSpec and playerClassFilename and class and playerSpecName and specID then
+            if playerClassFilename:lower() == class:lower() and playerSpecName:lower() == specID:lower() then
+                context.hasSameSpec = true
+                PGF.Debug("[BuildFilterContext] - Found same spec:", playerSpecName)
+            end
+        end
+    end
+    PGF.Debug("[BuildFilterContext] - hasSameSpec:", context.hasSameSpec)
+
     context.age = math.floor((searchResultInfo.age or 0) / 60)
     context.ageSecs = searchResultInfo.age or 0
     
@@ -104,7 +148,7 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
     context.playstyle = searchResultInfo.playstyle or 0
     
-        local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
+    local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
     context.appStatus = appStatus or "none"
     context.isApplied = not (not appStatus or appStatus == "none")
     

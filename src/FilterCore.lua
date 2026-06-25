@@ -154,6 +154,20 @@ local function PassesFilter(resultID, context, preRoleVectors)
             return false
         end
 
+        if hasRole.augmentationEvoker and not context.hasAugmentationEvoker then
+            return false
+        end
+
+        local hideAugmentationEvokers = filter.hideAugmentationEvokers == true
+        if hideAugmentationEvokers and context.hasAugmentationEvoker then
+            return false
+        end
+
+        local hideSameSpec = filter.hideSameSpec == true
+        if hideSameSpec and context.hasSameSpec then
+            return false
+        end
+
         local dungeonActivities = filter.dungeonActivities
         if dungeonActivities ~= nil then
             local selectedGroupIDs = {}

@@ -73,8 +73,11 @@ PGF.defaults = {
             tank = false,
             healer = false,
             tankOrHealer = false,
+            augmentationEvoker = false
         },
+        hideAugmentationEvokers = false,
         hideIncompatibleGroups = false,
+        hideSameSpec = false,
         difficulty = {
             normal = true,
             heroic = true,
