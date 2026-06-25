@@ -57,7 +57,7 @@ local defaultLocale = {
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Hide incompatible groups",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Only show groups that have room for your party's roles (tank/healer/DPS). When solo, hides groups that need none of your selected roles.",
     ["HIDE_SAME_SPEC_GROUPS"] = "Hide groups with the same specialization",
-    ["HIDE_SAME_SPEC_GROUPS_DESC"] = "Only show groups that do not contain your specilization.",
+    ["HIDE_SAME_SPEC_GROUPS_DESC"] = "Only show groups that do not contain your specialization.",
      
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Role Requirements",
