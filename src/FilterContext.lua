@@ -101,42 +101,63 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.hasAugmentationEvoker = false
     context.hasSameSpec = false
 
+    -- 1. Player class
+    local playerClassName, playerClassFilename = UnitClass("player")
 
-    -- Unused return values intentionally preserved for future use.
-    -- 1. Get the player's Class
-    local playerClassName, playerClassFilename, playerClassID = UnitClass("player")
+    -- 2. Player spec index
+    local playerSpecIndex = C_SpecializationInfo.GetSpecialization()
 
-    -- 2. Get the player's Specialization
-    local currentSpecIndex = GetSpecialization()
-    local playerSpecID, playerSpecName, playerSpecDescription, playerSpecIcon, playerSpecRole = nil, "No Spec", nil, nil, nil
-
-    if currentSpecIndex then
-        playerSpecID, playerSpecName, playerSpecDescription, playerSpecIcon, playerSpecRole = GetSpecializationInfo(currentSpecIndex)
+    -- 3. Player spec name
+    local playerSpecName = "UNKNOWN"
+    if playerSpecIndex then
+        local _, name = C_SpecializationInfo.GetSpecializationInfo(playerSpecIndex)
+        playerSpecName = name or "UNKNOWN"
     end
 
-    PGF.Debug(string.format("[BuildFilterContext] - You are a %s %s", playerSpecName, playerClassName))
+    local playerClassLower = (playerClassFilename or "UNKNOWN"):lower()
+    local playerSpecLower  = playerSpecName:lower()
+
+    PGF.Debug(string.format(
+        "[BuildFilterContext] - You are a %s %s",
+        playerSpecName,
+        playerClassName
+    ))
 
     local numMembers = searchResultInfo.numMembers or 0
+
     for memberIndex = 1, numMembers do
 
         if context.hasAugmentationEvoker and context.hasSameSpec then
             break
         end
 
-        local role, class, level, specID, exploratory = C_LFGList.GetSearchResultMemberInfo(resultID, memberIndex)
-  
-        if not context.hasAugmentationEvoker and specID and specID:lower() == "augmentation" then
-            context.hasAugmentationEvoker = true         
+        local member = C_LFGList.GetSearchResultPlayerInfo(resultID, memberIndex)
+
+        local memberClassFilename = member and member.classFilename or "UNKNOWN"
+        local memberSpecName      = member and member.specName or "UNKNOWN"
+
+        local memberClassLower = memberClassFilename:lower()
+        local memberSpecLower  = memberSpecName:lower()
+
+        -- Augmentation detection
+        if not context.hasAugmentationEvoker
+            and memberSpecLower == "augmentation"
+        then
+            context.hasAugmentationEvoker = true
             PGF.Debug("[BuildFilterContext] - Found Augmentation Evoker")
         end
 
-        if not context.hasSameSpec and playerClassFilename and class and playerSpecName and specID then
-            if playerClassFilename:lower() == class:lower() and playerSpecName:lower() == specID:lower() then
+        -- Same spec detection 
+        if not context.hasSameSpec then
+            if playerClassLower == memberClassLower
+                and playerSpecLower == memberSpecLower
+            then
                 context.hasSameSpec = true
                 PGF.Debug("[BuildFilterContext] - Found same spec:", playerSpecName)
             end
         end
     end
+
     PGF.Debug("[BuildFilterContext] - hasSameSpec:", context.hasSameSpec)
 
     context.age = math.floor((searchResultInfo.age or 0) / 60)
