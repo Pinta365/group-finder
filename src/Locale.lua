@@ -50,9 +50,15 @@ local defaultLocale = {
     ["HAS_HEALER_DESC"] = "Only show groups that already have a healer.",
     ["HAS_TANK_OR_HEALER"] = "Has Tank or Healer",
     ["HAS_TANK_OR_HEALER_DESC"] = "Only show groups that already have either a tank or a healer (or both).",
+    ["HAS_AUGMENTATION_EVOKER"] = "Has Augmentation Evoker",
+    ["HAS_AUGMENTATION_EVOKER_DESC"] = "Only show groups that contain an Augmentation Evoker.",
+    ["HIDE_AUGMENTATION_EVOKERS"] = "Hide groups with Augmentation Evoker",
+    ["HIDE_AUGMENTATION_EVOKERS_DESC"] = "Only show groups that do not contain an Augmentation Evoker.",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Hide incompatible groups",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Only show groups that have room for your party's roles (tank/healer/DPS). When solo, hides groups that need none of your selected roles.",
-    
+    ["HIDE_SAME_SPEC_GROUPS"] = "Hide groups with the same specialization",
+    ["HIDE_SAME_SPEC_GROUPS_DESC"] = "Only show groups that do not contain your specialization.",
+     
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Role Requirements",
     ["ROLE_REQ_DESC"] = "Filter groups by exact role counts (e.g., at least 2 healers).",
