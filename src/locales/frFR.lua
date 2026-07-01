@@ -46,9 +46,15 @@ if GetLocale() == "frFR" then
     ["HAS_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un soigneur.",
     ["HAS_TANK_OR_HEALER"] = "A un tank ou un soigneur",
     ["HAS_TANK_OR_HEALER_DESC"] = "Afficher uniquement les groupes qui ont déjà un tank ou un soigneur (ou les deux).",
+    ["HAS_AUGMENTATION_EVOKER"] = "A un Évocateur Augmentation",
+    ["HAS_AUGMENTATION_EVOKER_DESC"] = "Afficher uniquement les groupes qui contiennent un Évocateur Augmentation.",
+    ["HIDE_AUGMENTATION_EVOKERS"] = "Masquer les groupes avec un Évocateur Augmentation",
+    ["HIDE_AUGMENTATION_EVOKERS_DESC"] = "Afficher uniquement les groupes qui ne contiennent pas d'Évocateur Augmentation.",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Masquer les groupes incompatibles",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Afficher uniquement les groupes qui ont de la place pour les rôles de votre groupe (tank/soigneur/DPS). En solo, masque les groupes qui n'ont besoin d'aucun de vos rôles.",
-    
+    ["HIDE_SAME_SPEC_GROUPS"] = "Masquer les groupes avec la même spécialisation",
+    ["HIDE_SAME_SPEC_GROUPS_DESC"] = "Afficher uniquement les groupes qui ne contiennent pas votre spécialisation.",
+
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Exigences de rôle",
     ["ROLE_REQ_DESC"] = "Filtrer les groupes par nombre exact de rôles (ex. au moins 2 soigneurs).",

@@ -46,9 +46,15 @@ if GetLocale() == "deDE" then
     ["HAS_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Heiler haben.",
     ["HAS_TANK_OR_HEALER"] = "Hat Tank oder Heiler",
     ["HAS_TANK_OR_HEALER_DESC"] = "Zeige nur Gruppen, die bereits einen Tank oder einen Heiler (oder beide) haben.",
+    ["HAS_AUGMENTATION_EVOKER"] = "Hat Verstärkungs-Rufer",
+    ["HAS_AUGMENTATION_EVOKER_DESC"] = "Zeige nur Gruppen, die einen Verstärkungs-Rufer enthalten.",
+    ["HIDE_AUGMENTATION_EVOKERS"] = "Gruppen mit Verstärkungs-Rufer ausblenden",
+    ["HIDE_AUGMENTATION_EVOKERS_DESC"] = "Zeige nur Gruppen, die keinen Verstärkungs-Rufer enthalten.",
     ["HIDE_INCOMPATIBLE_GROUPS"] = "Unpassende Gruppen ausblenden",
     ["HIDE_INCOMPATIBLE_GROUPS_DESC"] = "Zeige nur Gruppen, die Platz für die Rollen eurer Gruppe haben (Tank/Heiler/DPS). Solo blendet Gruppen aus, die keine deiner gewählten Rollen brauchen.",
-    
+    ["HIDE_SAME_SPEC_GROUPS"] = "Gruppen mit gleicher Spezialisierung ausblenden",
+    ["HIDE_SAME_SPEC_GROUPS_DESC"] = "Zeige nur Gruppen, die deine Spezialisierung nicht enthalten.",
+
     -- Role Requirements
     ["ROLE_REQUIREMENTS"] = "Rollenanforderungen",
     ["ROLE_REQ_DESC"] = "Filtere Gruppen nach exakten Rollenanzahlen (z.B. mindestens 2 Heiler).",
