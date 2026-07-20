@@ -405,7 +405,7 @@ local function CreateSettingsSection(scrollContent)
         local disabled = s.disableCustomSorting == true
         local function toggle(dd)
             if not dd then return end
-            if disabled then UIDropDownMenu_DisableDropDown(dd) else UIDropDownMenu_EnableDropDown(dd) end
+            dd:SetEnabled(not disabled)
         end
         toggle(ratedBGPanel.primarySortDropdown)
         toggle(ratedBGPanel.primaryDirDropdown)
@@ -462,81 +462,21 @@ local function CreateSettingsSection(scrollContent)
 
     y = y + 48
 
-    -- Helper to build a sort dropdown
-    local function MakeSortDropdown(frameName, xOff, sortOptionsTable, getVal, setVal)
-        local dd = CreateFrame("Frame", frameName, content, "UIDropDownMenuTemplate")
-        dd:SetPoint("TOPLEFT", content, "TOPLEFT", xOff - 15, -y - 14)
-        UIDropDownMenu_SetWidth(dd, 120)
-
-        local function OnClick(self, arg1)
-            setVal(arg1)
-            UIDropDownMenu_SetSelectedValue(dd, arg1)
-            if arg1 == "none" then
-                UIDropDownMenu_SetText(dd, PGF.L("SORT_NONE"))
-            else
-                for _, opt in ipairs(sortOptionsTable) do
-                    if opt.value == arg1 then UIDropDownMenu_SetText(dd, opt.label); break end
-                end
-            end
-        end
-
-        UIDropDownMenu_Initialize(dd, function(self, level)
-            local cur = getVal()
-            if sortOptionsTable[1] and sortOptionsTable[1].value == "none" then
-                -- already has none option in table
-            else
-                local info = UIDropDownMenu_CreateInfo()
-                info.text = PGF.L("SORT_NONE"); info.value = "none"; info.arg1 = "none"; info.func = OnClick; info.checked = cur == nil
-                UIDropDownMenu_AddButton(info)
-            end
-            for _, opt in ipairs(sortOptionsTable) do
-                local info = UIDropDownMenu_CreateInfo()
-                info.text = opt.label; info.value = opt.value; info.arg1 = opt.value; info.func = OnClick; info.checked = cur == opt.value
-                UIDropDownMenu_AddButton(info)
-            end
-        end)
-
-        return dd, OnClick
-    end
-
     -- Primary Sort label
     local primarySortLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     primarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
     primarySortLabel:SetText(PGF.L("SORT_PRIMARY"))
 
-    local primarySortDropdown = CreateFrame("Frame", "PGFRatedBGPrimarySortDropdown", content, "UIDropDownMenuTemplate")
-    primarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
-    UIDropDownMenu_SetWidth(primarySortDropdown, 120)
-
-    local function SetPrimary(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.ratedBGSortSettings.primarySort = value
-        PGF.RefilterResults()
-    end
-
-    local function PrimaryOnClick(self, arg1)
-        SetPrimary(arg1)
-        UIDropDownMenu_SetSelectedValue(primarySortDropdown, arg1)
-        for _, opt in ipairs(ratedBGSortOptions) do
-            if opt.value == arg1 then UIDropDownMenu_SetText(primarySortDropdown, opt.label); break end
-        end
-    end
-
-    UIDropDownMenu_Initialize(primarySortDropdown, function(self, level)
-        local cur = GetSortSettings().primarySort or "age"
-        for _, opt in ipairs(ratedBGSortOptions) do
-            local info = UIDropDownMenu_CreateInfo()
-            info.text = opt.label; info.value = opt.value; info.arg1 = opt.value; info.func = PrimaryOnClick; info.checked = cur == opt.value
-            UIDropDownMenu_AddButton(info)
-        end
-    end)
-
-    local curPrimary = settings.primarySort or "age"
-    UIDropDownMenu_SetSelectedValue(primarySortDropdown, curPrimary)
-    for _, opt in ipairs(ratedBGSortOptions) do
-        if opt.value == curPrimary then UIDropDownMenu_SetText(primarySortDropdown, opt.label); break end
-    end
+    local primarySortDropdown = PGF.CreateRadioDropdown(
+        content, "PGFRatedBGPrimarySortDropdown", 120, ratedBGSortOptions,
+        function() return GetSortSettings().primarySort or "age" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.ratedBGSortSettings.primarySort = value
+            PGF.RefilterResults()
+        end)
+    primarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 14)
     ratedBGPanel.primarySortDropdown = primarySortDropdown
 
     -- Primary Dir
@@ -544,36 +484,20 @@ local function CreateSettingsSection(scrollContent)
     primaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
     primaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
 
-    local primaryDirDropdown = CreateFrame("Frame", "PGFRatedBGPrimaryDirDropdown", content, "UIDropDownMenuTemplate")
-    primaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
-    UIDropDownMenu_SetWidth(primaryDirDropdown, 80)
-
-    local function SetPrimaryDir(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.ratedBGSortSettings.primarySortDirection = value
-        PGF.RefilterResults()
-    end
-
-    local function PrimaryDirOnClick(self, arg1)
-        SetPrimaryDir(arg1)
-        UIDropDownMenu_SetSelectedValue(primaryDirDropdown, arg1)
-        UIDropDownMenu_SetText(primaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
-    end
-
-    UIDropDownMenu_Initialize(primaryDirDropdown, function(self, level)
-        local cur = GetSortSettings().primarySortDirection or "asc"
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_ASC"); info.value = "asc"; info.arg1 = "asc"; info.func = PrimaryDirOnClick; info.checked = cur == "asc"
-        UIDropDownMenu_AddButton(info)
-        info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_DESC"); info.value = "desc"; info.arg1 = "desc"; info.func = PrimaryDirOnClick; info.checked = cur == "desc"
-        UIDropDownMenu_AddButton(info)
-    end)
-
-    local curPrimaryDir = settings.primarySortDirection or "asc"
-    UIDropDownMenu_SetSelectedValue(primaryDirDropdown, curPrimaryDir)
-    UIDropDownMenu_SetText(primaryDirDropdown, curPrimaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    local dirOptions = {
+        { value = "asc", label = PGF.L("SORT_ASC") },
+        { value = "desc", label = PGF.L("SORT_DESC") },
+    }
+    local primaryDirDropdown = PGF.CreateRadioDropdown(
+        content, "PGFRatedBGPrimaryDirDropdown", 80, dirOptions,
+        function() return GetSortSettings().primarySortDirection or "asc" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.ratedBGSortSettings.primarySortDirection = value
+            PGF.RefilterResults()
+        end)
+    primaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y - 14)
     ratedBGPanel.primaryDirDropdown = primaryDirDropdown
 
     y = y + 50
@@ -583,50 +507,20 @@ local function CreateSettingsSection(scrollContent)
     secondarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
     secondarySortLabel:SetText(PGF.L("SORT_SECONDARY"))
 
-    local secondarySortDropdown = CreateFrame("Frame", "PGFRatedBGSecondarySortDropdown", content, "UIDropDownMenuTemplate")
-    secondarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
-    UIDropDownMenu_SetWidth(secondarySortDropdown, 120)
-
-    local function SetSecondary(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.ratedBGSortSettings.secondarySort = value ~= "none" and value or nil
-        PGF.RefilterResults()
+    local secondarySortOptions = { { value = "none", label = PGF.L("SORT_NONE") } }
+    for _, opt in ipairs(ratedBGSortOptions) do
+        secondarySortOptions[#secondarySortOptions + 1] = opt
     end
-
-    local function SecondaryOnClick(self, arg1)
-        SetSecondary(arg1)
-        UIDropDownMenu_SetSelectedValue(secondarySortDropdown, arg1)
-        if arg1 == "none" then
-            UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
-        else
-            for _, opt in ipairs(ratedBGSortOptions) do
-                if opt.value == arg1 then UIDropDownMenu_SetText(secondarySortDropdown, opt.label); break end
-            end
-        end
-    end
-
-    UIDropDownMenu_Initialize(secondarySortDropdown, function(self, level)
-        local cur = GetSortSettings().secondarySort
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_NONE"); info.value = "none"; info.arg1 = "none"; info.func = SecondaryOnClick; info.checked = not cur
-        UIDropDownMenu_AddButton(info)
-        for _, opt in ipairs(ratedBGSortOptions) do
-            info = UIDropDownMenu_CreateInfo()
-            info.text = opt.label; info.value = opt.value; info.arg1 = opt.value; info.func = SecondaryOnClick; info.checked = cur == opt.value
-            UIDropDownMenu_AddButton(info)
-        end
-    end)
-
-    local curSecondary = settings.secondarySort
-    UIDropDownMenu_SetSelectedValue(secondarySortDropdown, curSecondary or "none")
-    if curSecondary then
-        for _, opt in ipairs(ratedBGSortOptions) do
-            if opt.value == curSecondary then UIDropDownMenu_SetText(secondarySortDropdown, opt.label); break end
-        end
-    else
-        UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
-    end
+    local secondarySortDropdown = PGF.CreateRadioDropdown(
+        content, "PGFRatedBGSecondarySortDropdown", 120, secondarySortOptions,
+        function() return GetSortSettings().secondarySort or "none" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.ratedBGSortSettings.secondarySort = value ~= "none" and value or nil
+            PGF.RefilterResults()
+        end)
+    secondarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 14)
     ratedBGPanel.secondarySortDropdown = secondarySortDropdown
 
     -- Secondary Dir
@@ -634,36 +528,16 @@ local function CreateSettingsSection(scrollContent)
     secondaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
     secondaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
 
-    local secondaryDirDropdown = CreateFrame("Frame", "PGFRatedBGSecondaryDirDropdown", content, "UIDropDownMenuTemplate")
-    secondaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
-    UIDropDownMenu_SetWidth(secondaryDirDropdown, 80)
-
-    local function SetSecondaryDir(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.ratedBGSortSettings.secondarySortDirection = value
-        PGF.RefilterResults()
-    end
-
-    local function SecondaryDirOnClick(self, arg1)
-        SetSecondaryDir(arg1)
-        UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, arg1)
-        UIDropDownMenu_SetText(secondaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
-    end
-
-    UIDropDownMenu_Initialize(secondaryDirDropdown, function(self, level)
-        local cur = GetSortSettings().secondarySortDirection or "asc"
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_ASC"); info.value = "asc"; info.arg1 = "asc"; info.func = SecondaryDirOnClick; info.checked = cur == "asc"
-        UIDropDownMenu_AddButton(info)
-        info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_DESC"); info.value = "desc"; info.arg1 = "desc"; info.func = SecondaryDirOnClick; info.checked = cur == "desc"
-        UIDropDownMenu_AddButton(info)
-    end)
-
-    local curSecondaryDir = settings.secondarySortDirection or "asc"
-    UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, curSecondaryDir)
-    UIDropDownMenu_SetText(secondaryDirDropdown, curSecondaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    local secondaryDirDropdown = PGF.CreateRadioDropdown(
+        content, "PGFRatedBGSecondaryDirDropdown", 80, dirOptions,
+        function() return GetSortSettings().secondarySortDirection or "asc" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.ratedBGSortSettings.secondarySortDirection = value
+            PGF.RefilterResults()
+        end)
+    secondaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y - 14)
     ratedBGPanel.secondaryDirDropdown = secondaryDirDropdown
 
     y = y + 50
@@ -799,34 +673,18 @@ function PGF.UpdateRatedBGPanel()
 
     if ratedBGPanel.UpdateDropdownStates then ratedBGPanel.UpdateDropdownStates() end
 
-    local function refreshDropdown(dd, options, cur)
-        if not dd then return end
-        UIDropDownMenu_SetSelectedValue(dd, cur or "none")
-        if cur then
-            for _, opt in ipairs(options) do
-                if opt.value == cur then UIDropDownMenu_SetText(dd, opt.label); return end
-            end
-        end
-        UIDropDownMenu_SetText(dd, PGF.L("SORT_NONE"))
-    end
-
-    local settings = GetSortSettings()
-    local function refreshDir(dd, cur)
-        if not dd then return end
-        UIDropDownMenu_SetSelectedValue(dd, cur)
-        UIDropDownMenu_SetText(dd, cur == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
-    end
-
-    local curPrimary = settings.primarySort or "age"
     if ratedBGPanel.primarySortDropdown then
-        UIDropDownMenu_SetSelectedValue(ratedBGPanel.primarySortDropdown, curPrimary)
-        for _, opt in ipairs(ratedBGSortOptions) do
-            if opt.value == curPrimary then UIDropDownMenu_SetText(ratedBGPanel.primarySortDropdown, opt.label); break end
-        end
+        ratedBGPanel.primarySortDropdown:GenerateMenu()
     end
-    refreshDir(ratedBGPanel.primaryDirDropdown, settings.primarySortDirection or "asc")
-    refreshDropdown(ratedBGPanel.secondarySortDropdown, ratedBGSortOptions, settings.secondarySort)
-    refreshDir(ratedBGPanel.secondaryDirDropdown, settings.secondarySortDirection or "asc")
+    if ratedBGPanel.primaryDirDropdown then
+        ratedBGPanel.primaryDirDropdown:GenerateMenu()
+    end
+    if ratedBGPanel.secondarySortDropdown then
+        ratedBGPanel.secondarySortDropdown:GenerateMenu()
+    end
+    if ratedBGPanel.secondaryDirDropdown then
+        ratedBGPanel.secondaryDirDropdown:GenerateMenu()
+    end
 
     RecalculateLayout()
 end

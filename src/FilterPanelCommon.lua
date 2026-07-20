@@ -50,6 +50,67 @@ function PGF.CreateMinimalScrollBar(parent)
     return scrollBar
 end
 
+---Create a single-select dropdown using Blizzard's modern Menu system.
+---@param parent Frame Parent frame
+---@param name string|nil Global frame name (or nil for anonymous)
+---@param width number Dropdown width in pixels
+---@param options table Array of { value = any, label = string }
+---@param getValue fun(): any Returns the currently selected value
+---@param setValue fun(value: any) Persists the selection (DB write + side effects)
+---@return table dropdown The DropdownButton frame
+function PGF.CreateRadioDropdown(parent, name, width, options, getValue, setValue)
+    local DROPDOWN_HEIGHT = 22
+    local DROPDOWN_FONT_SIZE = 9
+    local ROW_FONT_OBJECT = "GameFontHighlightSmall"
+
+    local dropdown = CreateFrame("DropdownButton", name, parent, "WowStyle1DropdownTemplate")
+    dropdown:SetWidth(width)
+    dropdown:SetHeight(DROPDOWN_HEIGHT)
+
+    local labelFontString = dropdown.Text
+    if not labelFontString then
+        for _, region in ipairs({ dropdown:GetRegions() }) do
+            if region.IsObjectType and region:IsObjectType("FontString") then
+                labelFontString = region
+                break
+            end
+        end
+    end
+    if labelFontString then
+        local fontFile, _, fontFlags = labelFontString:GetFont()
+        if fontFile then
+            labelFontString:SetFont(fontFile, DROPDOWN_FONT_SIZE, fontFlags)
+        else
+            labelFontString:SetFontObject("GameFontHighlightSmall")
+        end
+    end
+
+    local function isSelected(value)
+        return getValue() == value
+    end
+    local function setSelected(value)
+        setValue(value)
+        return MenuResponse.Close
+    end
+
+    local function shrinkRowFont(button)
+        if button.fontString then
+            button.fontString:SetFontObject(ROW_FONT_OBJECT)
+        end
+    end
+
+    dropdown:SetupMenu(function(_, rootDescription)
+        for _, opt in ipairs(options) do
+            local radio = rootDescription:CreateRadio(opt.label, isSelected, setSelected, opt.value)
+            radio:AddInitializer(function(button)
+                shrinkRowFont(button)
+            end)
+        end
+    end)
+
+    return dropdown
+end
+
 ---Create an accordion section header.
 ---@param parent Frame Parent frame (scroll content)
 ---@param sectionID string Unique section identifier

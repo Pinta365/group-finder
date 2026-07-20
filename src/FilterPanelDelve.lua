@@ -485,35 +485,19 @@ local function CreateSettingsSection(scrollContent)
         local disabled = settings.disableCustomSorting == true
 
         if delvePanel.primarySortDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(delvePanel.primarySortDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(delvePanel.primarySortDropdown)
-            end
+            delvePanel.primarySortDropdown:SetEnabled(not disabled)
         end
 
         if delvePanel.primaryDirDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(delvePanel.primaryDirDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(delvePanel.primaryDirDropdown)
-            end
+            delvePanel.primaryDirDropdown:SetEnabled(not disabled)
         end
 
         if delvePanel.secondarySortDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(delvePanel.secondarySortDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(delvePanel.secondarySortDropdown)
-            end
+            delvePanel.secondarySortDropdown:SetEnabled(not disabled)
         end
 
         if delvePanel.secondaryDirDropdown then
-            if disabled then
-                UIDropDownMenu_DisableDropDown(delvePanel.secondaryDirDropdown)
-            else
-                UIDropDownMenu_EnableDropDown(delvePanel.secondaryDirDropdown)
-            end
+            delvePanel.secondaryDirDropdown:SetEnabled(not disabled)
         end
     end
 
@@ -574,52 +558,16 @@ local function CreateSettingsSection(scrollContent)
     primarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
     primarySortLabel:SetText(PGF.L("SORT_PRIMARY"))
 
-    local primarySortDropdown = CreateFrame("Frame", "PGFDelvePrimarySortDropdown", content, "UIDropDownMenuTemplate")
-    primarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
-    UIDropDownMenu_SetWidth(primarySortDropdown, 120)
-
-    local function SetPrimarySort(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.delveSortSettings.primarySort = value
-        PGF.RefilterResults()
-    end
-
-    local function PrimarySortOnClick(self, arg1)
-        SetPrimarySort(arg1)
-        UIDropDownMenu_SetSelectedValue(primarySortDropdown, arg1)
-        for _, opt in ipairs(delveSortOptions) do
-            if opt.value == arg1 then
-                UIDropDownMenu_SetText(primarySortDropdown, opt.label)
-                break
-            end
-        end
-    end
-
-    UIDropDownMenu_Initialize(primarySortDropdown, function(self, level)
-        local settings = GetSortSettings()
-        local currentSort = settings.primarySort or "age"
-
-        for _, opt in ipairs(delveSortOptions) do
-            local info = UIDropDownMenu_CreateInfo()
-            info.text = opt.label
-            info.value = opt.value
-            info.arg1 = opt.value
-            info.func = PrimarySortOnClick
-            info.checked = currentSort == opt.value
-            UIDropDownMenu_AddButton(info)
-        end
-    end)
-
-    local settings = GetSortSettings()
-    local currentPrimarySort = settings.primarySort or "age"
-    UIDropDownMenu_SetSelectedValue(primarySortDropdown, currentPrimarySort)
-    for _, opt in ipairs(delveSortOptions) do
-        if opt.value == currentPrimarySort then
-            UIDropDownMenu_SetText(primarySortDropdown, opt.label)
-            break
-        end
-    end
+    local primarySortDropdown = PGF.CreateRadioDropdown(
+        content, "PGFDelvePrimarySortDropdown", 120, delveSortOptions,
+        function() return GetSortSettings().primarySort or "age" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.delveSortSettings.primarySort = value
+            PGF.RefilterResults()
+        end)
+    primarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 14)
 
     delvePanel.primarySortDropdown = primarySortDropdown
 
@@ -628,47 +576,20 @@ local function CreateSettingsSection(scrollContent)
     primaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
     primaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
 
-    local primaryDirDropdown = CreateFrame("Frame", "PGFDelvePrimaryDirDropdown", content, "UIDropDownMenuTemplate")
-    primaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
-    UIDropDownMenu_SetWidth(primaryDirDropdown, 80)
-
-    local function SetPrimarySortDirection(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.delveSortSettings.primarySortDirection = value
-        PGF.RefilterResults()
-    end
-
-    local function PrimaryDirOnClick(self, arg1)
-        SetPrimarySortDirection(arg1)
-        UIDropDownMenu_SetSelectedValue(primaryDirDropdown, arg1)
-        UIDropDownMenu_SetText(primaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
-    end
-
-    UIDropDownMenu_Initialize(primaryDirDropdown, function(self, level)
-        local settings = GetSortSettings()
-        local currentDir = settings.primarySortDirection or "asc"
-
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_ASC")
-        info.value = "asc"
-        info.arg1 = "asc"
-        info.func = PrimaryDirOnClick
-        info.checked = currentDir == "asc"
-        UIDropDownMenu_AddButton(info)
-
-        info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_DESC")
-        info.value = "desc"
-        info.arg1 = "desc"
-        info.func = PrimaryDirOnClick
-        info.checked = currentDir == "desc"
-        UIDropDownMenu_AddButton(info)
-    end)
-
-    local currentPrimaryDir = settings.primarySortDirection or "asc"
-    UIDropDownMenu_SetSelectedValue(primaryDirDropdown, currentPrimaryDir)
-    UIDropDownMenu_SetText(primaryDirDropdown, currentPrimaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    local dirOptions = {
+        { value = "asc", label = PGF.L("SORT_ASC") },
+        { value = "desc", label = PGF.L("SORT_DESC") },
+    }
+    local primaryDirDropdown = PGF.CreateRadioDropdown(
+        content, "PGFDelvePrimaryDirDropdown", 80, dirOptions,
+        function() return GetSortSettings().primarySortDirection or "asc" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.delveSortSettings.primarySortDirection = value
+            PGF.RefilterResults()
+        end)
+    primaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y - 14)
 
     delvePanel.primaryDirDropdown = primaryDirDropdown
 
@@ -679,67 +600,20 @@ local function CreateSettingsSection(scrollContent)
     secondarySortLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
     secondarySortLabel:SetText(PGF.L("SORT_SECONDARY"))
 
-    local secondarySortDropdown = CreateFrame("Frame", "PGFDelveSecondarySortDropdown", content, "UIDropDownMenuTemplate")
-    secondarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING - 15, -y - 14)
-    UIDropDownMenu_SetWidth(secondarySortDropdown, 120)
-
-    local function SetSecondarySort(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.delveSortSettings.secondarySort = value ~= "none" and value or nil
-        PGF.RefilterResults()
+    local secondarySortOptions = { { value = "none", label = PGF.L("SORT_NONE") } }
+    for _, opt in ipairs(delveSortOptions) do
+        secondarySortOptions[#secondarySortOptions + 1] = opt
     end
-
-    local function SecondarySortOnClick(self, arg1)
-        SetSecondarySort(arg1)
-        UIDropDownMenu_SetSelectedValue(secondarySortDropdown, arg1)
-        if arg1 == "none" then
-            UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
-        else
-            for _, opt in ipairs(delveSortOptions) do
-                if opt.value == arg1 then
-                    UIDropDownMenu_SetText(secondarySortDropdown, opt.label)
-                    break
-                end
-            end
-        end
-    end
-
-    UIDropDownMenu_Initialize(secondarySortDropdown, function(self, level)
-        local settings = GetSortSettings()
-        local currentSort = settings.secondarySort
-
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_NONE")
-        info.value = "none"
-        info.arg1 = "none"
-        info.func = SecondarySortOnClick
-        info.checked = not settings.secondarySort
-        UIDropDownMenu_AddButton(info)
-
-        for _, opt in ipairs(delveSortOptions) do
-            info = UIDropDownMenu_CreateInfo()
-            info.text = opt.label
-            info.value = opt.value
-            info.arg1 = opt.value
-            info.func = SecondarySortOnClick
-            info.checked = currentSort == opt.value
-            UIDropDownMenu_AddButton(info)
-        end
-    end)
-
-    local currentSecondarySort = settings.secondarySort
-    UIDropDownMenu_SetSelectedValue(secondarySortDropdown, currentSecondarySort or "none")
-    if currentSecondarySort then
-        for _, opt in ipairs(delveSortOptions) do
-            if opt.value == currentSecondarySort then
-                UIDropDownMenu_SetText(secondarySortDropdown, opt.label)
-                break
-            end
-        end
-    else
-        UIDropDownMenu_SetText(secondarySortDropdown, PGF.L("SORT_NONE"))
-    end
+    local secondarySortDropdown = PGF.CreateRadioDropdown(
+        content, "PGFDelveSecondarySortDropdown", 120, secondarySortOptions,
+        function() return GetSortSettings().secondarySort or "none" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.delveSortSettings.secondarySort = value ~= "none" and value or nil
+            PGF.RefilterResults()
+        end)
+    secondarySortDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 14)
 
     delvePanel.secondarySortDropdown = secondarySortDropdown
 
@@ -748,47 +622,16 @@ local function CreateSettingsSection(scrollContent)
     secondaryDirLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y)
     secondaryDirLabel:SetText(PGF.L("SORT_DIRECTION"))
 
-    local secondaryDirDropdown = CreateFrame("Frame", "PGFDelveSecondaryDirDropdown", content, "UIDropDownMenuTemplate")
-    secondaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 135, -y - 14)
-    UIDropDownMenu_SetWidth(secondaryDirDropdown, 80)
-
-    local function SetSecondarySortDirection(value)
-        local db = PintaGroupFinderDB
-        PGF.EnsureFilter(db)
-        db.filter.delveSortSettings.secondarySortDirection = value
-        PGF.RefilterResults()
-    end
-
-    local function SecondaryDirOnClick(self, arg1)
-        SetSecondarySortDirection(arg1)
-        UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, arg1)
-        UIDropDownMenu_SetText(secondaryDirDropdown, arg1 == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
-    end
-
-    UIDropDownMenu_Initialize(secondaryDirDropdown, function(self, level)
-        local settings = GetSortSettings()
-        local currentDir = settings.secondarySortDirection or "asc"
-
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_ASC")
-        info.value = "asc"
-        info.arg1 = "asc"
-        info.func = SecondaryDirOnClick
-        info.checked = currentDir == "asc"
-        UIDropDownMenu_AddButton(info)
-
-        info = UIDropDownMenu_CreateInfo()
-        info.text = PGF.L("SORT_DESC")
-        info.value = "desc"
-        info.arg1 = "desc"
-        info.func = SecondaryDirOnClick
-        info.checked = currentDir == "desc"
-        UIDropDownMenu_AddButton(info)
-    end)
-
-    local currentSecondaryDir = settings.secondarySortDirection or "asc"
-    UIDropDownMenu_SetSelectedValue(secondaryDirDropdown, currentSecondaryDir)
-    UIDropDownMenu_SetText(secondaryDirDropdown, currentSecondaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+    local secondaryDirDropdown = PGF.CreateRadioDropdown(
+        content, "PGFDelveSecondaryDirDropdown", 80, dirOptions,
+        function() return GetSortSettings().secondarySortDirection or "asc" end,
+        function(value)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.delveSortSettings.secondarySortDirection = value
+            PGF.RefilterResults()
+        end)
+    secondaryDirDropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + 150, -y - 14)
 
     delvePanel.secondaryDirDropdown = secondaryDirDropdown
 
@@ -968,45 +811,19 @@ function PGF.UpdateDelvePanel()
     end
 
     if delvePanel.primarySortDropdown then
-        local settings = GetSortSettings()
-        local currentPrimarySort = settings.primarySort or "age"
-        UIDropDownMenu_SetSelectedValue(delvePanel.primarySortDropdown, currentPrimarySort)
-        for _, opt in ipairs(delveSortOptions) do
-            if opt.value == currentPrimarySort then
-                UIDropDownMenu_SetText(delvePanel.primarySortDropdown, opt.label)
-                break
-            end
-        end
+        delvePanel.primarySortDropdown:GenerateMenu()
     end
 
     if delvePanel.primaryDirDropdown then
-        local settings = GetSortSettings()
-        local currentPrimaryDir = settings.primarySortDirection or "asc"
-        UIDropDownMenu_SetSelectedValue(delvePanel.primaryDirDropdown, currentPrimaryDir)
-        UIDropDownMenu_SetText(delvePanel.primaryDirDropdown, currentPrimaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+        delvePanel.primaryDirDropdown:GenerateMenu()
     end
 
     if delvePanel.secondarySortDropdown then
-        local settings = GetSortSettings()
-        local currentSecondarySort = settings.secondarySort
-        UIDropDownMenu_SetSelectedValue(delvePanel.secondarySortDropdown, currentSecondarySort or "none")
-        if currentSecondarySort then
-            for _, opt in ipairs(delveSortOptions) do
-                if opt.value == currentSecondarySort then
-                    UIDropDownMenu_SetText(delvePanel.secondarySortDropdown, opt.label)
-                    break
-                end
-            end
-        else
-            UIDropDownMenu_SetText(delvePanel.secondarySortDropdown, PGF.L("SORT_NONE"))
-        end
+        delvePanel.secondarySortDropdown:GenerateMenu()
     end
 
     if delvePanel.secondaryDirDropdown then
-        local settings = GetSortSettings()
-        local currentSecondaryDir = settings.secondarySortDirection or "asc"
-        UIDropDownMenu_SetSelectedValue(delvePanel.secondaryDirDropdown, currentSecondaryDir)
-        UIDropDownMenu_SetText(delvePanel.secondaryDirDropdown, currentSecondaryDir == "asc" and PGF.L("SORT_ASC") or PGF.L("SORT_DESC"))
+        delvePanel.secondaryDirDropdown:GenerateMenu()
     end
 
     RecalculateLayout()
