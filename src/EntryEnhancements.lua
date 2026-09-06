@@ -8,8 +8,6 @@ local leaderIconFrames = {}
 local dungeonSpecFrames = {}
 local ratingLabels = {}
 local ageLabels = {}
-local specNameToTexture = {}
-local specNameCacheBuilt = false
 
 local playerClassFile = nil
 local playerSpecID = nil
@@ -61,29 +59,11 @@ local function UpdatePlayerClassSpec()
     playerSpecNameToRole["?"] = "DAMAGER"
 end
 
-local function BuildSpecNameCache()
-    if specNameCacheBuilt then return end
-    specNameCacheBuilt = true
-    for classID = 1, 20 do
-        local _, classFilename = GetClassInfo(classID)
-        if not classFilename then break end
-        for sex = 1, 2 do
-            for specIndex = 1, 5 do
-                local specId, name, _, icon = C_SpecializationInfo.GetSpecializationInfo(specIndex, false, false, nil, sex, nil, classID)
-                if name and name ~= "" and icon and icon ~= 0 then
-                    specNameToTexture[classFilename .. CACHE_KEY_SEP .. name] = icon
-                end
-            end
-        end
-    end
-end
-
 ---@param specName string
 ---@param classFilename string|nil
 ---@return number|nil icon
 local function GetSpecTextureBySpecNameAndClass(specName, classFilename)
-    if not specName or specName == "" then return nil end
-    return specNameToTexture[(classFilename or "") .. CACHE_KEY_SEP .. specName]
+    return PGF.GetSpecIconByNameAndClass(specName, classFilename)
 end
 
 ---@param rating number
@@ -711,7 +691,6 @@ end
 function PGF.InitializeEntryEnhancements()
     hooksecurefunc("LFGListSearchEntry_Update", OnEntryUpdate)
     UpdatePlayerClassSpec()
-    BuildSpecNameCache()
 
     local specFrame = CreateFrame("Frame")
     specFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")

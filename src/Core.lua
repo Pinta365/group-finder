@@ -64,18 +64,18 @@ function PGF.GetLocalizedDifficultyName(difficultyKey)
     return fallback[difficultyKey] or difficultyKey
 end
 
--- Maps "CLASSFILE\1LocalizedSpecName" to a numeric specialization ID.
+-- Maps "CLASSFILE\1LocalizedSpecName" to that specialization's ID and icon.
 -- C_LFGList.GetSearchResultPlayerInfo only exposes a localized spec name (the returned
--- LfgSearchResultPlayerInfo has no spec ID), so any spec comparison has to go through this
+-- LfgSearchResultPlayerInfo has no spec ID), so any spec lookup has to go through this
 -- table to behave the same on non-English clients.
 local SPEC_CACHE_KEY_SEP = "\1"
-local specNameToID = {}
-local specNameToIDBuilt = false
+local specNameToInfo = {}
+local specNameCacheBuilt = false
 
 ---Build the localized spec name lookup. Runs once; stays unbuilt while the specialization
 ---API returns nothing so it can retry (data may be missing before PLAYER_LOGIN).
-local function BuildSpecNameToIDCache()
-    if specNameToIDBuilt then return end
+local function BuildSpecNameCache()
+    if specNameCacheBuilt then return end
 
     local GetSpecForClass = GetSpecializationInfoForClassID
         or (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfoForClassID)
@@ -86,10 +86,16 @@ local function BuildSpecNameToIDCache()
         local _, classFilename = GetClassInfo(classID)
         if classFilename then
             for specIndex = 1, 5 do
+                -- UnitSex: 1 = Neutrum/Unknown, 2 = Male, 3 = Female. Some locales gender
+                -- spec names and the server reports each member's own gendered form, so all
+                -- three variants have to be registered.
                 for sex = 1, 3 do
-                    local specID, specName = GetSpecForClass(classID, specIndex, sex)
+                    local specID, specName, _, icon = GetSpecForClass(classID, specIndex, sex)
                     if specID and specName and specName ~= "" then
-                        specNameToID[classFilename .. SPEC_CACHE_KEY_SEP .. specName] = specID
+                        specNameToInfo[classFilename .. SPEC_CACHE_KEY_SEP .. specName] = {
+                            id = specID,
+                            icon = (icon and icon ~= 0) and icon or nil,
+                        }
                         entries = entries + 1
                     end
                 end
@@ -98,8 +104,19 @@ local function BuildSpecNameToIDCache()
     end
 
     if entries > 0 then
-        specNameToIDBuilt = true
+        specNameCacheBuilt = true
     end
+end
+
+---@param specName string? Localized spec name
+---@param classFilename string? Locale-independent class token
+---@return table? info { id = specID, icon = fileID? }
+local function GetSpecInfoByNameAndClass(specName, classFilename)
+    if not specName or specName == "" or not classFilename then
+        return nil
+    end
+    BuildSpecNameCache()
+    return specNameToInfo[classFilename .. SPEC_CACHE_KEY_SEP .. specName]
 end
 
 ---Resolve a localized specialization name to its numeric specialization ID.
@@ -107,9 +124,15 @@ end
 ---@param classFilename string? Locale-independent class token, e.g. "EVOKER"
 ---@return number? specID nil if the name could not be resolved
 function PGF.GetSpecIDByNameAndClass(specName, classFilename)
-    if not specName or specName == "" or not classFilename then
-        return nil
-    end
-    BuildSpecNameToIDCache()
-    return specNameToID[classFilename .. SPEC_CACHE_KEY_SEP .. specName]
+    local info = GetSpecInfoByNameAndClass(specName, classFilename)
+    return info and info.id or nil
+end
+
+---Resolve a localized specialization name to its icon texture.
+---@param specName string? Localized spec name, e.g. from GetSearchResultPlayerInfo
+---@param classFilename string? Locale-independent class token, e.g. "EVOKER"
+---@return number? icon FileDataID, nil if the name could not be resolved
+function PGF.GetSpecIconByNameAndClass(specName, classFilename)
+    local info = GetSpecInfoByNameAndClass(specName, classFilename)
+    return info and info.icon or nil
 end
