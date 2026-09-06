@@ -8,6 +8,7 @@ local leaderIconFrames = {}
 local dungeonSpecFrames = {}
 local ratingLabels = {}
 local ageLabels = {}
+local bloodlustIcons = {}
 
 local playerClassFile = nil
 local playerSpecID = nil
@@ -295,6 +296,7 @@ end
 ---@param resultID number
 ---@param searchResultInfo table
 ---@param ratingShown boolean
+---@return boolean shown
 local function AddAgeIndicator(entry, resultID, searchResultInfo, ratingShown)
     local label = GetOrCreateAgeLabel(entry)
     local ageSeconds = searchResultInfo.age or 0
@@ -306,8 +308,61 @@ local function AddAgeIndicator(entry, resultID, searchResultInfo, ratingShown)
         local anchor = ratingShown and ratingLabels[entry] or entry.Name
         label:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
         label:Show()
+        return true
     else
         label:Hide()
+        return false
+    end
+end
+
+---@param entry Frame
+---@return Texture
+local function GetOrCreateBloodlustIcon(entry)
+    local icon = bloodlustIcons[entry]
+    if not icon then
+        icon = entry:CreateTexture(nil, "OVERLAY")
+        icon:SetSize(12, 12)
+        icon:SetTexture("Interface\\Icons\\spell_nature_bloodlust")
+        bloodlustIcons[entry] = icon
+    end
+    return icon
+end
+
+---Whether any listed member of the group can provide Bloodlust/Heroism. Deliberately group-only; the player's own class is not counted.
+---@param resultID number
+---@param numMembers number
+---@return boolean hasLust
+local function GroupHasBloodlust(resultID, numMembers)
+    for i = 1, numMembers do
+        local info = C_LFGList.GetSearchResultPlayerInfo(resultID, i)
+        if info and info.classFilename and PGF.BLOODLUST_CLASSES[info.classFilename] then
+            return true
+        end
+    end
+    return false
+end
+
+---@param entry Frame
+---@param resultID number
+---@param searchResultInfo table
+---@param ratingShown boolean
+---@param ageShown boolean
+local function AddBloodlustIndicator(entry, resultID, searchResultInfo, ratingShown, ageShown)
+    local icon = GetOrCreateBloodlustIcon(entry)
+    local numMembers = searchResultInfo.numMembers or 0
+
+    if numMembers > 0 and entry.Name and GroupHasBloodlust(resultID, numMembers) then
+        local anchor = entry.Name
+        if ageShown then
+            anchor = ageLabels[entry]
+        elseif ratingShown then
+            anchor = ratingLabels[entry]
+        end
+        icon:ClearAllPoints()
+        icon:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
+        icon:Show()
+    else
+        icon:Hide()
     end
 end
 
@@ -607,6 +662,7 @@ local function OnEntryUpdate(self)
     local showRating = ui and ui.showLeaderRating
     local showAge = ui and ui.showAge
     local showMissing = ui and ui.showMissingRoles
+    local showBloodlust = ui and ui.showBloodlustIcon
 
     local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
     if not searchResultInfo then return end
@@ -672,11 +728,19 @@ local function OnEntryUpdate(self)
         if label then label:Hide() end
     end
 
+    local ageShown = false
     if isDungeon and showAge then
-        AddAgeIndicator(self, resultID, searchResultInfo, ratingShown)
+        ageShown = AddAgeIndicator(self, resultID, searchResultInfo, ratingShown)
     else
         local label = ageLabels[self]
         if label then label:Hide() end
+    end
+
+    if isDungeon and showBloodlust then
+        AddBloodlustIndicator(self, resultID, searchResultInfo, ratingShown, ageShown)
+    else
+        local icon = bloodlustIcons[self]
+        if icon then icon:Hide() end
     end
 
     if (categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidSpecIndicators)

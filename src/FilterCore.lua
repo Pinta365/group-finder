@@ -162,6 +162,16 @@ local function PassesFilter(resultID, context, preRoleVectors)
             return false
         end
 
+        if hasRole.bloodlust and not context.hasLust then
+            return false
+        end
+
+        -- Deliberately tested against groupHasLust rather than hasLust: this filter exists so a
+        -- lust class can find groups that still need one, and hasLust always includes ourselves.
+        if filter.hideBloodlustGroups == true and context.groupHasLust then
+            return false
+        end
+
         local hideAugmentationEvokers = filter.hideAugmentationEvokers == true
         if hideAugmentationEvokers and context.hasAugmentationEvoker then
             return false

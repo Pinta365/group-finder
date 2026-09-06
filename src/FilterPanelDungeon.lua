@@ -676,6 +676,34 @@ local function CreateMiscSection(scrollContent)
 
     y = y + 22
 
+    -- Has Bloodlust/Hero (custom OR filter, not backed by Blizzard's advanced filter)
+    local bloodlustCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    bloodlustCheckbox:SetSize(20, 20)
+    bloodlustCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local bloodlustLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    bloodlustLabel:SetPoint("LEFT", bloodlustCheckbox, "RIGHT", 5, 0)
+    bloodlustLabel:SetText(PGF.L("HAS_BLOODLUST"))
+
+    bloodlustCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hasRole.bloodlust = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    bloodlustCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HAS_BLOODLUST"))
+        GameTooltip:AddLine(PGF.L("HAS_BLOODLUST_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    bloodlustCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.bloodlustCheckbox = bloodlustCheckbox
+
+    y = y + 22
+
     -- Hide Augmentation Evokers (custom OR filter, not backed by Blizzard's advanced filter)
     local hideAugmentationCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     hideAugmentationCheckbox:SetSize(20, 20)
@@ -701,6 +729,34 @@ local function CreateMiscSection(scrollContent)
     hideAugmentationCheckbox:SetScript("OnLeave", GameTooltip_Hide)
 
     dungeonPanel.hideAugmentationCheckbox = hideAugmentationCheckbox
+
+    y = y + 22
+
+    -- Hide Bloodlust groups (custom OR filter, not backed by Blizzard's advanced filter)
+    local hideBloodlustCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideBloodlustCheckbox:SetSize(20, 20)
+    hideBloodlustCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local hideBloodlustLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideBloodlustLabel:SetPoint("LEFT", hideBloodlustCheckbox, "RIGHT", 5, 0)
+    hideBloodlustLabel:SetText(PGF.L("HIDE_BLOODLUST_GROUPS"))
+
+    hideBloodlustCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hideBloodlustGroups = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+
+    hideBloodlustCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_BLOODLUST_GROUPS"))
+        GameTooltip:AddLine(PGF.L("HIDE_BLOODLUST_GROUPS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideBloodlustCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    dungeonPanel.hideBloodlustCheckbox = hideBloodlustCheckbox
 
     y = y + 22
 
@@ -857,6 +913,33 @@ local function CreateSettingsSection(scrollContent)
     showDungeonSpecIconsCheckbox:SetScript("OnLeave", GameTooltip_Hide)
     showDungeonSpecIconsCheckbox:SetChecked(ui.showDungeonSpecIcons ~= false)
     dungeonPanel.showDungeonSpecIconsCheckbox = showDungeonSpecIconsCheckbox
+    y = y + 24
+
+    -- Show Bloodlust Icon Checkbox
+    local showBloodlustIconCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showBloodlustIconCheckbox:SetSize(20, 20)
+    showBloodlustIconCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showBloodlustIconLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showBloodlustIconLabel:SetPoint("LEFT", showBloodlustIconCheckbox, "RIGHT", 5, 0)
+    showBloodlustIconLabel:SetText(PGF.L("SHOW_BLOODLUST_ICON"))
+    showBloodlustIconCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showBloodlustIcon = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showBloodlustIconCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_BLOODLUST_ICON"))
+        GameTooltip:AddLine(PGF.L("SHOW_BLOODLUST_ICON_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showBloodlustIconCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showBloodlustIconCheckbox:SetChecked(ui.showBloodlustIcon ~= false)
+    dungeonPanel.showBloodlustIconCheckbox = showBloodlustIconCheckbox
     y = y + 24
 
     -- Show Leader Rating Checkbox
@@ -1262,6 +1345,12 @@ function PGF.UpdateDungeonPanel()
         local hasRole = (db.filter and db.filter.hasRole) or {}
         dungeonPanel.augmentationCheckbox:SetChecked(hasRole.augmentationEvoker == true)
     end
+
+    if dungeonPanel.bloodlustCheckbox then
+        local db = PintaGroupFinderDB
+        local hasRole = (db.filter and db.filter.hasRole) or {}
+        dungeonPanel.bloodlustCheckbox:SetChecked(hasRole.bloodlust == true)
+    end
     
     if dungeonPanel.ratingBox then
         local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -1278,6 +1367,12 @@ function PGF.UpdateDungeonPanel()
         local db = PintaGroupFinderDB
         local filter = db.filter or {}
         dungeonPanel.hideAugmentationCheckbox:SetChecked(filter.hideAugmentationEvokers == true)
+    end
+
+    if dungeonPanel.hideBloodlustCheckbox then
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+        dungeonPanel.hideBloodlustCheckbox:SetChecked(filter.hideBloodlustGroups == true)
     end
 
     if dungeonPanel.hideSameSpecCheckbox then

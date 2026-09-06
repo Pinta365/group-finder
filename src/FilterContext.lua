@@ -19,6 +19,28 @@ local ACTIVE_APP_STATUS = {
     inviteaccepted = true,
 }
 
+---Whether the player or any of their party members can provide Bloodlust/Heroism.
+---A group only needs one source, so a lust class in our own party covers the group we join.
+---@return boolean provides
+local function SelfOrPartyProvidesBloodlust()
+    local _, classFilename = UnitClass("player")
+    if classFilename and PGF.BLOODLUST_CLASSES[classFilename] then
+        return true
+    end
+
+    for i = 1, 4 do
+        local unit = "party" .. i
+        if UnitExists(unit) then
+            local _, unitClassFilename = UnitClass(unit)
+            if unitClassFilename and PGF.BLOODLUST_CLASSES[unitClassFilename] then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 ---@class FilterContext
 --- Core fields (always populated)
 ---@field activityID number Activity ID for this listing
@@ -40,6 +62,8 @@ local ACTIVE_APP_STATUS = {
 ---@field playstyle number Playstyle for dungeons (0 for raids)
 ---@field hasAugmentationEvoker boolean True if group has an augmentation evoker (M+ only)
 ---@field hasSameSpec boolean True if group has at least one member with your spec
+---@field groupHasLust boolean True if a listed group member can provide Bloodlust/Heroism
+---@field hasLust boolean True if the group has lust once you and your party join
 --- Raid-specific fields
 ---@field defeatedBosses string[]? Array of defeated boss names (raids only)
 ---@field defeatedBossCount number? Number of bosses defeated (raids only)
@@ -111,6 +135,7 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
 
     context.hasAugmentationEvoker = false
     context.hasSameSpec = false
+    context.groupHasLust = false
 
     -- 1. Player class
     local playerClassName, playerClassFilename = UnitClass("player")
@@ -140,7 +165,7 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
 
     for memberIndex = 1, numMembers do
 
-        if context.hasAugmentationEvoker and context.hasSameSpec then
+        if context.hasAugmentationEvoker and context.hasSameSpec and context.groupHasLust then
             break
         end
 
@@ -152,6 +177,12 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
 
         local memberClassLower = memberClassFilename:lower()
         local memberSpecLower  = memberSpecName:lower()
+
+        -- Bloodlust detection.
+        if not context.groupHasLust and PGF.BLOODLUST_CLASSES[memberClassFilename] then
+            context.groupHasLust = true
+            PGF.Debug("[BuildFilterContext] - Found Bloodlust from", memberClassFilename)
+        end
 
         -- Augmentation detection
         if not context.hasAugmentationEvoker then
@@ -185,7 +216,12 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
         end
     end
 
-    PGF.Debug("[BuildFilterContext] - hasSameSpec:", context.hasSameSpec)
+    -- The filter asks "will this group have lust once I join", so our own party counts.
+    -- groupHasLust stays group-only for the entry indicator.
+    context.hasLust = context.groupHasLust or SelfOrPartyProvidesBloodlust()
+
+    PGF.Debug("[BuildFilterContext] - hasSameSpec:", context.hasSameSpec,
+        "groupHasLust:", context.groupHasLust, "hasLust:", context.hasLust)
 
     context.age = math.floor((searchResultInfo.age or 0) / 60)
     context.ageSecs = searchResultInfo.age or 0

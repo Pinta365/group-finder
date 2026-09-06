@@ -15,6 +15,14 @@ PGF.RATED_BG_CATEGORY_ID = 9
 -- SpecializationID for Evoker: Augmentation
 PGF.SPEC_ID_AUGMENTATION_EVOKER = 1473
 
+-- Classes that can provide the Bloodlust/Heroism 30% haste effect. 
+PGF.BLOODLUST_CLASSES = {
+    SHAMAN = true,
+    MAGE = true,
+    EVOKER = true,
+    HUNTER = true,
+}
+
 ---@class SavedVariables
 ---@field debug boolean
 ---@field filter FilterSettings
@@ -60,6 +68,7 @@ PGF.SPEC_ID_AUGMENTATION_EVOKER = 1473
 ---@field showMissingRoles boolean
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
+---@field showBloodlustIcon boolean
 ---@field showArenaLeaderIcon boolean
 ---@field showArenaSpecIcons boolean
 ---@field showRatedBGSpecIndicators boolean
@@ -76,9 +85,11 @@ PGF.defaults = {
             tank = false,
             healer = false,
             tankOrHealer = false,
-            augmentationEvoker = false
+            augmentationEvoker = false,
+            bloodlust = false
         },
         hideAugmentationEvokers = false,
+        hideBloodlustGroups = false,
         hideIncompatibleGroups = false,
         hideSameSpec = false,
         difficulty = {
@@ -207,6 +218,7 @@ PGF.defaults = {
         showMissingRoles = true,
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
+        showBloodlustIcon = true,
         showRaidSpecIndicators = true,
         showArenaLeaderIcon = true,
         showArenaSpecIcons = true,
