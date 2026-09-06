@@ -107,10 +107,12 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     -- 2. Player spec index
     local playerSpecIndex = C_SpecializationInfo.GetSpecialization()
 
-    -- 3. Player spec name
+    -- 3. Player spec ID and name
+    local playerSpecID = nil
     local playerSpecName = "UNKNOWN"
     if playerSpecIndex then
-        local _, name = C_SpecializationInfo.GetSpecializationInfo(playerSpecIndex)
+        local specID, name = C_SpecializationInfo.GetSpecializationInfo(playerSpecIndex)
+        playerSpecID = specID
         playerSpecName = name or "UNKNOWN"
     end
 
@@ -135,23 +137,37 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
 
         local memberClassFilename = member and member.classFilename or "UNKNOWN"
         local memberSpecName      = member and member.specName or "UNKNOWN"
+        local memberSpecID        = PGF.GetSpecIDByNameAndClass(memberSpecName, memberClassFilename)
 
         local memberClassLower = memberClassFilename:lower()
         local memberSpecLower  = memberSpecName:lower()
 
         -- Augmentation detection
-        if not context.hasAugmentationEvoker
-            and memberSpecLower == "augmentation"
-        then
-            context.hasAugmentationEvoker = true
-            PGF.Debug("[BuildFilterContext] - Found Augmentation Evoker")
+        if not context.hasAugmentationEvoker then
+            local isAugmentation
+            if memberSpecID then
+                isAugmentation = memberSpecID == PGF.SPEC_ID_AUGMENTATION_EVOKER
+            else
+                isAugmentation = memberSpecLower == "augmentation"
+            end
+
+            if isAugmentation then
+                context.hasAugmentationEvoker = true
+                PGF.Debug("[BuildFilterContext] - Found Augmentation Evoker")
+            end
         end
 
-        -- Same spec detection 
+        -- Same spec detection
         if not context.hasSameSpec then
-            if playerClassLower == memberClassLower
-                and playerSpecLower == memberSpecLower
-            then
+            local isSameSpec
+            if playerSpecID and memberSpecID then
+                isSameSpec = playerSpecID == memberSpecID
+            else
+                isSameSpec = playerClassLower == memberClassLower
+                    and playerSpecLower == memberSpecLower
+            end
+
+            if isSameSpec then
                 context.hasSameSpec = true
                 PGF.Debug("[BuildFilterContext] - Found same spec:", playerSpecName)
             end

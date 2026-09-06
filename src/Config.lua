@@ -12,6 +12,9 @@ PGF.DELVE_CATEGORY_ID    = 121
 PGF.ARENA_CATEGORY_ID    = 4
 PGF.RATED_BG_CATEGORY_ID = 9
 
+-- SpecializationID for Evoker: Augmentation
+PGF.SPEC_ID_AUGMENTATION_EVOKER = 1473
+
 ---@class SavedVariables
 ---@field debug boolean
 ---@field filter FilterSettings
