@@ -9,6 +9,16 @@ local addonName, PGF = ...
 -- Cache for GetActivityInfoTable
 local activityInfoCache = {}
 
+-- Application statuses that mean we still have a live application to a group. Everything else
+-- ("declined", "declined_full", "declined_delisted", "cancelled", "timedout", "failed",
+-- "invitedeclined") is a dead application; Blizzard deliberately sorts those to the bottom of
+-- the list, so they must not be treated as pending.
+local ACTIVE_APP_STATUS = {
+    applied = true,
+    invited = true,
+    inviteaccepted = true,
+}
+
 ---@class FilterContext
 --- Core fields (always populated)
 ---@field activityID number Activity ID for this listing
@@ -24,7 +34,8 @@ local activityInfoCache = {}
 ---@field mprating number Leader's M+ score
 ---@field age number Listing age in minutes
 ---@field appStatus string Application status ("none", "applied", etc.)
----@field isApplied boolean True if you've applied to this group
+---@field pendingStatus string? Set while an application is still being confirmed by the server
+---@field isApplied boolean True if you have a live (non-declined) application to this group
 ---@field generalPlaystyle number Playstyle for raids: 1=Learning, 2=Relaxed, 3=Competitive, 4=Carry
 ---@field playstyle number Playstyle for dungeons (0 for raids)
 ---@field hasAugmentationEvoker boolean True if group has an augmentation evoker (M+ only)
@@ -185,9 +196,10 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
     context.playstyle = searchResultInfo.playstyle or 0
     
-    local _, appStatus = C_LFGList.GetApplicationInfo(resultID)
+    local _, appStatus, pendingStatus = C_LFGList.GetApplicationInfo(resultID)
     context.appStatus = appStatus or "none"
-    context.isApplied = not (not appStatus or appStatus == "none")
+    context.pendingStatus = pendingStatus
+    context.isApplied = (pendingStatus ~= nil) or ACTIVE_APP_STATUS[context.appStatus] == true
     
     -- PvP-specific fields
     local pvpCategoryID = context.categoryID

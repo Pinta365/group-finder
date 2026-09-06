@@ -121,6 +121,10 @@ end
 ---@param preRoleVectors table[]? Pre-computed party role vectors
 ---@return boolean passes
 local function PassesFilter(resultID, context, preRoleVectors)
+    if context.isApplied then
+        return true
+    end
+
     local db = PintaGroupFinderDB
     local filter = db.filter or {}
     local advancedFilter = C_LFGList.GetAdvancedFilter()
@@ -519,6 +523,47 @@ function PGF.FilterResults(results)
     return filtered, contextCache
 end
 
+---Pull groups we have a live application to into the result list.
+---Declined applications are deliberately left out so they keep sinking to the bottom, which is
+---what Blizzard does with them too.
+---@param results number[] Filtered resultIDs, mutated in place
+---@param contextCache table Context cache keyed by resultID
+---@param applications number[]? Result IDs from C_LFGList.GetApplications()
+---@return number merged Number of applications pulled into the result list
+local function MergePendingApplications(results, contextCache, applications)
+    if not applications or #applications == 0 then
+        return 0
+    end
+
+    local present = {}
+    for _, resultID in ipairs(results) do
+        present[resultID] = true
+    end
+
+    local merged = 0
+    for _, resultID in ipairs(applications) do
+        if not present[resultID] and C_LFGList.HasSearchResultInfo(resultID) then
+            local context = contextCache[resultID]
+            if not context then
+                local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
+                local memberCounts = searchResultInfo and C_LFGList.GetSearchResultMemberCounts(resultID)
+                if searchResultInfo and memberCounts then
+                    context = PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
+                    contextCache[resultID] = context
+                end
+            end
+
+            if context and context.isApplied then
+                present[resultID] = true
+                table.insert(results, resultID)
+                merged = merged + 1
+            end
+        end
+    end
+
+    return merged
+end
+
 ---Get sort value for a context based on sort type.
 ---@param context FilterContext
 ---@param sortType string
@@ -706,16 +751,22 @@ local function InterceptResultUpdates()
         end
         
         local _, resultIDs = C_LFGList.GetSearchResults()
-        if not resultIDs or #resultIDs == 0 then
+        resultIDs = resultIDs or {}
+
+        local applications = C_LFGList.GetApplications()
+
+        if #resultIDs == 0 and (not applications or #applications == 0) then
             return
         end
-        
+
         filterInProgress = true
         local totalBefore = #resultIDs
         local processedResults, contextCache = PGF.FilterResults(resultIDs)
         local totalAfterFilter = #processedResults
+        local mergedPending = MergePendingApplications(processedResults, contextCache, applications)
         processedResults = PGF.SortResults(processedResults, contextCache)
-        PGF.Debug("Filter:", totalBefore, "->", totalAfterFilter, "results")
+        PGF.Debug("Filter:", totalBefore, "->", totalAfterFilter, "results,",
+            mergedPending, "pending merged")
 
         if searchPanel.results then
             searchPanel.results = processedResults
