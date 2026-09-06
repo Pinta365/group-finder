@@ -66,6 +66,11 @@ if GetLocale() == "deDE" then
     
     -- Raids
     ["BOSS_FILTER"] = "Boss-Filter:",
+    ["BOSS_RANGE"] = "Besiegte Bosse:",
+    ["BOSS_RANGE_MIN"] = "Min",
+    ["BOSS_RANGE_MIN_DESC"] = "Zeige nur Gruppen, die mindestens so viele Bosse besiegt haben. Leer lassen für kein Minimum.",
+    ["BOSS_RANGE_MAX"] = "Max",
+    ["BOSS_RANGE_MAX_DESC"] = "Zeige nur Gruppen, die höchstens so viele Bosse besiegt haben. Leer lassen für kein Maximum. Beide auf 0 setzen für neue Instanzen.",
     ["BOSS_FILTER_ANY"] = "Beliebig",
     ["BOSS_FILTER_FRESH"] = "Neue Instanz",
     ["BOSS_FILTER_PARTIAL"] = "Teilweiser Fortschritt",
@@ -105,6 +110,7 @@ if GetLocale() == "deDE" then
     ["SORT_DIRECTION"] = "Richtung:",
     ["SORT_AGE"] = "Alter",
     ["SORT_RATING"] = "Leiterwertung",
+    ["SORT_BOSS_PROGRESS"] = "Besiegte Bosse",
     ["SORT_GROUP_SIZE"] = "Gruppengröße",
     ["SORT_ILVL"] = "Gegenstandsstufe",
     ["SORT_NAME"] = "Leitername",
@@ -129,6 +135,8 @@ if GetLocale() == "deDE" then
     ["SHOW_LEADER_RATING_DESC"] = "Zeigt die Mythisch+-Wertung des Gruppenleiters neben dem Gruppennamen.",
     ["SHOW_MISSING_ROLES"] = "Fehlende Rollen anzeigen",
     ["SHOW_MISSING_ROLES_DESC"] = "Zeigt entsättigte Rollensymbole für unbesetzte Plätze in Dungeon-Suchergebnissen.",
+    ["SHOW_RAID_BOSS_PROGRESS"] = "Bossfortschritt anzeigen",
+    ["SHOW_RAID_BOSS_PROGRESS_DESC"] = "Zeigt an, wie viele Bosse des Schlachtzugs die Gruppe bereits besiegt hat, z.B. 6/8.",
     ["SHOW_RAID_SPEC_INDICATORS"] = "Raid-Spezialisierungsanzeige",
     ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Zeigt an, wie viele deiner Klasse und Spezialisierung bereits in der Raidgruppe sind.",
     ["SHOW_ARENA_LEADER_ICON"] = "Anführer-Symbol anzeigen",

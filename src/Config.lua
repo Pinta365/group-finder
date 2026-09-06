@@ -15,6 +15,10 @@ PGF.RATED_BG_CATEGORY_ID = 9
 -- SpecializationID for Evoker: Augmentation
 PGF.SPEC_ID_AUGMENTATION_EVOKER = 1473
 
+-- Sentinel for "no upper limit" in the raid bosses-defeated range. A real maximum is a
+-- boss count, so any negative value is unreachable and safe to overload.
+PGF.BOSS_MAX_UNLIMITED = -1
+
 -- Classes that can provide the Bloodlust/Heroism 30% haste effect. 
 PGF.BLOODLUST_CLASSES = {
     SHAMAN = true,
@@ -32,6 +36,8 @@ PGF.BLOODLUST_CLASSES = {
 ---@field minRating number
 ---@field dungeons number[]
 ---@field hasRole HasRoleSettings
+---@field raidBossMin number? Minimum bosses defeated (0 = no minimum)
+---@field raidBossMax number? Maximum bosses defeated (PGF.BOSS_MAX_UNLIMITED = no maximum)
 ---@field hideIncompatibleGroups boolean?
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
@@ -56,9 +62,9 @@ PGF.BLOODLUST_CLASSES = {
 ---@field carry boolean
 
 ---@class SortSettings
----@field primarySort string "age"|"rating"|"groupSize"|"ilvl"|"name"
+---@field primarySort string "age"|"rating"|"bossProgress"|"groupSize"|"ilvl"|"name"
 ---@field primarySortDirection string "asc"|"desc"
----@field secondarySort string? "age"|"rating"|"groupSize"|"ilvl"|"name"|nil
+---@field secondarySort string? "age"|"rating"|"bossProgress"|"groupSize"|"ilvl"|"name"|nil
 ---@field secondarySortDirection string? "asc"|"desc"|nil
 ---@field movePendingGroupsToTop boolean?
 
@@ -69,6 +75,7 @@ PGF.BLOODLUST_CLASSES = {
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
 ---@field showBloodlustIcon boolean
+---@field showRaidBossProgress boolean
 ---@field showArenaLeaderIcon boolean
 ---@field showArenaSpecIcons boolean
 ---@field showRatedBGSpecIndicators boolean
@@ -104,6 +111,8 @@ PGF.defaults = {
             competitive = true,
             carry = true,
         },
+        raidBossMin = 0,
+        raidBossMax = PGF.BOSS_MAX_UNLIMITED,
         raidRoleRequirements = {
             tank = { enabled = false, operator = ">=", value = 1 },
             healer = { enabled = false, operator = ">=", value = 2 },
@@ -220,6 +229,7 @@ PGF.defaults = {
         showDungeonSpecIcons = true,
         showBloodlustIcon = true,
         showRaidSpecIndicators = true,
+        showRaidBossProgress = true,
         showArenaLeaderIcon = true,
         showArenaSpecIcons = true,
         showRatedBGSpecIndicators = true,

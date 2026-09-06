@@ -9,6 +9,7 @@ local dungeonSpecFrames = {}
 local ratingLabels = {}
 local ageLabels = {}
 local bloodlustIcons = {}
+local bossProgressLabels = {}
 
 local playerClassFile = nil
 local playerSpecID = nil
@@ -312,6 +313,41 @@ local function AddAgeIndicator(entry, resultID, searchResultInfo, ratingShown)
     else
         label:Hide()
         return false
+    end
+end
+
+---@param entry Frame
+---@return FontString
+local function GetOrCreateBossProgressLabel(entry)
+    local label = bossProgressLabels[entry]
+    if not label then
+        label = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        bossProgressLabels[entry] = label
+    end
+    return label
+end
+
+---Show "6/8" for a raid listing: bosses the group has already killed out of the raid total.
+---@param entry Frame
+---@param resultID number
+---@param searchResultInfo table
+local function AddRaidBossProgress(entry, resultID, searchResultInfo)
+    local label = GetOrCreateBossProgressLabel(entry)
+
+    local activityID = searchResultInfo.activityIDs and searchResultInfo.activityIDs[1]
+        or searchResultInfo.activityID
+    local total = PGF.GetRaidEncounterCount(activityID)
+
+    if total > 0 and entry.Name then
+        local encounterInfo = C_LFGList.GetSearchResultEncounterInfo(resultID)
+        local defeated = encounterInfo and #encounterInfo or 0
+
+        label:SetText(string.format("%d/%d", defeated, total))
+        label:ClearAllPoints()
+        label:SetPoint("LEFT", entry.Name, "RIGHT", 4, 0)
+        label:Show()
+    else
+        label:Hide()
     end
 end
 
@@ -741,6 +777,13 @@ local function OnEntryUpdate(self)
     else
         local icon = bloodlustIcons[self]
         if icon then icon:Hide() end
+    end
+
+    if categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidBossProgress then
+        AddRaidBossProgress(self, resultID, searchResultInfo)
+    else
+        local label = bossProgressLabels[self]
+        if label then label:Hide() end
     end
 
     if (categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidSpecIndicators)

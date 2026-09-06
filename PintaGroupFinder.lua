@@ -43,6 +43,18 @@ function eventFrame:ADDON_LOADED(loadedAddon)
         MergeDefaults(PintaGroupFinderDB, PGF.defaults)
     end
     
+    -- One-time migration of the old any/fresh/partial boss dropdown into the numeric range that
+    -- replaced it.
+    local filter = PintaGroupFinderDB.filter
+    if filter and filter.raidBossFilter then
+        if filter.raidBossFilter == "fresh" then
+            filter.raidBossMin, filter.raidBossMax = 0, 0
+        elseif filter.raidBossFilter == "partial" then
+            filter.raidBossMin, filter.raidBossMax = 1, PGF.BOSS_MAX_UNLIMITED
+        end
+        filter.raidBossFilter = nil
+    end
+
     if not PintaGroupFinderCharDB then
         PintaGroupFinderCharDB = CopyTable(PGF.charDefaults)
     else

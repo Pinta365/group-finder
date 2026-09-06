@@ -331,14 +331,14 @@ local function PassesFilter(resultID, context, preRoleVectors)
             end
         end
 
-        local bossFilter = filter.raidBossFilter or "any"
-        if bossFilter ~= "any" then
-            local encounterInfo = C_LFGList.GetSearchResultEncounterInfo(resultID)
-            local defeatedCount = encounterInfo and #encounterInfo or 0
-
-            if bossFilter == "fresh" and defeatedCount > 0 then
+        local bossMin = filter.raidBossMin or 0
+        local bossMax = filter.raidBossMax or PGF.BOSS_MAX_UNLIMITED
+        if bossMin > 0 or bossMax >= 0 then
+            local defeatedCount = context.defeatedBossCount or 0
+            if defeatedCount < bossMin then
                 return false
-            elseif bossFilter == "partial" and defeatedCount == 0 then
+            end
+            if bossMax >= 0 and defeatedCount > bossMax then
                 return false
             end
         end
@@ -583,6 +583,9 @@ local function GetSortValue(context, sortType)
         return context.ageSecs or context.age * 60 or 0
     elseif sortType == "rating" then
         return context.mprating or 0
+    elseif sortType == "bossProgress" then
+        -- Raid-only; every other category leaves defeatedBossCount unset.
+        return context.defeatedBossCount or 0
     elseif sortType == "groupSize" then
         return context.members or 0
     elseif sortType == "ilvl" then

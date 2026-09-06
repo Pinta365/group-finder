@@ -422,34 +422,78 @@ local function CreateBossFilterSection(scrollContent)
     
     local y = CONTENT_PADDING
     
-    -- Filter type dropdown
+    -- Bosses defeated range. 
     local filterLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     filterLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
-    filterLabel:SetText(PGF.L("BOSS_FILTER") or "Filter:")
-    
-    local bossFilterOptions = {
-        { value = "any", label = PGF.L("BOSS_FILTER_ANY") },
-        { value = "fresh", label = PGF.L("BOSS_FILTER_FRESH") },
-        { value = "partial", label = PGF.L("BOSS_FILTER_PARTIAL") },
-    }
-    local dropdown = PGF.CreateRadioDropdown(
-        content, "PGFRaidBossFilterDropdown", 150, bossFilterOptions,
-        function()
-            local db = PintaGroupFinderDB
-            return (db.filter and db.filter.raidBossFilter) or "any"
-        end,
-        function(value)
-            local db = PintaGroupFinderDB
-            PGF.EnsureFilter(db)
-            db.filter.raidBossFilter = value
-            PGF.RefilterResults()
+    filterLabel:SetText(PGF.L("BOSS_RANGE"))
+
+    y = y + 18
+
+    ---Read a range box back into the db. Empty means "unbounded" on both ends.
+    ---@param box EditBox
+    ---@param key string
+    ---@param emptyValue number
+    local function CommitRangeBox(box, key, emptyValue)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        local text = box:GetText()
+        if text == nil or text == "" then
+            db.filter[key] = emptyValue
+        else
+            db.filter[key] = tonumber(text) or emptyValue
+        end
+        PGF.RefilterResults()
+    end
+
+    ---@param labelText string
+    ---@param tooltipTitle string
+    ---@param tooltipDesc string
+    ---@param key string
+    ---@param emptyValue number
+    ---@param xOffset number
+    ---@return EditBox
+    local function CreateRangeBox(labelText, tooltipTitle, tooltipDesc, key, emptyValue, xOffset)
+        local boxLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        boxLabel:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING + xOffset, -y - 4)
+        boxLabel:SetText(labelText)
+
+        local box = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+        box:SetSize(40, 20)
+        box:SetPoint("LEFT", boxLabel, "RIGHT", 10, 0)
+        box:SetAutoFocus(false)
+        box:SetNumeric(true)
+        box:SetMaxLetters(2)
+
+        box:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(tooltipTitle)
+            GameTooltip:AddLine(tooltipDesc, 1, 1, 1, true)
+            GameTooltip:Show()
         end)
-    dropdown:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y - 14)
-    
-    raidPanel.bossFilterDropdown = dropdown
-    
-    y = y + 50
-    
+        box:SetScript("OnLeave", GameTooltip_Hide)
+
+        box:SetScript("OnEnterPressed", function(self)
+            self:ClearFocus()
+            CommitRangeBox(self, key, emptyValue)
+        end)
+        box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+        box:SetScript("OnEditFocusLost", function(self)
+            CommitRangeBox(self, key, emptyValue)
+        end)
+
+        return box
+    end
+
+    raidPanel.bossMinBox = CreateRangeBox(
+        PGF.L("BOSS_RANGE_MIN"), PGF.L("BOSS_RANGE_MIN"), PGF.L("BOSS_RANGE_MIN_DESC"),
+        "raidBossMin", 0, 0)
+
+    raidPanel.bossMaxBox = CreateRangeBox(
+        PGF.L("BOSS_RANGE_MAX"), PGF.L("BOSS_RANGE_MAX"), PGF.L("BOSS_RANGE_MAX_DESC"),
+        "raidBossMax", PGF.BOSS_MAX_UNLIMITED, 110)
+
+    y = y + 32
+
     -- TODO: Individual boss checkboxes will be added here in future
     
     content:SetHeight(y + CONTENT_PADDING)
@@ -707,6 +751,7 @@ end
 
 local raidSortOptions = {
     { value = "age", label = PGF.L("SORT_AGE") },
+    { value = "bossProgress", label = PGF.L("SORT_BOSS_PROGRESS") },
     { value = "groupSize", label = PGF.L("SORT_GROUP_SIZE") },
     { value = "ilvl", label = PGF.L("SORT_ILVL") },
     { value = "name", label = PGF.L("SORT_NAME") },
@@ -750,6 +795,33 @@ local function CreateSettingsSection(scrollContent)
     showRaidSpecCheckbox:SetScript("OnLeave", GameTooltip_Hide)
     showRaidSpecCheckbox:SetChecked(ui.showRaidSpecIndicators ~= false)
     raidPanel.showRaidSpecCheckbox = showRaidSpecCheckbox
+    y = y + 24
+
+    -- Show Boss Progress Checkbox
+    local showBossProgressCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showBossProgressCheckbox:SetSize(20, 20)
+    showBossProgressCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showBossProgressLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showBossProgressLabel:SetPoint("LEFT", showBossProgressCheckbox, "RIGHT", 5, 0)
+    showBossProgressLabel:SetText(PGF.L("SHOW_RAID_BOSS_PROGRESS"))
+    showBossProgressCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showRaidBossProgress = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showBossProgressCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_RAID_BOSS_PROGRESS"))
+        GameTooltip:AddLine(PGF.L("SHOW_RAID_BOSS_PROGRESS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showBossProgressCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showBossProgressCheckbox:SetChecked(ui.showRaidBossProgress ~= false)
+    raidPanel.showBossProgressCheckbox = showBossProgressCheckbox
     y = y + 24
 
     -- Disable Custom Sorting Checkbox
@@ -1077,8 +1149,19 @@ function PGF.UpdateRaidPanel()
         end
     end
 
-    if raidPanel.bossFilterDropdown then
-        raidPanel.bossFilterDropdown:GenerateMenu()
+    if raidPanel.bossMinBox or raidPanel.bossMaxBox then
+        local db = PintaGroupFinderDB
+        local filter = db.filter or {}
+
+        if raidPanel.bossMinBox then
+            local bossMin = filter.raidBossMin or 0
+            raidPanel.bossMinBox:SetText(bossMin > 0 and tostring(bossMin) or "")
+        end
+
+        if raidPanel.bossMaxBox then
+            local bossMax = filter.raidBossMax
+            raidPanel.bossMaxBox:SetText((bossMax and bossMax >= 0) and tostring(bossMax) or "")
+        end
     end
 
     UpdateRaidList()

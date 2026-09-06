@@ -66,6 +66,11 @@ if GetLocale() == "frFR" then
     
     -- Raids
     ["BOSS_FILTER"] = "Filtre de boss :",
+    ["BOSS_RANGE"] = "Boss vaincus :",
+    ["BOSS_RANGE_MIN"] = "Min",
+    ["BOSS_RANGE_MIN_DESC"] = "Afficher uniquement les groupes ayant vaincu au moins ce nombre de boss. Laisser vide pour aucun minimum.",
+    ["BOSS_RANGE_MAX"] = "Max",
+    ["BOSS_RANGE_MAX_DESC"] = "Afficher uniquement les groupes ayant vaincu au plus ce nombre de boss. Laisser vide pour aucun maximum. Mettre 0 aux deux pour les instances neuves.",
     ["BOSS_FILTER_ANY"] = "Tous",
     ["BOSS_FILTER_FRESH"] = "Instance neuve",
     ["BOSS_FILTER_PARTIAL"] = "Déjà entamé",
@@ -105,6 +110,7 @@ if GetLocale() == "frFR" then
     ["SORT_DIRECTION"] = "Direction :",
     ["SORT_AGE"] = "Âge",
     ["SORT_RATING"] = "Note du chef",
+    ["SORT_BOSS_PROGRESS"] = "Boss vaincus",
     ["SORT_GROUP_SIZE"] = "Taille du groupe",
     ["SORT_ILVL"] = "Niveau d'objet requis",
     ["SORT_NAME"] = "Nom du chef",
@@ -129,6 +135,8 @@ if GetLocale() == "frFR" then
     ["SHOW_LEADER_RATING_DESC"] = "Affiche la note Mythique+ du chef de groupe à côté du nom du groupe.",
     ["SHOW_MISSING_ROLES"] = "Afficher les rôles manquants",
     ["SHOW_MISSING_ROLES_DESC"] = "Affiche des icônes de rôle désaturées pour les emplacements non remplis dans les résultats de recherche de donjon.",
+    ["SHOW_RAID_BOSS_PROGRESS"] = "Afficher la progression des boss",
+    ["SHOW_RAID_BOSS_PROGRESS_DESC"] = "Affiche combien de boss du raid le groupe a déjà vaincus, par ex. 6/8.",
     ["SHOW_RAID_SPEC_INDICATORS"] = "Afficher les indicateurs de spé raid",
     ["SHOW_RAID_SPEC_INDICATORS_DESC"] = "Affiche combien de votre classe et spécialisation sont déjà dans le groupe de raid.",
     ["SHOW_ARENA_LEADER_ICON"] = "Afficher l'icône du chef",
