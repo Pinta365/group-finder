@@ -132,6 +132,8 @@ if GetLocale() == "deDE" then
     ["SHOW_BLOODLUST_ICON_DESC"] = "Zeigt ein Symbol bei Dungeon-Suchergebnissen, deren Gruppe bereits eine Kampfrausch/Heldentum-Klasse enthält.",
     ["SHOW_REGION_TAG"] = "Regionskürzel anzeigen",
     ["SHOW_REGION_TAG_DESC"] = "Zeigt ein kurzes Kürzel für Spieler aus einer anderen Region oder Sprache als deinem Realm, z. B. OCE, BR oder LA auf US-Realms und DE, FR oder EN auf EU-Realms. Wird bei Gruppenlisten und bei Bewerbern für deine Gruppe angezeigt.",
+    ["HIDE_UNRATED_LEADERS"] = "Anführer ohne Wertung ausblenden",
+    ["HIDE_UNRATED_LEADERS_DESC"] = "Blendet Mythisch+-Gruppen aus, deren Anführer keine Mythisch+-Wertung hat. Filtert die meisten Boost-/WTS-Angebote heraus, die meist von Charakteren ohne Wertung stammen.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Klassenspezialisierungs-Symbole anzeigen",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Dungeon-Suchergebnissen.",
     ["SHOW_AGE"] = "Alter der Auflistung anzeigen",

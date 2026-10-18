@@ -969,6 +969,30 @@ local function CreateSettingsSection(scrollContent)
     dungeonPanel.showRegionTagCheckbox = showRegionTagCheckbox
     y = y + 24
 
+    -- Hide Unrated Leaders Checkbox
+    local hideUnratedLeadersCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideUnratedLeadersCheckbox:SetSize(20, 20)
+    hideUnratedLeadersCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local hideUnratedLeadersLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideUnratedLeadersLabel:SetPoint("LEFT", hideUnratedLeadersCheckbox, "RIGHT", 5, 0)
+    hideUnratedLeadersLabel:SetText(PGF.L("HIDE_UNRATED_LEADERS"))
+    hideUnratedLeadersCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hideUnratedLeaders = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    hideUnratedLeadersCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_UNRATED_LEADERS"))
+        GameTooltip:AddLine(PGF.L("HIDE_UNRATED_LEADERS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideUnratedLeadersCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    hideUnratedLeadersCheckbox:SetChecked((PintaGroupFinderDB.filter or {}).hideUnratedLeaders ~= false)
+    dungeonPanel.hideUnratedLeadersCheckbox = hideUnratedLeadersCheckbox
+    y = y + 24
+
     -- Show Leader Rating Checkbox
     local showLeaderRatingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     showLeaderRatingCheckbox:SetSize(20, 20)
@@ -1400,6 +1424,11 @@ function PGF.UpdateDungeonPanel()
         local db = PintaGroupFinderDB
         local filter = db.filter or {}
         dungeonPanel.hideBloodlustCheckbox:SetChecked(filter.hideBloodlustGroups == true)
+    end
+
+    if dungeonPanel.hideUnratedLeadersCheckbox then
+        local filter = PintaGroupFinderDB.filter or {}
+        dungeonPanel.hideUnratedLeadersCheckbox:SetChecked(filter.hideUnratedLeaders ~= false)
     end
 
     if dungeonPanel.hideSameSpecCheckbox then

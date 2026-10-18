@@ -166,6 +166,11 @@ local function PassesFilter(resultID, context, preRoleVectors)
             return false
         end
 
+        -- Boost sellers usually list from characters with no M+ score
+        if filter.hideUnratedLeaders ~= false and context.mythicplus and (context.mprating or 0) == 0 then
+            return false
+        end
+
         -- Deliberately tested against groupHasLust rather than hasLust: this filter exists so a
         -- lust class can find groups that still need one, and hasLust always includes ourselves.
         if filter.hideBloodlustGroups == true and context.groupHasLust then

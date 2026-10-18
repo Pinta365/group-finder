@@ -39,6 +39,7 @@ PGF.BLOODLUST_CLASSES = {
 ---@field raidBossMin number? Minimum bosses defeated (0 = no minimum)
 ---@field raidBossMax number? Maximum bosses defeated (PGF.BOSS_MAX_UNLIMITED = no maximum)
 ---@field hideIncompatibleGroups boolean?
+---@field hideUnratedLeaders boolean?
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
 ---@field dungeonSortSettings SortSettings
@@ -100,6 +101,7 @@ PGF.defaults = {
         hideBloodlustGroups = false,
         hideIncompatibleGroups = false,
         hideSameSpec = false,
+        hideUnratedLeaders = true,
         difficulty = {
             normal = true,
             heroic = true,
