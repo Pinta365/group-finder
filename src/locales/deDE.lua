@@ -130,6 +130,8 @@ if GetLocale() == "deDE" then
     ["HAS_BLOODLUST_DESC"] = "Zeige nur Gruppen, die nach deinem Beitritt Kampfrausch/Heldentum haben. Zählt Magier, Schamanen, Rufer und Jäger in der Gruppe sowie dich und deine Gruppe.",
     ["SHOW_BLOODLUST_ICON"] = "Kampfrausch-Symbol anzeigen",
     ["SHOW_BLOODLUST_ICON_DESC"] = "Zeigt ein Symbol bei Dungeon-Suchergebnissen, deren Gruppe bereits eine Kampfrausch/Heldentum-Klasse enthält.",
+    ["SHOW_REGION_TAG"] = "Regionskürzel anzeigen",
+    ["SHOW_REGION_TAG_DESC"] = "Zeigt ein kurzes Kürzel für Spieler aus einer anderen Region oder Sprache als deinem Realm, z. B. OCE, BR oder LA auf US-Realms und DE, FR oder EN auf EU-Realms. Wird bei Gruppenlisten und bei Bewerbern für deine Gruppe angezeigt.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Klassenspezialisierungs-Symbole anzeigen",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Zeigt Spezialisierungs-Symbole unter gefüllten Rollen-Slots in Dungeon-Suchergebnissen.",
     ["SHOW_AGE"] = "Alter der Auflistung anzeigen",

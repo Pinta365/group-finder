@@ -75,6 +75,7 @@ PGF.BLOODLUST_CLASSES = {
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
 ---@field showBloodlustIcon boolean
+---@field showRegionTag boolean
 ---@field showRaidBossProgress boolean
 ---@field showArenaLeaderIcon boolean
 ---@field showArenaSpecIcons boolean
@@ -228,6 +229,7 @@ PGF.defaults = {
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
         showBloodlustIcon = true,
+        showRegionTag = true,
         showRaidSpecIndicators = true,
         showRaidBossProgress = true,
         showArenaLeaderIcon = true,

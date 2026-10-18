@@ -130,6 +130,8 @@ if GetLocale() == "frFR" then
     ["HAS_BLOODLUST_DESC"] = "Afficher uniquement les groupes qui auront Furie sanguinaire/Héroïsme une fois que vous les rejoignez. Compte les mages, chamans, évocateurs et chasseurs du groupe, ainsi que vous et votre groupe.",
     ["SHOW_BLOODLUST_ICON"] = "Afficher l'icône de Furie sanguinaire",
     ["SHOW_BLOODLUST_ICON_DESC"] = "Affiche une icône sur les résultats de recherche de donjon dont le groupe contient déjà une classe Furie sanguinaire/Héroïsme.",
+    ["SHOW_REGION_TAG"] = "Afficher l'étiquette de région",
+    ["SHOW_REGION_TAG_DESC"] = "Affiche une courte étiquette pour les joueurs d'une région ou d'une langue différente de votre royaume, comme OCE, BR ou LA sur les royaumes US et DE, FR ou EN sur les royaumes EU. Affichée sur les listes de groupes et sur les candidats à votre groupe.",
     ["SHOW_DUNGEON_SPEC_ICONS"] = "Afficher les icônes de spé",
     ["SHOW_DUNGEON_SPEC_ICONS_DESC"] = "Affiche les icônes de spécialisation sous les emplacements de rôle remplis dans les résultats de recherche de donjon.",
     ["SHOW_AGE"] = "Afficher l'âge de l'annonce",

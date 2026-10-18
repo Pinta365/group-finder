@@ -942,6 +942,33 @@ local function CreateSettingsSection(scrollContent)
     dungeonPanel.showBloodlustIconCheckbox = showBloodlustIconCheckbox
     y = y + 24
 
+    -- Show Region Tag Checkbox
+    local showRegionTagCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showRegionTagCheckbox:SetSize(20, 20)
+    showRegionTagCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showRegionTagLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showRegionTagLabel:SetPoint("LEFT", showRegionTagCheckbox, "RIGHT", 5, 0)
+    showRegionTagLabel:SetText(PGF.L("SHOW_REGION_TAG"))
+    showRegionTagCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showRegionTag = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showRegionTagCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_REGION_TAG"))
+        GameTooltip:AddLine(PGF.L("SHOW_REGION_TAG_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showRegionTagCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showRegionTagCheckbox:SetChecked(ui.showRegionTag ~= false)
+    dungeonPanel.showRegionTagCheckbox = showRegionTagCheckbox
+    y = y + 24
+
     -- Show Leader Rating Checkbox
     local showLeaderRatingCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
     showLeaderRatingCheckbox:SetSize(20, 20)

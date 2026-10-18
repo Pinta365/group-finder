@@ -10,6 +10,8 @@ local ratingLabels = {}
 local ageLabels = {}
 local bloodlustIcons = {}
 local bossProgressLabels = {}
+local regionTagLabels = {}
+local applicantRegionTags = {}
 
 local playerClassFile = nil
 local playerSpecID = nil
@@ -33,6 +35,44 @@ local REMAINING_KEYS = {
 }
 
 local CACHE_KEY_SEP = "\1"
+
+local REGION_TAG_COLORS = {
+    US = "4da6ff", EN = "4da6ff", OCE = "33cc99",
+    BR = "66cc33", PT = "66cc33", LA = "ff9933", ES = "ff6633",
+    DE = "ffcc00", FR = "6699ff", IT = "33cc66", RU = "cc6666",
+}
+
+local GAME_REGION_KEYS = { [1] = "US", [3] = "EU" }
+
+---Region/language tag for a character's realm, e.g. "OCE", "BR", "DE".
+---@param fullName string|nil "Name-Realm", or "Name" for characters on the player's realm
+---@return string|nil tag
+function PGF.GetRealmTag(fullName)
+    if not fullName or (issecretvalue and issecretvalue(fullName)) then return nil end
+
+    local regionKey = GAME_REGION_KEYS[GetCurrentRegion()]
+    local tags = regionKey and PGF.REALM_TAGS and PGF.REALM_TAGS[regionKey]
+    if not tags then return nil end
+
+    local realm = fullName:match("^[^-]+%-(.+)$") or GetNormalizedRealmName()
+    if not realm then return nil end
+
+    return tags[realm:lower():gsub("[%s%-]", "")]
+end
+
+local playerRealmTag
+
+---Colored tag text for a realm, or nil when it matches the player's own realm tag.
+---@param fullName string|nil
+---@return string|nil
+local function GetRegionTagText(fullName)
+    if playerRealmTag == nil then
+        playerRealmTag = PGF.GetRealmTag(UnitName("player")) or false
+    end
+    local tag = PGF.GetRealmTag(fullName)
+    if not tag or tag == playerRealmTag then return nil end
+    return string.format("|cff%s%s|r", REGION_TAG_COLORS[tag] or "aaaaaa", tag)
+end
 
 ---@return nil
 local function UpdatePlayerClassSpec()
@@ -346,8 +386,10 @@ local function AddRaidBossProgress(entry, resultID, searchResultInfo)
         label:ClearAllPoints()
         label:SetPoint("LEFT", entry.Name, "RIGHT", 4, 0)
         label:Show()
+        return true
     else
         label:Hide()
+        return false
     end
 end
 
@@ -397,9 +439,59 @@ local function AddBloodlustIndicator(entry, resultID, searchResultInfo, ratingSh
         icon:ClearAllPoints()
         icon:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
         icon:Show()
+        return true
     else
         icon:Hide()
+        return false
     end
+end
+
+---Show the leader's realm region/language tag (e.g. "OCE", "BR", "DE") after the other labels.
+---@param entry Frame
+---@param searchResultInfo table
+---@param anchor Region Last label shown to the right of the name, or the name itself
+local function AddRegionTag(entry, searchResultInfo, anchor)
+    local label = regionTagLabels[entry]
+    local text = entry.Name and GetRegionTagText(searchResultInfo.leaderName)
+    if not text then
+        if label then label:Hide() end
+        return
+    end
+
+    if not label then
+        label = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        regionTagLabels[entry] = label
+    end
+    label:SetText(text)
+    label:ClearAllPoints()
+    label:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
+    label:Show()
+end
+
+---Show the applicant's realm region/language tag next to their name in the application viewer.
+---@param member Frame
+---@param appID number
+---@param memberIdx number
+local function OnApplicantMemberUpdate(member, appID, memberIdx)
+    local label = applicantRegionTags[member]
+    local ui = PintaGroupFinderDB and PintaGroupFinderDB.ui
+    local text
+    if ui and ui.showRegionTag ~= false and member.Name then
+        text = GetRegionTagText((C_LFGList.GetApplicantMemberInfo(appID, memberIdx)))
+    end
+    if not text then
+        if label then label:Hide() end
+        return
+    end
+
+    if not label then
+        label = member:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        applicantRegionTags[member] = label
+    end
+    label:SetText(text)
+    label:ClearAllPoints()
+    label:SetPoint("LEFT", member.Name, "RIGHT", 3, 0)
+    label:Show()
 end
 
 ---@param entry Frame
@@ -772,17 +864,31 @@ local function OnEntryUpdate(self)
         if label then label:Hide() end
     end
 
+    local bloodlustShown = false
     if isDungeon and showBloodlust then
-        AddBloodlustIndicator(self, resultID, searchResultInfo, ratingShown, ageShown)
+        bloodlustShown = AddBloodlustIndicator(self, resultID, searchResultInfo, ratingShown, ageShown)
     else
         local icon = bloodlustIcons[self]
         if icon then icon:Hide() end
     end
 
+    local bossProgressShown = false
     if categoryID == PGF.RAID_CATEGORY_ID and ui and ui.showRaidBossProgress then
-        AddRaidBossProgress(self, resultID, searchResultInfo)
+        bossProgressShown = AddRaidBossProgress(self, resultID, searchResultInfo)
     else
         local label = bossProgressLabels[self]
+        if label then label:Hide() end
+    end
+
+    if ui and ui.showRegionTag ~= false then
+        local anchor = (bloodlustShown and bloodlustIcons[self])
+            or (ageShown and ageLabels[self])
+            or (ratingShown and ratingLabels[self])
+            or (bossProgressShown and bossProgressLabels[self])
+            or self.Name
+        AddRegionTag(self, searchResultInfo, anchor)
+    else
+        local label = regionTagLabels[self]
         if label then label:Hide() end
     end
 
@@ -797,6 +903,9 @@ end
 
 function PGF.InitializeEntryEnhancements()
     hooksecurefunc("LFGListSearchEntry_Update", OnEntryUpdate)
+    if LFGListApplicationViewer_UpdateApplicantMember then
+        hooksecurefunc("LFGListApplicationViewer_UpdateApplicantMember", OnApplicantMemberUpdate)
+    end
     UpdatePlayerClassSpec()
 
     local specFrame = CreateFrame("Frame")
