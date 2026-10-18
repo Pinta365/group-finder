@@ -38,16 +38,17 @@ local CACHE_KEY_SEP = "\1"
 
 local playerRealmTag
 
----Colored tag text for a realm, or nil when it matches the player's own realm tag.
+---Flag and tag text for a realm, or nil when it matches the player's own realm tag.
 ---@param fullName string|nil
+---@param flagOnly boolean? Omit the tag text (for narrow columns)
 ---@return string|nil
-local function GetRegionTagText(fullName)
+local function GetRegionTagText(fullName, flagOnly)
     if playerRealmTag == nil then
         playerRealmTag = PGF.GetRealmTag(UnitName("player")) or false
     end
     local tag = PGF.GetRealmTag(fullName)
     if not tag or tag == playerRealmTag then return nil end
-    return PGF.FormatRegionTag(tag)
+    return PGF.FormatRegionTag(tag, flagOnly)
 end
 
 ---@return nil
@@ -453,7 +454,7 @@ local function OnApplicantMemberUpdate(member, appID, memberIdx)
     local ui = PintaGroupFinderDB and PintaGroupFinderDB.ui
     local text
     if ui and ui.showRegionTag ~= false and member.Name then
-        text = GetRegionTagText((C_LFGList.GetApplicantMemberInfo(appID, memberIdx)))
+        text = GetRegionTagText((C_LFGList.GetApplicantMemberInfo(appID, memberIdx)), true)
     end
     if not text then
         if label then label:Hide() end
@@ -466,7 +467,11 @@ local function OnApplicantMemberUpdate(member, appID, memberIdx)
     end
     label:SetText(text)
     label:ClearAllPoints()
-    label:SetPoint("LEFT", member.Name, "RIGHT", 3, 0)
+    -- The name FontString spans the whole column, so anchor after the visible text instead
+    local nameWidth = member.Name:GetWidth()
+    local textWidth = member.Name:GetStringWidth()
+    local offset = (nameWidth > 0 and textWidth > nameWidth) and nameWidth or textWidth
+    label:SetPoint("LEFT", member.Name, "LEFT", offset + 3, 0)
     label:Show()
 end
 

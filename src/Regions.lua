@@ -49,10 +49,14 @@ end
 
 ---Flag icon plus colored tag text, e.g. "<flag> OCE".
 ---@param tag string
+---@param flagOnly boolean? Return just the flag when one exists
 ---@return string
-function PGF.FormatRegionTag(tag)
+function PGF.FormatRegionTag(tag, flagOnly)
     local flag = REGION_TAG_FLAGS[tag]
     local text = string.format("|cff%s%s|r", REGION_TAG_COLORS[tag] or "aaaaaa", tag)
+    if flag and flagOnly then
+        return FLAG_TEXTURE_FORMAT:format(flag)
+    end
     return flag and (FLAG_TEXTURE_FORMAT:format(flag) .. " " .. text) or text
 end
 
