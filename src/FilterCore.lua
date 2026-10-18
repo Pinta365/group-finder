@@ -171,6 +171,11 @@ local function PassesFilter(resultID, context, preRoleVectors)
             return false
         end
 
+        -- Unknown realms (no tag) always pass so new realms are never hidden by mistake
+        if context.regionTag and filter.regions and filter.regions[context.regionTag] == false then
+            return false
+        end
+
         -- Deliberately tested against groupHasLust rather than hasLust: this filter exists so a
         -- lust class can find groups that still need one, and hasLust always includes ourselves.
         if filter.hideBloodlustGroups == true and context.groupHasLust then

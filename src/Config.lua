@@ -40,6 +40,7 @@ PGF.BLOODLUST_CLASSES = {
 ---@field raidBossMax number? Maximum bosses defeated (PGF.BOSS_MAX_UNLIMITED = no maximum)
 ---@field hideIncompatibleGroups boolean?
 ---@field hideUnratedLeaders boolean?
+---@field regions table<string, boolean>? Region tag -> false to hide that region
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
 ---@field dungeonSortSettings SortSettings
@@ -102,6 +103,7 @@ PGF.defaults = {
         hideIncompatibleGroups = false,
         hideSameSpec = false,
         hideUnratedLeaders = true,
+        regions = {},
         difficulty = {
             normal = true,
             heroic = true,
@@ -137,6 +139,7 @@ PGF.defaults = {
             misc = false,
             quickApply = false,
             settings = false,
+            regions = false,
         },
         dungeonSortSettings = {
             disableCustomSorting = true,

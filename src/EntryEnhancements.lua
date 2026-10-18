@@ -36,36 +36,6 @@ local REMAINING_KEYS = {
 
 local CACHE_KEY_SEP = "\1"
 
-local REGION_TAG_COLORS = {
-    US = "4da6ff", EN = "4da6ff", OCE = "33cc99",
-    BR = "66cc33", PT = "66cc33", LA = "ff9933", ES = "ff6633",
-    DE = "ffcc00", FR = "6699ff", IT = "33cc66", RU = "cc6666",
-}
-
-local REGION_TAG_FLAGS = {
-    US = "us", EN = "gb", OCE = "au", BR = "br", PT = "pt", LA = "mx",
-    ES = "es", DE = "de", FR = "fr", IT = "it", RU = "ru",
-}
-local FLAG_TEXTURE_FORMAT = "|TInterface\\AddOns\\" .. addonName .. "\\Textures\\Flags\\%s:10:16|t"
-
-local GAME_REGION_KEYS = { [1] = "US", [3] = "EU" }
-
----Region/language tag for a character's realm, e.g. "OCE", "BR", "DE".
----@param fullName string|nil "Name-Realm", or "Name" for characters on the player's realm
----@return string|nil tag
-function PGF.GetRealmTag(fullName)
-    if not fullName or (issecretvalue and issecretvalue(fullName)) then return nil end
-
-    local regionKey = GAME_REGION_KEYS[GetCurrentRegion()]
-    local tags = regionKey and PGF.REALM_TAGS and PGF.REALM_TAGS[regionKey]
-    if not tags then return nil end
-
-    local realm = fullName:match("^[^-]+%-(.+)$") or GetNormalizedRealmName()
-    if not realm then return nil end
-
-    return tags[realm:lower():gsub("[%s%-]", "")]
-end
-
 local playerRealmTag
 
 ---Colored tag text for a realm, or nil when it matches the player's own realm tag.
@@ -77,9 +47,7 @@ local function GetRegionTagText(fullName)
     end
     local tag = PGF.GetRealmTag(fullName)
     if not tag or tag == playerRealmTag then return nil end
-    local flag = REGION_TAG_FLAGS[tag]
-    local text = string.format("|cff%s%s|r", REGION_TAG_COLORS[tag] or "aaaaaa", tag)
-    return flag and (FLAG_TEXTURE_FORMAT:format(flag) .. " " .. text) or text
+    return PGF.FormatRegionTag(tag)
 end
 
 ---@return nil

@@ -54,6 +54,7 @@ end
 ---@field healerNeeded number Slots still needed for healer
 ---@field dpsNeeded number Slots still needed for DPS
 ---@field mprating number Leader's M+ score
+---@field regionTag string? Leader realm region/language tag, e.g. "OCE"
 ---@field age number Listing age in minutes
 ---@field appStatus string Application status ("none", "applied", etc.)
 ---@field pendingStatus string? Set while an application is still being confirmed by the server
@@ -228,6 +229,7 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     
     context.ilvl = searchResultInfo.requiredItemLevel or 0
     context.leaderName = searchResultInfo.leaderName and searchResultInfo.leaderName:lower() or ""
+    context.regionTag = PGF.GetRealmTag(searchResultInfo.leaderName)
     
     context.generalPlaystyle = searchResultInfo.generalPlaystyle or 0
     context.playstyle = searchResultInfo.playstyle or 0
