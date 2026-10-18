@@ -22,6 +22,9 @@ local defaultLocale = {
     ["AUTO_ACCEPT_PARTY"] = "Auto-accept party",
     ["AUTO_ACCEPT_PARTY_TITLE"] = "Auto-Accept Party Sign Up",
     ["AUTO_ACCEPT_PARTY_DESC"] = "Automatically accept when your party leader signs up.",
+    ["KEEP_APPLIED_ROLE"] = "Keep applied role",
+    ["KEEP_APPLIED_ROLE_TITLE"] = "Keep Applied Role",
+    ["KEEP_APPLIED_ROLE_DESC"] = "After joining a group, keep the role you signed up with instead of switching to your current spec's role. Useful when applying as an off-spec role you will swap to.",
     
     -- Rating
     ["MIN_RATING"] = "Min Rating:",

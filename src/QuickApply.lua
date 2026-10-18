@@ -272,6 +272,67 @@ local function SetupPartyRoleAutoAccept()
     C_Timer.After(0.25, retry)
 end
 
+local KEEP_ROLE_WATCH_SECONDS = 30
+local KEEP_ROLE_MAX_RESTORES = 3
+local VALID_ROLES = { TANK = true, HEALER = true, DAMAGER = true }
+
+---Keep the role you applied with after joining a group.
+---The game can reassign your group role to your current spec's role on join
+---(e.g. applying as healer while in a DPS spec). For a short window after
+---accepting an invite, restore the applied role if it was changed.
+local function SetupKeepAppliedRole()
+    local wantedRole
+    local watchUntil = 0
+    local restores = 0
+
+    local function checkRole()
+        if not wantedRole then return end
+        if GetTime() > watchUntil or not IsInGroup() then
+            wantedRole = nil
+            return
+        end
+
+        local current = UnitGroupRolesAssigned("player")
+        if current == wantedRole or InCombatLockdown() or restores >= KEEP_ROLE_MAX_RESTORES then
+            return
+        end
+
+        restores = restores + 1
+        PGF.Debug("Keep applied role: restoring", wantedRole, "was", current)
+        UnitSetRole("player", wantedRole)
+    end
+
+    local frame = CreateFrame("Frame")
+    frame:RegisterEvent("LFG_LIST_APPLICATION_STATUS_UPDATED")
+    frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+    frame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+    frame:SetScript("OnEvent", function(_, event, resultID, newStatus)
+        if event ~= "LFG_LIST_APPLICATION_STATUS_UPDATED" then
+            checkRole()
+            return
+        end
+
+        if newStatus ~= "inviteaccepted" then return end
+
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
+        if quickApply.keepAppliedRole == false then return end
+
+        local _, _, _, _, role = C_LFGList.GetApplicationInfo(resultID)
+        if not role or (issecretvalue and issecretvalue(role)) or not VALID_ROLES[role] then
+            return
+        end
+
+        wantedRole = role
+        watchUntil = GetTime() + KEEP_ROLE_WATCH_SECONDS
+        restores = 0
+
+        -- The server can assign roles a moment after the join completes
+        C_Timer.After(1, checkRole)
+        C_Timer.After(3, checkRole)
+    end)
+end
+
 ---Monitor and sync role changes from Blizzard's UI.
 local function SetupRoleChangeMonitoring()
     local roleChangeHandler = function(leader, tank, healer, dps)
@@ -323,6 +384,7 @@ function PGF.InitializeQuickApply()
     SetupAutoSignup()
     SetupEntryClickHandler()
     SetupPartyRoleAutoAccept()
+    SetupKeepAppliedRole()
     
     PGF.Debug("Quick Apply initialized")
 end

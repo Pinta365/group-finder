@@ -244,6 +244,7 @@ PGF.defaults = {
 ---@field enabled boolean
 ---@field roles RoleSettings
 ---@field autoAcceptParty boolean
+---@field keepAppliedRole boolean
 
 ---@class RoleSettings
 ---@field tank boolean
@@ -260,6 +261,7 @@ PGF.charDefaults = {
             damage = false,
         },
         autoAcceptParty = false,
+        keepAppliedRole = true,
     },
 }
 

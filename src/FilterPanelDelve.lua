@@ -796,6 +796,10 @@ function PGF.UpdateDelvePanel()
         delvePanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
     end
 
+    if delvePanel.quickApplyKeepRole then
+        delvePanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+    end
+
     if delvePanel.disableCustomSortingCheckbox then
         local settings = GetSortSettings()
         delvePanel.disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)

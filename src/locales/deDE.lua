@@ -18,6 +18,9 @@ if GetLocale() == "deDE" then
     ["AUTO_ACCEPT_PARTY"] = "Gruppe automatisch akzeptieren",
     ["AUTO_ACCEPT_PARTY_TITLE"] = "Automatische Gruppenannahme",
     ["AUTO_ACCEPT_PARTY_DESC"] = "Automatisch akzeptieren, wenn sich dein Gruppenleiter anmeldet.",
+    ["KEEP_APPLIED_ROLE"] = "Angemeldete Rolle behalten",
+    ["KEEP_APPLIED_ROLE_TITLE"] = "Angemeldete Rolle behalten",
+    ["KEEP_APPLIED_ROLE_DESC"] = "Nach dem Beitritt zu einer Gruppe die Rolle behalten, mit der du dich angemeldet hast, statt zur Rolle deiner aktuellen Spezialisierung zu wechseln. Nützlich, wenn du dich für eine Rolle deiner Zweitspezialisierung anmeldest.",
     
     -- Rating
     ["MIN_RATING"] = "Mindestwertung:",

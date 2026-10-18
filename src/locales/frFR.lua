@@ -18,6 +18,9 @@ if GetLocale() == "frFR" then
     ["AUTO_ACCEPT_PARTY"] = "Accepter automatiquement le groupe",
     ["AUTO_ACCEPT_PARTY_TITLE"] = "Acceptation automatique du groupe",
     ["AUTO_ACCEPT_PARTY_DESC"] = "Accepter automatiquement lorsque votre chef de groupe s'inscrit.",
+    ["KEEP_APPLIED_ROLE"] = "Conserver le rôle choisi",
+    ["KEEP_APPLIED_ROLE_TITLE"] = "Conserver le rôle choisi",
+    ["KEEP_APPLIED_ROLE_DESC"] = "Après avoir rejoint un groupe, conserver le rôle choisi lors de l'inscription au lieu de passer au rôle de votre spécialisation actuelle. Utile si vous postulez avec le rôle d'une autre spécialisation.",
     
     -- Rating
     ["MIN_RATING"] = "Note min. :",

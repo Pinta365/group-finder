@@ -221,7 +221,7 @@ end
 ---Create the Quick Apply accordion section
 ---Stores widget references on the panel table; all settings go to charDB.quickApply.
 ---@param scrollContent Frame The scroll content frame
----@param panel table Panel table; receives quickApplyEnable, quickApplyRoleCheckboxes, quickApplyAutoAccept
+---@param panel table Panel table; receives quickApplyEnable, quickApplyRoleCheckboxes, quickApplyAutoAccept, quickApplyKeepRole
 ---@param sections table The sections array to insert into
 ---@param makeHeader fun(parent, sectionID, title): Frame Panel-local accordion header builder
 function PGF.CreateQuickApplySection(scrollContent, panel, sections, makeHeader)
@@ -315,9 +315,34 @@ function PGF.CreateQuickApplySection(scrollContent, panel, sections, makeHeader)
 
     y = y + 24
 
+    local keepRoleCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    keepRoleCheckbox:SetSize(20, 20)
+    keepRoleCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+    local keepRoleLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    keepRoleLabel:SetPoint("LEFT", keepRoleCheckbox, "RIGHT", 5, 0)
+    keepRoleLabel:SetText(PGF.L("KEEP_APPLIED_ROLE"))
+
+    keepRoleCheckbox:SetScript("OnClick", function(self)
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        if not charDB.quickApply then charDB.quickApply = {} end
+        charDB.quickApply.keepAppliedRole = self:GetChecked()
+    end)
+
+    keepRoleCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("KEEP_APPLIED_ROLE_TITLE"))
+        GameTooltip:AddLine(PGF.L("KEEP_APPLIED_ROLE_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    keepRoleCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+
+    y = y + 24
+
     panel.quickApplyEnable = quickApplyEnable
     panel.quickApplyRoleCheckboxes = quickApplyRoleCheckboxes
     panel.quickApplyAutoAccept = autoAcceptCheckbox
+    panel.quickApplyKeepRole = keepRoleCheckbox
 
     content:SetHeight(y + CONTENT_PADDING)
 

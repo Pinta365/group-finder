@@ -1194,6 +1194,10 @@ function PGF.UpdateRaidPanel()
     if raidPanel.quickApplyAutoAccept then
         raidPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
     end
+
+    if raidPanel.quickApplyKeepRole then
+        raidPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+    end
     
     if raidPanel.disableCustomSortingCheckbox then
         local settings = GetSortSettingsRaid()

@@ -781,6 +781,10 @@ function PGF.UpdateArenaPanel()
         arenaPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
     end
 
+    if arenaPanel.quickApplyKeepRole then
+        arenaPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+    end
+
     if arenaPanel.showLeaderIconCheckbox then
         local ui = (PintaGroupFinderDB and PintaGroupFinderDB.ui) or PGF.defaults.ui
         arenaPanel.showLeaderIconCheckbox:SetChecked(ui.showArenaLeaderIcon ~= false)

@@ -1418,6 +1418,10 @@ function PGF.UpdateDungeonPanel()
         dungeonPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
     end
 
+    if dungeonPanel.quickApplyKeepRole then
+        dungeonPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+    end
+
     if dungeonPanel.disableCustomSortingCheckbox then
         local settings = GetSortSettings()
         dungeonPanel.disableCustomSortingCheckbox:SetChecked(settings.disableCustomSorting ~= false)
