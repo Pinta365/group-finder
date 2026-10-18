@@ -42,6 +42,12 @@ local REGION_TAG_COLORS = {
     DE = "ffcc00", FR = "6699ff", IT = "33cc66", RU = "cc6666",
 }
 
+local REGION_TAG_FLAGS = {
+    US = "us", EN = "gb", OCE = "au", BR = "br", PT = "pt", LA = "mx",
+    ES = "es", DE = "de", FR = "fr", IT = "it", RU = "ru",
+}
+local FLAG_TEXTURE_FORMAT = "|TInterface\\AddOns\\" .. addonName .. "\\Textures\\Flags\\%s:10:16|t"
+
 local GAME_REGION_KEYS = { [1] = "US", [3] = "EU" }
 
 ---Region/language tag for a character's realm, e.g. "OCE", "BR", "DE".
@@ -71,7 +77,9 @@ local function GetRegionTagText(fullName)
     end
     local tag = PGF.GetRealmTag(fullName)
     if not tag or tag == playerRealmTag then return nil end
-    return string.format("|cff%s%s|r", REGION_TAG_COLORS[tag] or "aaaaaa", tag)
+    local flag = REGION_TAG_FLAGS[tag]
+    local text = string.format("|cff%s%s|r", REGION_TAG_COLORS[tag] or "aaaaaa", tag)
+    return flag and (FLAG_TEXTURE_FORMAT:format(flag) .. " " .. text) or text
 end
 
 ---@return nil
