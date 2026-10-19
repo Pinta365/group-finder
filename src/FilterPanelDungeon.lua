@@ -829,10 +829,9 @@ local function CreateMiscSection(scrollContent)
 end
 
 --------------------------------------------------------------------------------
--- Section 5: Quick Apply
+-- Section 5: Regions
 --------------------------------------------------------------------------------
 
----Create Quick Apply section.
 ---Create Regions section: one checkbox per realm region/language, based on the group leader's realm.
 local function CreateRegionsSection(scrollContent)
     local tags = PGF.GetRegionFilterTags()
@@ -888,12 +887,17 @@ local function CreateRegionsSection(scrollContent)
     })
 end
 
+--------------------------------------------------------------------------------
+-- Section 6: Quick Apply
+--------------------------------------------------------------------------------
+
+---Create Quick Apply section.
 local function CreateQuickApplySection(scrollContent)
     PGF.CreateQuickApplySection(scrollContent, dungeonPanel, sections, MakeAccordionHeader)
 end
 
 --------------------------------------------------------------------------------
--- Section 6: Settings
+-- Section 7: Settings
 --------------------------------------------------------------------------------
 
 local dungeonSortOptions = {
@@ -1044,7 +1048,7 @@ local function CreateSettingsSection(scrollContent)
         GameTooltip:Show()
     end)
     hideUnratedLeadersCheckbox:SetScript("OnLeave", GameTooltip_Hide)
-    hideUnratedLeadersCheckbox:SetChecked((PintaGroupFinderDB.filter or {}).hideUnratedLeaders ~= false)
+    hideUnratedLeadersCheckbox:SetChecked((PintaGroupFinderDB.filter or {}).hideUnratedLeaders == true)
     dungeonPanel.hideUnratedLeadersCheckbox = hideUnratedLeadersCheckbox
     y = y + 24
 
@@ -1484,7 +1488,7 @@ function PGF.UpdateDungeonPanel()
 
     if dungeonPanel.hideUnratedLeadersCheckbox then
         local filter = PintaGroupFinderDB.filter or {}
-        dungeonPanel.hideUnratedLeadersCheckbox:SetChecked(filter.hideUnratedLeaders ~= false)
+        dungeonPanel.hideUnratedLeadersCheckbox:SetChecked(filter.hideUnratedLeaders == true)
     end
 
     if dungeonPanel.regionCheckboxes then
@@ -1538,7 +1542,7 @@ function PGF.UpdateDungeonPanel()
     end
 
     if dungeonPanel.quickApplyKeepRole then
-        dungeonPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+        dungeonPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole == true)
     end
 
     if dungeonPanel.disableCustomSortingCheckbox then

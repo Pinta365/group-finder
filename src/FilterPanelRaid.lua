@@ -1196,7 +1196,7 @@ function PGF.UpdateRaidPanel()
     end
 
     if raidPanel.quickApplyKeepRole then
-        raidPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+        raidPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole == true)
     end
     
     if raidPanel.disableCustomSortingCheckbox then

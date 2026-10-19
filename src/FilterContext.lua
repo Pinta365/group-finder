@@ -54,6 +54,7 @@ end
 ---@field healerNeeded number Slots still needed for healer
 ---@field dpsNeeded number Slots still needed for DPS
 ---@field mprating number Leader's M+ score
+---@field mpratingKnown boolean Whether the listing reported a leader M+ score at all
 ---@field regionTag string? Leader realm region/language tag, e.g. "OCE"
 ---@field age number Listing age in minutes
 ---@field appStatus string Application status ("none", "applied", etc.)
@@ -133,6 +134,7 @@ function PGF.BuildFilterContext(resultID, searchResultInfo, memberCounts)
     context.dpsNeeded = memberCounts.DAMAGER_REMAINING or 0
     
     context.mprating = searchResultInfo.leaderOverallDungeonScore or 0
+    context.mpratingKnown = searchResultInfo.leaderOverallDungeonScore ~= nil
 
     context.hasAugmentationEvoker = false
     context.hasSameSpec = false

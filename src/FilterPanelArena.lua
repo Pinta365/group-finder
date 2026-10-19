@@ -782,7 +782,7 @@ function PGF.UpdateArenaPanel()
     end
 
     if arenaPanel.quickApplyKeepRole then
-        arenaPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+        arenaPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole == true)
     end
 
     if arenaPanel.showLeaderIconCheckbox then

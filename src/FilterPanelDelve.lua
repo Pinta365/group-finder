@@ -797,7 +797,7 @@ function PGF.UpdateDelvePanel()
     end
 
     if delvePanel.quickApplyKeepRole then
-        delvePanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole ~= false)
+        delvePanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole == true)
     end
 
     if delvePanel.disableCustomSortingCheckbox then

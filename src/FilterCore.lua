@@ -167,7 +167,7 @@ local function PassesFilter(resultID, context, preRoleVectors)
         end
 
         -- Boost sellers usually list from characters with no M+ score
-        if filter.hideUnratedLeaders ~= false and context.mythicplus and (context.mprating or 0) == 0 then
+        if filter.hideUnratedLeaders == true and context.mythicplus and context.mpratingKnown and context.mprating == 0 then
             return false
         end
 

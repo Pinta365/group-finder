@@ -134,7 +134,7 @@ if GetLocale() == "deDE" then
     ["SHOW_REGION_TAG"] = "Regionskürzel anzeigen",
     ["SHOW_REGION_TAG_DESC"] = "Zeigt ein kurzes Kürzel für Spieler aus einer anderen Region oder Sprache als deinem Realm, z. B. OCE, BR oder LA auf US-Realms und DE, FR oder EN auf EU-Realms. Wird bei Gruppenlisten und bei Bewerbern für deine Gruppe angezeigt.",
     ["HIDE_UNRATED_LEADERS"] = "Anführer ohne Wertung ausblenden",
-    ["HIDE_UNRATED_LEADERS_DESC"] = "Blendet Mythisch+-Gruppen aus, deren Anführer keine Mythisch+-Wertung hat. Filtert die meisten Boost-/WTS-Angebote heraus, die meist von Charakteren ohne Wertung stammen.",
+    ["HIDE_UNRATED_LEADERS_DESC"] = "Blendet Mythisch+-Gruppen aus, deren Anführer keine Mythisch+-Wertung hat. Filtert die meisten Boost-/WTS-Angebote heraus, die meist von Charakteren ohne Wertung stammen. Blendet auch Gruppen von neuen oder zurückkehrenden Spielern und erste Schlüssel der Saison aus.",
     ["REGION_FILTER_DESC"] = "Zeigt Gruppen, deren Anführer auf einem Realm dieser Region oder Sprache ist. Gruppen von Realms, die das Addon nicht kennt, werden immer angezeigt.",
     ["REGION_US"] = "Vereinigte Staaten",
     ["REGION_OCE"] = "Ozeanien",

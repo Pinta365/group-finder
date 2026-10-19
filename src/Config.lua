@@ -102,7 +102,7 @@ PGF.defaults = {
         hideBloodlustGroups = false,
         hideIncompatibleGroups = false,
         hideSameSpec = false,
-        hideUnratedLeaders = true,
+        hideUnratedLeaders = false,
         regions = {},
         difficulty = {
             normal = true,
@@ -268,7 +268,7 @@ PGF.charDefaults = {
             damage = false,
         },
         autoAcceptParty = false,
-        keepAppliedRole = true,
+        keepAppliedRole = false,
     },
 }
 

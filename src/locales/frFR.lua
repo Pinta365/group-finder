@@ -134,7 +134,7 @@ if GetLocale() == "frFR" then
     ["SHOW_REGION_TAG"] = "Afficher l'étiquette de région",
     ["SHOW_REGION_TAG_DESC"] = "Affiche une courte étiquette pour les joueurs d'une région ou d'une langue différente de votre royaume, comme OCE, BR ou LA sur les royaumes US et DE, FR ou EN sur les royaumes EU. Affichée sur les listes de groupes et sur les candidats à votre groupe.",
     ["HIDE_UNRATED_LEADERS"] = "Masquer les chefs sans cote",
-    ["HIDE_UNRATED_LEADERS_DESC"] = "Masque les groupes Mythique+ dont le chef n'a aucune cote Mythique+. Filtre la plupart des annonces de boost/WTS, qui proviennent généralement de personnages sans cote.",
+    ["HIDE_UNRATED_LEADERS_DESC"] = "Masque les groupes Mythique+ dont le chef n'a aucune cote Mythique+. Filtre la plupart des annonces de boost/WTS, qui proviennent généralement de personnages sans cote. Masque aussi les groupes de joueurs nouveaux ou de retour et les premières clés de la saison.",
     ["REGION_FILTER_DESC"] = "Affiche les groupes dont le chef est sur un royaume de cette région ou langue. Les groupes de royaumes inconnus de l'addon sont toujours affichés.",
     ["REGION_US"] = "États-Unis",
     ["REGION_OCE"] = "Océanie",
