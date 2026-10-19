@@ -859,7 +859,11 @@ local function CreateRegionsSection(scrollContent)
             PGF.EnsureFilter(db)
             if not db.filter.regions then db.filter.regions = {} end
             -- Store only unticked regions; nil means shown
-            db.filter.regions[tag] = (not self:GetChecked()) and false or nil
+            if self:GetChecked() then
+                db.filter.regions[tag] = nil
+            else
+                db.filter.regions[tag] = false
+            end
             PGF.RefilterResults()
         end)
 

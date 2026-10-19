@@ -115,6 +115,19 @@ local function ActivityMatchesSelectedGroups(activityID, categoryID, selectedGro
     return false
 end
 
+-- Results hidden by the Regions filter only because their leader name hadn't arrived yet
+local pendingLeaderNames = {}
+
+---@param filter table
+---@return boolean active True when at least one region is unticked
+local function HasRegionFilter(filter)
+    if not filter.regions then return false end
+    for _, shown in pairs(filter.regions) do
+        if shown == false then return true end
+    end
+    return false
+end
+
 ---Check if result passes filter criteria.
 ---@param resultID number
 ---@param context FilterContext Filter context
@@ -171,9 +184,17 @@ local function PassesFilter(resultID, context, preRoleVectors)
             return false
         end
 
-        -- Unknown realms (no tag) always pass so new realms are never hidden by mistake
-        if context.regionTag and filter.regions and filter.regions[context.regionTag] == false then
-            return false
+        if HasRegionFilter(filter) then
+            -- The leader name often arrives after the first results; hold the group back until it
+            -- does so it can't slip past the filter. WatchPendingLeaderNames refilters once it's known.
+            if not context.leaderNameKnown then
+                pendingLeaderNames[resultID] = true
+                return false
+            end
+            -- Unknown realms (no tag) always pass so new realms are never hidden by mistake
+            if context.regionTag and filter.regions[context.regionTag] == false then
+                return false
+            end
         end
 
         -- Deliberately tested against groupHasLust rather than hasLust: this filter exists so a
@@ -523,6 +544,7 @@ function PGF.FilterResults(results)
 
     local filtered = {}
     local contextCache = {}
+    wipe(pendingLeaderNames)
 
     for _, resultID in ipairs(results) do
         if C_LFGList.HasSearchResultInfo(resultID) then
@@ -806,8 +828,32 @@ local function InterceptResultUpdates()
     hooksecurefunc("LFGListSearchPanel_UpdateResultList", updateHandler)
 end
 
+---Refilter when a leader name arrives for a result the Regions filter was holding back.
+---Blizzard only redraws the row on LFG_LIST_SEARCH_RESULT_UPDATED, it doesn't rebuild the list.
+local function WatchPendingLeaderNames()
+    local refilterQueued = false
+
+    local frame = CreateFrame("Frame")
+    frame:RegisterEvent("LFG_LIST_SEARCH_RESULT_UPDATED")
+    frame:SetScript("OnEvent", function(_, _, resultID)
+        if refilterQueued or not pendingLeaderNames[resultID] then return end
+
+        local info = C_LFGList.GetSearchResultInfo(resultID)
+        if not info or info.leaderName == nil then return end
+
+        -- Names usually arrive in bursts; batch them into one refilter
+        refilterQueued = true
+        C_Timer.After(0.3, function()
+            refilterQueued = false
+            PGF.RefilterResults()
+        end)
+    end)
+end
+
 ---Initialize filtering system.
 function PGF.InitializeFilterCore()
+    WatchPendingLeaderNames()
+
     local function attemptSetup()
         if LFGListFrame and LFGListFrame.SearchPanel then
             InterceptResultUpdates()
