@@ -530,6 +530,8 @@ end
 ---@return number[] filteredResults
 ---@return table contextCache Built FilterContext objects keyed by resultID, for reuse in SortResults
 function PGF.FilterResults(results)
+    wipe(pendingLeaderNames)
+
     if not results or #results == 0 then
         return results, {}
     end
@@ -544,7 +546,6 @@ function PGF.FilterResults(results)
 
     local filtered = {}
     local contextCache = {}
-    wipe(pendingLeaderNames)
 
     for _, resultID in ipairs(results) do
         if C_LFGList.HasSearchResultInfo(resultID) then
