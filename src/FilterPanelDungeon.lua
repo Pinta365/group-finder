@@ -829,7 +829,70 @@ local function CreateMiscSection(scrollContent)
 end
 
 --------------------------------------------------------------------------------
--- Section 5: Quick Apply
+-- Section 5: Regions
+--------------------------------------------------------------------------------
+
+---Create Regions section: one checkbox per realm region/language, based on the group leader's realm.
+local function CreateRegionsSection(scrollContent)
+    local tags = PGF.GetRegionFilterTags()
+    if #tags == 0 then return end
+
+    local header = MakeAccordionHeader(scrollContent, "regions", PGF.L("SECTION_REGIONS") or "REGIONS")
+    local content = PGF.CreateAccordionContent(scrollContent)
+
+    local y = CONTENT_PADDING
+    local regionCheckboxes = {}
+    local filter = PintaGroupFinderDB.filter or {}
+    local regions = filter.regions or {}
+
+    for _, tag in ipairs(tags) do
+        local checkbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+        checkbox:SetSize(20, 20)
+        checkbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+
+        local label = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
+        label:SetText(PGF.FormatRegionTag(tag) .. "  " .. PGF.L("REGION_" .. tag))
+
+        checkbox:SetScript("OnClick", function(self)
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            if not db.filter.regions then db.filter.regions = {} end
+            -- Store only unticked regions; nil means shown
+            if self:GetChecked() then
+                db.filter.regions[tag] = nil
+            else
+                db.filter.regions[tag] = false
+            end
+            PGF.RefilterResults()
+        end)
+
+        checkbox:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(PGF.L("REGION_" .. tag))
+            GameTooltip:AddLine(PGF.L("REGION_FILTER_DESC"), 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        checkbox:SetScript("OnLeave", GameTooltip_Hide)
+
+        checkbox:SetChecked(regions[tag] ~= false)
+        regionCheckboxes[tag] = checkbox
+        y = y + 22
+    end
+
+    dungeonPanel.regionCheckboxes = regionCheckboxes
+
+    content:SetHeight(y + CONTENT_PADDING)
+
+    table.insert(sections, {
+        id = "regions",
+        header = header,
+        content = content,
+    })
+end
+
+--------------------------------------------------------------------------------
+-- Section 6: Quick Apply
 --------------------------------------------------------------------------------
 
 ---Create Quick Apply section.
@@ -838,7 +901,7 @@ local function CreateQuickApplySection(scrollContent)
 end
 
 --------------------------------------------------------------------------------
--- Section 6: Settings
+-- Section 7: Settings
 --------------------------------------------------------------------------------
 
 local dungeonSortOptions = {
@@ -940,6 +1003,57 @@ local function CreateSettingsSection(scrollContent)
     showBloodlustIconCheckbox:SetScript("OnLeave", GameTooltip_Hide)
     showBloodlustIconCheckbox:SetChecked(ui.showBloodlustIcon ~= false)
     dungeonPanel.showBloodlustIconCheckbox = showBloodlustIconCheckbox
+    y = y + 24
+
+    -- Show Region Tag Checkbox
+    local showRegionTagCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    showRegionTagCheckbox:SetSize(20, 20)
+    showRegionTagCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local showRegionTagLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    showRegionTagLabel:SetPoint("LEFT", showRegionTagCheckbox, "RIGHT", 5, 0)
+    showRegionTagLabel:SetText(PGF.L("SHOW_REGION_TAG"))
+    showRegionTagCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        if not db.ui then db.ui = {} end
+        for k, v in pairs(PGF.defaults.ui) do
+            if db.ui[k] == nil then db.ui[k] = v end
+        end
+        db.ui.showRegionTag = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    showRegionTagCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("SHOW_REGION_TAG"))
+        GameTooltip:AddLine(PGF.L("SHOW_REGION_TAG_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    showRegionTagCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    showRegionTagCheckbox:SetChecked(ui.showRegionTag ~= false)
+    dungeonPanel.showRegionTagCheckbox = showRegionTagCheckbox
+    y = y + 24
+
+    -- Hide Unrated Leaders Checkbox
+    local hideUnratedLeadersCheckbox = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+    hideUnratedLeadersCheckbox:SetSize(20, 20)
+    hideUnratedLeadersCheckbox:SetPoint("TOPLEFT", content, "TOPLEFT", CONTENT_PADDING, -y)
+    local hideUnratedLeadersLabel = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    hideUnratedLeadersLabel:SetPoint("LEFT", hideUnratedLeadersCheckbox, "RIGHT", 5, 0)
+    hideUnratedLeadersLabel:SetText(PGF.L("HIDE_UNRATED_LEADERS"))
+    hideUnratedLeadersCheckbox:SetScript("OnClick", function(self)
+        local db = PintaGroupFinderDB
+        PGF.EnsureFilter(db)
+        db.filter.hideUnratedLeaders = self:GetChecked()
+        PGF.RefilterResults()
+    end)
+    hideUnratedLeadersCheckbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(PGF.L("HIDE_UNRATED_LEADERS"))
+        GameTooltip:AddLine(PGF.L("HIDE_UNRATED_LEADERS_DESC"), 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    hideUnratedLeadersCheckbox:SetScript("OnLeave", GameTooltip_Hide)
+    hideUnratedLeadersCheckbox:SetChecked((PintaGroupFinderDB.filter or {}).hideUnratedLeaders == true)
+    dungeonPanel.hideUnratedLeadersCheckbox = hideUnratedLeadersCheckbox
     y = y + 24
 
     -- Show Leader Rating Checkbox
@@ -1277,6 +1391,7 @@ local function CreateDungeonFilterPanel()
     CreateDifficultySection(scrollContent)
     CreatePlaystyleSection(scrollContent)
     CreateMiscSection(scrollContent)
+    CreateRegionsSection(scrollContent)
     CreateQuickApplySection(scrollContent)
     CreateSettingsSection(scrollContent)
     
@@ -1375,6 +1490,18 @@ function PGF.UpdateDungeonPanel()
         dungeonPanel.hideBloodlustCheckbox:SetChecked(filter.hideBloodlustGroups == true)
     end
 
+    if dungeonPanel.hideUnratedLeadersCheckbox then
+        local filter = PintaGroupFinderDB.filter or {}
+        dungeonPanel.hideUnratedLeadersCheckbox:SetChecked(filter.hideUnratedLeaders == true)
+    end
+
+    if dungeonPanel.regionCheckboxes then
+        local regions = (PintaGroupFinderDB.filter or {}).regions or {}
+        for tag, checkbox in pairs(dungeonPanel.regionCheckboxes) do
+            checkbox:SetChecked(regions[tag] ~= false)
+        end
+    end
+
     if dungeonPanel.hideSameSpecCheckbox then
         local db = PintaGroupFinderDB
         local filter = db.filter or {}
@@ -1416,6 +1543,10 @@ function PGF.UpdateDungeonPanel()
     
     if dungeonPanel.quickApplyAutoAccept then
         dungeonPanel.quickApplyAutoAccept:SetChecked(quickApply.autoAcceptParty ~= false)
+    end
+
+    if dungeonPanel.quickApplyKeepRole then
+        dungeonPanel.quickApplyKeepRole:SetChecked(quickApply.keepAppliedRole == true)
     end
 
     if dungeonPanel.disableCustomSortingCheckbox then

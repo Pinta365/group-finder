@@ -8,6 +8,8 @@
 
     <Include file="src\DungeonDatabase.lua"/>
     <Include file="src\RaidDatabase.lua"/>
+    <Include file="src\RealmDatabase.lua"/>
+    <Include file="src\Regions.lua"/>
     <Include file="src\FilterContext.lua"/>
     <Include file="src\FilterCore.lua"/>
     <Include file="src\FilterPanelCommon.lua"/>

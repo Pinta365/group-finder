@@ -39,6 +39,8 @@ PGF.BLOODLUST_CLASSES = {
 ---@field raidBossMin number? Minimum bosses defeated (0 = no minimum)
 ---@field raidBossMax number? Maximum bosses defeated (PGF.BOSS_MAX_UNLIMITED = no maximum)
 ---@field hideIncompatibleGroups boolean?
+---@field hideUnratedLeaders boolean?
+---@field regions table<string, boolean>? Region tag -> false to hide that region
 ---@field difficulty DifficultySettings
 ---@field playstyle PlaystyleSettings
 ---@field dungeonSortSettings SortSettings
@@ -75,6 +77,7 @@ PGF.BLOODLUST_CLASSES = {
 ---@field showLeaderIcon boolean
 ---@field showDungeonSpecIcons boolean
 ---@field showBloodlustIcon boolean
+---@field showRegionTag boolean
 ---@field showRaidBossProgress boolean
 ---@field showArenaLeaderIcon boolean
 ---@field showArenaSpecIcons boolean
@@ -99,6 +102,8 @@ PGF.defaults = {
         hideBloodlustGroups = false,
         hideIncompatibleGroups = false,
         hideSameSpec = false,
+        hideUnratedLeaders = false,
+        regions = {},
         difficulty = {
             normal = true,
             heroic = true,
@@ -134,6 +139,7 @@ PGF.defaults = {
             misc = false,
             quickApply = false,
             settings = false,
+            regions = false,
         },
         dungeonSortSettings = {
             disableCustomSorting = true,
@@ -228,6 +234,7 @@ PGF.defaults = {
         showLeaderIcon = true,
         showDungeonSpecIcons = true,
         showBloodlustIcon = true,
+        showRegionTag = true,
         showRaidSpecIndicators = true,
         showRaidBossProgress = true,
         showArenaLeaderIcon = true,
@@ -244,6 +251,7 @@ PGF.defaults = {
 ---@field enabled boolean
 ---@field roles RoleSettings
 ---@field autoAcceptParty boolean
+---@field keepAppliedRole boolean
 
 ---@class RoleSettings
 ---@field tank boolean
@@ -260,6 +268,7 @@ PGF.charDefaults = {
             damage = false,
         },
         autoAcceptParty = false,
+        keepAppliedRole = false,
     },
 }
 

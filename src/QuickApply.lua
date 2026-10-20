@@ -272,6 +272,83 @@ local function SetupPartyRoleAutoAccept()
     C_Timer.After(0.25, retry)
 end
 
+local KEEP_ROLE_WATCH_SECONDS = 30
+local VALID_ROLES = { TANK = true, HEALER = true, DAMAGER = true }
+
+---Keep the role you applied with after joining a group.
+---The game can reassign your group role to your current spec's role on join
+---(e.g. applying as healer while in a DPS spec). For a short window after
+---accepting an invite, restore the applied role once if it was changed.
+---Stops watching as soon as another player (e.g. the leader) sets your role.
+local function SetupKeepAppliedRole()
+    local wantedRole
+    local watchUntil = 0
+
+    local function checkRole()
+        if not wantedRole then return end
+        if GetTime() > watchUntil or not IsInGroup() then
+            wantedRole = nil
+            return
+        end
+
+        if InCombatLockdown() then return end
+
+        -- "NONE" means the join hasn't assigned a role yet; wait so the single restore isn't spent early
+        local current = UnitGroupRolesAssigned("player")
+        if current == wantedRole or current == "NONE" then
+            return
+        end
+
+        PGF.Debug("Keep applied role: restoring", wantedRole, "was", current)
+        UnitSetRole("player", wantedRole)
+        -- Restore only once so later role changes are left alone
+        wantedRole = nil
+    end
+
+    local frame = CreateFrame("Frame")
+    frame:RegisterEvent("LFG_LIST_APPLICATION_STATUS_UPDATED")
+    frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+    frame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+    frame:RegisterEvent("ROLE_CHANGED_INFORM")
+    frame:SetScript("OnEvent", function(_, event, ...)
+        if event == "ROLE_CHANGED_INFORM" then
+            -- Someone else (usually the leader) set our role: respect it and stop watching
+            local changedName, fromName = ...
+            if not wantedRole or not changedName or not fromName or fromName == "" then return end
+            if issecretvalue and (issecretvalue(changedName) or issecretvalue(fromName)) then return end
+            if UnitIsUnit(changedName, "player") and not UnitIsUnit(fromName, "player") then
+                PGF.Debug("Keep applied role: role set by", fromName, "- no longer watching")
+                wantedRole = nil
+            end
+            return
+        end
+
+        if event ~= "LFG_LIST_APPLICATION_STATUS_UPDATED" then
+            checkRole()
+            return
+        end
+
+        local resultID, newStatus = ...
+        if newStatus ~= "inviteaccepted" then return end
+
+        local charDB = PintaGroupFinderCharDB or PGF.charDefaults
+        local quickApply = charDB.quickApply or PGF.charDefaults.quickApply
+        if not quickApply.enabled or not quickApply.keepAppliedRole then return end
+
+        local _, _, _, _, role = C_LFGList.GetApplicationInfo(resultID)
+        if not role or (issecretvalue and issecretvalue(role)) or not VALID_ROLES[role] then
+            return
+        end
+
+        wantedRole = role
+        watchUntil = GetTime() + KEEP_ROLE_WATCH_SECONDS
+
+        -- The server can assign roles a moment after the join completes
+        C_Timer.After(1, checkRole)
+        C_Timer.After(3, checkRole)
+    end)
+end
+
 ---Monitor and sync role changes from Blizzard's UI.
 local function SetupRoleChangeMonitoring()
     local roleChangeHandler = function(leader, tank, healer, dps)
@@ -323,6 +400,7 @@ function PGF.InitializeQuickApply()
     SetupAutoSignup()
     SetupEntryClickHandler()
     SetupPartyRoleAutoAccept()
+    SetupKeepAppliedRole()
     
     PGF.Debug("Quick Apply initialized")
 end

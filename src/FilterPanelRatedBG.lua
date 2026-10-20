@@ -657,6 +657,7 @@ function PGF.UpdateRatedBGPanel()
     end
 
     if ratedBGPanel.quickApplyAutoAccept then ratedBGPanel.quickApplyAutoAccept:SetChecked(qa.autoAcceptParty ~= false) end
+    if ratedBGPanel.quickApplyKeepRole then ratedBGPanel.quickApplyKeepRole:SetChecked(qa.keepAppliedRole == true) end
 
     if ratedBGPanel.disableCustomSortingCheckbox then
         ratedBGPanel.disableCustomSortingCheckbox:SetChecked(GetSortSettings().disableCustomSorting ~= false)
