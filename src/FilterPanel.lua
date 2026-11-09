@@ -129,7 +129,7 @@ local function InitializeAdvancedFilterDefaults()
     end
     
     for blizzKey, ourKey in pairs(playstyleMapping) do
-        if (advancedFilter[blizzKey] == nil or advancedFilter[blizzKey] == false) and playstyleDefaults[ourKey] == true then
+        if (advancedFilter[blizzKey] == nil or advancedFilter[blizzKey] == false) and playstyleDefaults[blizzKey] == true then
             advancedFilter[blizzKey] = true
             needsSave = true
         end
