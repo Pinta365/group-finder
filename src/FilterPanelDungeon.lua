@@ -458,10 +458,10 @@ local function CreatePlaystyleSection(scrollContent)
     local playstyleCheckboxes = {}
     
     local playstyles = {
-        { blizzKey = "generalPlaystyle1", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE1"] or "Learning", tooltip = PGF.L("PLAYSTYLE_LEARNING_DESC") },
-        { blizzKey = "generalPlaystyle2", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE2"] or "Relaxed", tooltip = PGF.L("PLAYSTYLE_RELAXED_DESC") },
-        { blizzKey = "generalPlaystyle3", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE3"] or "Competitive", tooltip = PGF.L("PLAYSTYLE_COMPETITIVE_DESC") },
-        { blizzKey = "generalPlaystyle4", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE4"] or "Carry Offered", tooltip = PGF.L("PLAYSTYLE_CARRY_DESC") },
+        { blizzKey = "generalPlaystyle1", key = "learning", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE1"] or "Learning", tooltip = PGF.L("PLAYSTYLE_LEARNING_DESC") },
+        { blizzKey = "generalPlaystyle2", key = "relaxed", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE2"] or "Relaxed", tooltip = PGF.L("PLAYSTYLE_RELAXED_DESC") },
+        { blizzKey = "generalPlaystyle3", key = "competitive", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE3"] or "Competitive", tooltip = PGF.L("PLAYSTYLE_COMPETITIVE_DESC") },
+        { blizzKey = "generalPlaystyle4", key = "carry", label = _G["GROUP_FINDER_GENERAL_PLAYSTYLE4"] or "Carry Offered", tooltip = PGF.L("PLAYSTYLE_CARRY_DESC") },
     }
     
     for _, playstyle in ipairs(playstyles) do
@@ -480,10 +480,11 @@ local function CreatePlaystyleSection(scrollContent)
                 C_LFGList.SaveAdvancedFilter(advancedFilter)
             end
             
+            -- Persist under our keys so InitializeAdvancedFilterDefaults doesn't re-check it on /reload
             local db = PintaGroupFinderDB
             PGF.EnsureFilter(db)
             db.filter.playstyle = db.filter.playstyle or {}
-            db.filter.playstyle[playstyle.blizzKey] = self:GetChecked() and true or false
+            db.filter.playstyle[playstyle.key] = self:GetChecked()
             local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
             if searchPanel and LFGListSearchPanel_DoSearch then
                 LFGListSearchPanel_DoSearch(searchPanel)
@@ -502,11 +503,6 @@ local function CreatePlaystyleSection(scrollContent)
         y = y + 22
     end
     
-    local db = PintaGroupFinderDB
-    local playstyle = db.filter and db.filter.playstyle or {}
-    for blizzKey, checkboxData in pairs(playstyleCheckboxes) do
-        checkboxData.frame:SetChecked(playstyle[blizzKey] ~= false)
-    end
     dungeonPanel.playstyleCheckboxes = playstyleCheckboxes
     
     content:SetHeight(y + CONTENT_PADDING)
@@ -1435,11 +1431,12 @@ function PGF.UpdateDungeonPanel()
     end
     
     if dungeonPanel.playstyleCheckboxes then
-        local db = PintaGroupFinderDB
-        local playstyle = db.filter and db.filter.playstyle or {}
-        for blizzKey, checkboxData in pairs(dungeonPanel.playstyleCheckboxes) do
-            if checkboxData and checkboxData.frame then
-                checkboxData.frame:SetChecked(playstyle[blizzKey] ~= false)
+        local advancedFilter = C_LFGList.GetAdvancedFilter()
+        if advancedFilter then
+            for blizzKey, checkboxData in pairs(dungeonPanel.playstyleCheckboxes) do
+                if checkboxData and checkboxData.frame then
+                    checkboxData.frame:SetChecked(advancedFilter[blizzKey] == true)
+                end
             end
         end
     end
