@@ -480,6 +480,10 @@ local function CreatePlaystyleSection(scrollContent)
                 C_LFGList.SaveAdvancedFilter(advancedFilter)
             end
             
+            local db = PintaGroupFinderDB
+            PGF.EnsureFilter(db)
+            db.filter.playstyle = db.filter.playstyle or {}
+            db.filter.playstyle[playstyle.blizzKey] = self:GetChecked() and true or false
             local searchPanel = LFGListFrame and LFGListFrame.SearchPanel
             if searchPanel and LFGListSearchPanel_DoSearch then
                 LFGListSearchPanel_DoSearch(searchPanel)
@@ -498,6 +502,11 @@ local function CreatePlaystyleSection(scrollContent)
         y = y + 22
     end
     
+    local db = PintaGroupFinderDB
+    local playstyle = db.filter and db.filter.playstyle or {}
+    for blizzKey, checkboxData in pairs(playstyleCheckboxes) do
+        checkboxData.frame:SetChecked(playstyle[blizzKey] ~= false)
+    end
     dungeonPanel.playstyleCheckboxes = playstyleCheckboxes
     
     content:SetHeight(y + CONTENT_PADDING)
@@ -1426,12 +1435,11 @@ function PGF.UpdateDungeonPanel()
     end
     
     if dungeonPanel.playstyleCheckboxes then
-        local advancedFilter = C_LFGList.GetAdvancedFilter()
-        if advancedFilter then
-            for blizzKey, checkboxData in pairs(dungeonPanel.playstyleCheckboxes) do
-                if checkboxData and checkboxData.frame then
-                    checkboxData.frame:SetChecked(advancedFilter[blizzKey] == true)
-                end
+        local db = PintaGroupFinderDB
+        local playstyle = db.filter and db.filter.playstyle or {}
+        for blizzKey, checkboxData in pairs(dungeonPanel.playstyleCheckboxes) do
+            if checkboxData and checkboxData.frame then
+                checkboxData.frame:SetChecked(playstyle[blizzKey] ~= false)
             end
         end
     end
